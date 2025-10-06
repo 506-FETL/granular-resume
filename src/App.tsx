@@ -6,7 +6,6 @@ import { SiteHeader } from '@/components/dashboard/site-header'
 import { ThemeProvider } from '@/components/theme-provider'
 import { SidebarInset } from '@/components/ui/sidebar'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Spinner } from '@/components/ui/spinner'
 
 function App() {
   return (
