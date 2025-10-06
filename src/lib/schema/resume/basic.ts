@@ -27,7 +27,6 @@ export const BasicsSchema = z.object({
   name: z.string().trim(),
   gender: GenderSchema,
   birthMonth: z.string(),
-  age: z.number().int().min(0).max(100),
   phone: z.string().trim(),
   email: z.string(),
   workYears: WorkYearsSchema,
@@ -38,6 +37,7 @@ export const BasicsSchema = z.object({
   nativePlace: z.string().trim(),
   customFields: z.array(CustomFieldSchema).default([]),
   politicalStatus: PoliticalStatusSchema,
+  isHidden: z.boolean().default(false),
 }).partial()
 
 export type BasicFormType = z.infer<typeof BasicsSchema>
@@ -46,7 +46,6 @@ export const DEFAULT_BASICS: BasicFormType = {
   name: 'Granular Resume',
   gender: '男',
   birthMonth: undefined,
-  age: undefined,
   phone: undefined,
   email: undefined,
   workYears: '不填',
@@ -57,4 +56,5 @@ export const DEFAULT_BASICS: BasicFormType = {
   nativePlace: undefined,
   politicalStatus: '不填',
   customFields: [],
+  isHidden: false,
 }

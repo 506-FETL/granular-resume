@@ -17,8 +17,11 @@ function Editor() {
           <DrawerHeader>
             <DrawerTitle>简历信息</DrawerTitle>
           </DrawerHeader>
-          <DrawerDescription></DrawerDescription>
-          <div className="p-4">
+          <div className="p-4 overflow-y-auto overflow-x-hidden">
+            <DrawerDescription>
+              {/* TODO Button Group */}
+              实时更新预览
+            </DrawerDescription>
             <BasicResumeForm />
           </div>
         </DrawerContent>

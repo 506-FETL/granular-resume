@@ -1,5 +1,6 @@
 import type { BasicFormType, Gender, MaritalStatus, PoliticalStatus, WorkYears } from '@/lib/schema'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { REGEXP_ONLY_DIGITS } from 'input-otp'
 import { ChevronDownIcon } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -13,6 +14,7 @@ import {
   FormLabel,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ResumeSchema } from '@/lib/schema'
@@ -42,7 +44,7 @@ function BasicResumeForm({ className }: { className?: string }) {
   return (
     <Form {...form}>
       <section className={`mx-auto w-200  ${className}`}>
-        <form id="basic-resume-form" className="grid grid-cols-4 grid-rows-3 gap-4 items-start justify-items-start sm:grid-rows-3 md:grid-rows-3 lg:grid-rows-4">
+        <form id="basic-resume-form" className="grid gap-4 items-start justify-items-start sm:grid-rows-3 sm:grid-cols-2 md:grid-rows-3 md:grid-cols-3 lg:grid-rows-4 lg:grid-cols-4">
           <FormField
             control={form.control}
             name="name"
@@ -91,6 +93,7 @@ function BasicResumeForm({ className }: { className?: string }) {
                       </PopoverTrigger>
                       <PopoverContent className="w-auto overflow-hidden p-0" align="start">
                         <Calendar
+                          defaultMonth={new Date(2002, 1, 1)}
                           mode="single"
                           selected={field.value ? new Date(field.value) : undefined}
                           captionLayout="dropdown"
@@ -147,7 +150,6 @@ function BasicResumeForm({ className }: { className?: string }) {
               <FormItem>
                 <FormLabel>联系邮箱</FormLabel>
                 <FormControl><Input placeholder="you@example.com" {...field} /></FormControl>
-
               </FormItem>
             )}
           />
@@ -178,16 +180,19 @@ function BasicResumeForm({ className }: { className?: string }) {
               <FormItem>
                 <FormLabel>身高(cm)</FormLabel>
                 <FormControl>
-                  <Input
-                    type="number"
-                    inputMode="numeric"
-                    placeholder="cm"
-                    {...field}
-                    value={field.value ?? ''}
-                    onChange={e => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
-                  />
+                  <InputOTP
+                    pattern={REGEXP_ONLY_DIGITS}
+                    value={field.value ? String(field.value) : ''}
+                    onChange={(v) => { field.onChange(Number(v)) }}
+                    maxLength={3}
+                  >
+                    <InputOTPGroup>
+                      <InputOTPSlot index={0} />
+                      <InputOTPSlot index={1} />
+                      <InputOTPSlot index={2} />
+                    </InputOTPGroup>
+                  </InputOTP>
                 </FormControl>
-
               </FormItem>
             )}
           />
@@ -198,14 +203,20 @@ function BasicResumeForm({ className }: { className?: string }) {
               <FormItem>
                 <FormLabel>体重</FormLabel>
                 <FormControl>
-                  <Input
-                    type="number"
-                    inputMode="numeric"
-                    placeholder="kg"
-                    {...field}
-                    value={field.value ?? ''}
-                    onChange={e => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
-                  />
+                  <FormControl>
+                    <InputOTP
+                      pattern={REGEXP_ONLY_DIGITS}
+                      value={field.value ? String(field.value) : ''}
+                      onChange={(v) => { field.onChange(Number(v)) }}
+                      maxLength={3}
+                    >
+                      <InputOTPGroup>
+                        <InputOTPSlot index={0} />
+                        <InputOTPSlot index={1} />
+                        <InputOTPSlot index={2} />
+                      </InputOTPGroup>
+                    </InputOTP>
+                  </FormControl>
                 </FormControl>
 
               </FormItem>

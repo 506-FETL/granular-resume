@@ -12,8 +12,10 @@ import {
 } from '@/components/ui/sidebar'
 
 export function NavOptions({
+  description = 'Options',
   options,
 }: {
+  description?: string
   options: {
     title: string
     url: string
@@ -22,7 +24,7 @@ export function NavOptions({
 }) {
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Options</SidebarGroupLabel>
+      <SidebarGroupLabel>{description}</SidebarGroupLabel>
       <SidebarMenu>
         {options.map(item => (
           <SidebarMenuItem key={item.title}>
