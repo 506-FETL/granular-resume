@@ -377,7 +377,7 @@ export function SideTabsWithCurve({
             }}
           >
             <div ref={contentRef}>
-              <AnimatePresence mode="popLayout">
+              <AnimatePresence mode="wait">
                 {items.map(it =>
                   it.id === active
                   && (
