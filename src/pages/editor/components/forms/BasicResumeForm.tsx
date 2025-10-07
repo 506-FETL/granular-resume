@@ -40,12 +40,12 @@ function BasicResumeForm({ className }: { className?: string }) {
     reValidateMode: 'onChange',
   })
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields, remove, prepend } = useFieldArray({
     control: form.control,
     name: 'customFields',
   })
   function onAddField() {
-    append({ label: '', value: '' })
+    prepend({ label: '', value: '' })
   }
   const [open, setOpen] = useState(false)
 
@@ -276,6 +276,10 @@ function BasicResumeForm({ className }: { className?: string }) {
           />
         </section>
         <Separator className="mt-6" />
+        <Button type="button" size={isMobile ? 'icon' : 'sm'} onClick={onAddField} className="mt-6">
+          <Plus />
+          { !isMobile && '添加自定义字段' }
+        </Button>
         <div className="mt-6 grid gap-4 justify-items-start sm:grid-cols-2 md:grid-cols-3">
           {fields.map((item, index) => (
             <div key={item.id} className="flex gap-2 items-end">
@@ -315,10 +319,6 @@ function BasicResumeForm({ className }: { className?: string }) {
             </div>
           ))}
         </div>
-        <Button type="button" size={isMobile ? 'icon' : 'sm'} onClick={onAddField} className="mt-6">
-          <Plus />
-          { !isMobile && '添加自定义字段' }
-        </Button>
       </form>
     </Form>
   )
