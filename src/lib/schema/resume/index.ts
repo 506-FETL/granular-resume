@@ -13,4 +13,4 @@ export * from './basic'
 export * from './jobIntent'
 
 export type ORDERType = (keyof ResumeSchemaType)
-export const DEFAULT_ORDER: ORDERType[] = ['basics']
+export const DEFAULT_ORDER: ORDERType[] = ['basics', 'jobIntent']

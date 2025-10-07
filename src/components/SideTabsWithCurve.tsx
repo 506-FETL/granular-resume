@@ -38,7 +38,7 @@ export function SideTabsWithCurve({
   gapPx = 6,
   offsetX = 12,
   padding = 0,
-  minHeight = 240,
+  minHeight = 0,
   strokeWidth = 1,
   orientation = 'vertical',
   stroke = 'gray',
@@ -53,9 +53,11 @@ export function SideTabsWithCurve({
   const tabsRef = useRef<HTMLDivElement | null>(null)
   const btnRefs = useRef<Record<string, HTMLButtonElement | null>>({})
   const contentRef = useRef<HTMLDivElement | null>(null)
+  const shrinkTimerRef = useRef<number | null>(null)
 
   // 右侧内容盒几何（容器坐标）
   const [box, setBox] = useState({ x: 0, y: 0, w: 0, h: minHeight, totalHeight: minHeight })
+  const [layoutHeight, setLayoutHeight] = useState(Math.max(minHeight, box.totalHeight))
 
   // 闭合路径 d
   const [outlineD, setOutlineD] = useState('')
@@ -223,6 +225,35 @@ export function SideTabsWithCurve({
     computeOutline()
   }, [computeOutline])
 
+  useEffect(() => {
+    const nextHeight = Math.max(minHeight, box.totalHeight)
+
+    if (nextHeight >= layoutHeight) {
+      if (shrinkTimerRef.current != null) {
+        window.clearTimeout(shrinkTimerRef.current)
+        shrinkTimerRef.current = null
+      }
+      if (layoutHeight !== nextHeight)
+        setLayoutHeight(nextHeight)
+      return
+    }
+
+    if (shrinkTimerRef.current != null)
+      window.clearTimeout(shrinkTimerRef.current)
+
+    shrinkTimerRef.current = window.setTimeout(() => {
+      shrinkTimerRef.current = null
+      setLayoutHeight(prev => (nextHeight < prev ? nextHeight : prev))
+    }, 220)
+
+    return () => {
+      if (shrinkTimerRef.current != null) {
+        window.clearTimeout(shrinkTimerRef.current)
+        shrinkTimerRef.current = null
+      }
+    }
+  }, [box.totalHeight, layoutHeight, minHeight])
+
   // 监听尺寸/内容变化
   useEffect(() => {
     const ro = new ResizeObserver(() => {
@@ -257,7 +288,7 @@ export function SideTabsWithCurve({
         orientation === 'horizontal' ? 'flex-row' : 'flex-col',
         className,
       )}
-      style={{ height: box.totalHeight }}
+      style={{ height: layoutHeight }}
     >
       <div
         ref={tabsRef}
@@ -297,7 +328,7 @@ export function SideTabsWithCurve({
       <svg
         className="absolute inset-0 block -z-1"
         width="100%"
-        height={box.totalHeight}
+        height={layoutHeight}
         style={{ overflow: 'visible', pointerEvents: 'none' }}
       >
         <defs>
@@ -311,7 +342,7 @@ export function SideTabsWithCurve({
             d={outlineD}
             initial={false}
             animate={{ d: outlineD }}
-            transition={{ type: 'spring', stiffness: 220, damping: 26 }}
+            transition={{ type: 'spring', stiffness: 220, damping: 16 }}
             fill={fill}
             stroke={stroke}
             strokeWidth={strokeWidth}
@@ -326,7 +357,7 @@ export function SideTabsWithCurve({
       <svg
         className="absolute inset-0 block z-1"
         width="100%"
-        height={box.totalHeight}
+        height={layoutHeight}
         style={{ overflow: 'visible', pointerEvents: 'none' }}
       >
         {/* 内容：被闭合路径“包裹”的区域（与盒几何一致） */}
@@ -346,16 +377,14 @@ export function SideTabsWithCurve({
             }}
           >
             <div ref={contentRef}>
-              <AnimatePresence mode="wait">
+              <AnimatePresence mode="popLayout">
                 {items.map(it =>
                   it.id === active
                   && (
                     <motion.div
                       key={it.id}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -8 }}
-                      transition={{ duration: 0.2 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
                       className="prose max-w-none dark:prose-invert p-6"
                     >
                       {it.content}

@@ -5,7 +5,6 @@ import { useForm } from 'react-hook-form'
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { useDebouncedFieldUpdate } from '@/hooks/useDebouncedFieldUpdate'
 import { ResumeSchema } from '@/lib/schema'
 import { cn } from '@/lib/utils'
 import useResumeStore from '@/store/resume/form'
@@ -23,7 +22,9 @@ function JobIntentForm({ className }: { className?: string }) {
     reValidateMode: 'onChange',
   })
 
-  useDebouncedFieldUpdate(form, updateJobIntent, 300)
+  form.watch((value) => {
+    updateJobIntent(value)
+  })
 
   return (
     <Form {...form}>

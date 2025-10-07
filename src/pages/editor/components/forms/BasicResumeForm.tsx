@@ -17,7 +17,6 @@ import { Input } from '@/components/ui/input'
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { useDebouncedFieldUpdate } from '@/hooks/useDebouncedFieldUpdate'
 import { ResumeSchema } from '@/lib/schema'
 import { cn } from '@/lib/utils'
 import useResumeStore from '@/store/resume/form'
@@ -39,7 +38,9 @@ function BasicResumeForm({ className }: { className?: string }) {
   })
   const [open, setOpen] = useState(false)
 
-  useDebouncedFieldUpdate(form, updateBasics, 300)
+  form.watch((value) => {
+    updateBasics(value)
+  })
 
   return (
     <Form {...form}>

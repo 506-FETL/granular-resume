@@ -6,6 +6,7 @@ import { SideTabsWithCurve } from '@/components/SideTabsWithCurve'
 import { useTheme } from '@/components/theme-provider'
 import { Button } from '@/components/ui/button'
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer'
+import useResumeStore from '@/store/resume/form'
 import BasicResumeForm from './components/forms/BasicResumeForm'
 import JobIntentForm from './components/forms/JobIntentForm'
 import ResumePreview from './components/preview/BasicResumePreview'
@@ -28,8 +29,9 @@ const ITEMS: Item<ORDERType>[] = [
 function Editor() {
   const [open, setOpen] = useState(false)
   const { theme } = useTheme()
+  const activeTabId = useResumeStore(state => state.activeTabId)
 
-  const fill = theme === 'dark' ? '#1c1917' : '#f5f5f4'
+  const fill = theme === 'dark' ? '#1c1917' : '#fafaf9'
   const stroke = theme === 'dark' ? '#292524' : '#e7e5e4'
 
   return (
@@ -44,7 +46,7 @@ function Editor() {
           </DrawerHeader>
           <DrawerDescription></DrawerDescription>
           <div className="p-4 overflow-y-auto overflow-x-hidden">
-            <SideTabsWithCurve items={ITEMS} defaultId={ITEMS[0].id} fill={fill} stroke={stroke} />
+            <SideTabsWithCurve items={ITEMS} defaultId={activeTabId} fill={fill} stroke={stroke} />
           </div>
         </DrawerContent>
       </Drawer>
