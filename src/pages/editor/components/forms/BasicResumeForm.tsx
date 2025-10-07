@@ -17,7 +17,9 @@ import { Input } from '@/components/ui/input'
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useDebouncedFieldUpdate } from '@/hooks/useDebouncedFieldUpdate'
 import { ResumeSchema } from '@/lib/schema'
+import { cn } from '@/lib/utils'
 import useResumeStore from '@/store/resume/form'
 
 const genderOptions: Gender[] = ['不填', '男', '女', '其他']
@@ -37,14 +39,12 @@ function BasicResumeForm({ className }: { className?: string }) {
   })
   const [open, setOpen] = useState(false)
 
-  form.watch((data) => {
-    updateBasics(data)
-  })
+  useDebouncedFieldUpdate(form, updateBasics, 300)
 
   return (
     <Form {...form}>
-      <section className={`mx-auto w-200  ${className}`}>
-        <form id="basic-resume-form" className="grid gap-4 items-start justify-items-start sm:grid-rows-3 sm:grid-cols-2 md:grid-rows-3 md:grid-cols-3 lg:grid-rows-4 lg:grid-cols-4">
+      <form id="basic-resume-form" className={cn(className)}>
+        <section className="grid gap-4 justify-items-start sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           <FormField
             control={form.control}
             name="name"
@@ -230,7 +230,6 @@ function BasicResumeForm({ className }: { className?: string }) {
               <FormItem>
                 <FormLabel>民族</FormLabel>
                 <FormControl><Input placeholder="请输入民族" {...field} /></FormControl>
-
               </FormItem>
             )}
           />
@@ -261,12 +260,11 @@ function BasicResumeForm({ className }: { className?: string }) {
                     {politicalStatusOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
                   </SelectContent>
                 </Select>
-
               </FormItem>
             )}
           />
-        </form>
-      </section>
+        </section>
+      </form>
     </Form>
   )
 }

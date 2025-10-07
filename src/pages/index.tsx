@@ -1,7 +1,5 @@
-function Home() {
+export default function DemoPage() {
   return (
     <div>Home</div>
   )
 }
-
-export default Home

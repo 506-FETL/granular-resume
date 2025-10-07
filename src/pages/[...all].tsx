@@ -13,8 +13,11 @@ import {
 import { Globe } from '@/components/ui/globe'
 import { Highlighter } from '@/components/ui/highlighter'
 import { LightRays } from '@/components/ui/light-rays'
+import { useIsMobile } from '@/hooks/use-mobile'
 
 export default function NotFound() {
+  const isMobile = useIsMobile()
+
   return (
     <Empty>
       <EmptyHeader>
@@ -22,12 +25,12 @@ export default function NotFound() {
           <IconTool />
         </EmptyMedia>
         <EmptyTitle>
-          <Highlighter action="underline" color="#FF9800">
+          <Highlighter action="box" color="#FF9800">
             正在建设中...
           </Highlighter>
         </EmptyTitle>
         <EmptyDescription>
-          敬请期待!
+          敬请期待
         </EmptyDescription>
       </EmptyHeader>
       <EmptyContent>
@@ -43,7 +46,7 @@ export default function NotFound() {
           </Link>
         </Button>
       </EmptyContent>
-      <LightRays length="100vh" />
+      {!isMobile && <LightRays length="100vh" />}
       <div className="absolute bottom-1/4 w-full">
         <Globe />
       </div>

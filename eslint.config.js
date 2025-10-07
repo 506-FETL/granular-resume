@@ -10,6 +10,7 @@ export default antfu({
     'unused-imports/no-unused-vars': 'warn',
     'no-console': 'error',
     'no-undef': 'error',
+    'react-hooks-extra/no-direct-set-state-in-use-effect': 'off',
   },
   ignores: ['src/components/ui/*'],
 })
