@@ -1,9 +1,9 @@
 import type { BasicFormType, Gender, MaritalStatus, PoliticalStatus, WorkYears } from '@/lib/schema'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { REGEXP_ONLY_DIGITS } from 'input-otp'
-import { ChevronDownIcon } from 'lucide-react'
+import { ChevronDownIcon, Delete, Plus } from 'lucide-react'
 import { useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useFieldArray, useForm } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import {
@@ -17,6 +17,8 @@ import { Input } from '@/components/ui/input'
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Separator } from '@/components/ui/separator'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { ResumeSchema } from '@/lib/schema'
 import { cn } from '@/lib/utils'
 import useResumeStore from '@/store/resume/form'
@@ -29,6 +31,7 @@ const politicalStatusOptions: PoliticalStatus[] = ['不填', '中共党员', '�
 function BasicResumeForm({ className }: { className?: string }) {
   const basics = useResumeStore(state => state.basics)
   const updateBasics = useResumeStore(state => state.updateBasics)
+  const isMobile = useIsMobile()
 
   const form = useForm<BasicFormType>({
     resolver: zodResolver(ResumeSchema.shape.basics),
@@ -36,6 +39,14 @@ function BasicResumeForm({ className }: { className?: string }) {
     mode: 'onChange',
     reValidateMode: 'onChange',
   })
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: 'customFields',
+  })
+  function onAddField() {
+    append({ label: '', value: '' })
+  }
   const [open, setOpen] = useState(false)
 
   form.watch((value) => {
@@ -242,7 +253,6 @@ function BasicResumeForm({ className }: { className?: string }) {
               <FormItem>
                 <FormLabel>籍贯</FormLabel>
                 <FormControl><Input placeholder="四川 / 江苏南京" {...field} /></FormControl>
-
               </FormItem>
             )}
           />
@@ -265,6 +275,50 @@ function BasicResumeForm({ className }: { className?: string }) {
             )}
           />
         </section>
+        <Separator className="mt-6" />
+        <div className="mt-6 grid gap-4 justify-items-start sm:grid-cols-2 md:grid-cols-3">
+          {fields.map((item, index) => (
+            <div key={item.id} className="flex gap-2 items-end">
+              <FormField
+                control={form.control}
+                name={`customFields.${index}.label`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>标签</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="标签" />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name={`customFields.${index}.value`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>值</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="值" />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <Button
+                type="button"
+                variant="destructive"
+                size={isMobile ? 'icon' : 'sm'}
+                onClick={() => remove(index)}
+              >
+                <Delete />
+                {!isMobile && '删除'}
+              </Button>
+            </div>
+          ))}
+        </div>
+        <Button type="button" size={isMobile ? 'icon' : 'sm'} onClick={onAddField} className="mt-6">
+          <Plus />
+          { !isMobile && '添加自定义字段' }
+        </Button>
       </form>
     </Form>
   )

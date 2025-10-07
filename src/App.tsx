@@ -4,7 +4,7 @@ import routes from '~react-pages'
 import { AppSidebar } from '@/components/dashboard/app-sidebar'
 import { SiteHeader } from '@/components/dashboard/site-header'
 import { ThemeProvider } from '@/components/theme-provider'
-import { SidebarInset } from '@/components/ui/sidebar'
+import { SidebarHeader, SidebarInset } from '@/components/ui/sidebar'
 import { Skeleton } from '@/components/ui/skeleton'
 
 function App() {
@@ -12,7 +12,9 @@ function App() {
     <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
       <AppSidebar variant="inset" />
       <SidebarInset className="relative overflow-hidden">
-        <SiteHeader />
+        <SidebarHeader className="">
+          <SiteHeader />
+        </SidebarHeader>
         <Suspense fallback={<Loading />}>
           <div className="p-4">
             {useRoutes(routes)}

@@ -342,7 +342,7 @@ export function SideTabsWithCurve({
             d={outlineD}
             initial={false}
             animate={{ d: outlineD }}
-            transition={{ type: 'spring', stiffness: 220, damping: 16 }}
+            transition={{ type: 'spring', stiffness: 320, damping: 20 }}
             fill={fill}
             stroke={stroke}
             strokeWidth={strokeWidth}
@@ -385,7 +385,7 @@ export function SideTabsWithCurve({
                       key={it.id}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      className="prose max-w-none dark:prose-invert p-6"
+                      className="p-6"
                     >
                       {it.content}
                     </motion.div>
