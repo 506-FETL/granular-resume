@@ -1,8 +1,8 @@
-import type { Item } from '@/components/SideTabsWithCurve'
+import type { ReactNode } from 'react'
 import type { ORDERType } from '@/lib/schema'
 import { Briefcase, Edit, GraduationCap, UserRound } from 'lucide-react'
 import { useState } from 'react'
-import { SideTabsWithCurve } from '@/components/SideTabsWithCurve'
+import { SideTabs, SideTabsWrapper, Tab, ViewPort } from '@/components/SideTabs'
 import { useTheme } from '@/components/theme-provider'
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer'
 import { RainbowButton } from '@/components/ui/rainbow-button'
@@ -13,12 +13,19 @@ import BasicResumeForm from './components/forms/BasicResumeForm'
 import JobIntentForm from './components/forms/JobIntentForm'
 import ResumePreview from './components/preview/BasicResumePreview'
 
+interface Item<T> {
+  id: T
+  label: string
+  icon: ReactNode
+  content: ReactNode
+}
+
 const ITEMS: Item<ORDERType>[] = [
   {
     id: 'basics',
     label: '基本信息',
-    content: <BasicResumeForm />,
     icon: <UserRound />,
+    content: <BasicResumeForm />,
   },
   {
     id: 'jobIntent',
@@ -56,13 +63,23 @@ function Editor() {
             {!isMobile && '编辑简历'}
           </RainbowButton>
         </DrawerTrigger>
-        <DrawerContent className="h-120">
+        <DrawerContent className="h-140">
           <DrawerHeader>
             <DrawerTitle>简历信息</DrawerTitle>
           </DrawerHeader>
           <DrawerDescription></DrawerDescription>
           <div className="p-4 overflow-y-scroll overflow-x-hidden">
-            <SideTabsWithCurve items={ITEMS} defaultId={activeTabId} fill={fill} stroke={stroke} />
+            <SideTabsWrapper defaultId={activeTabId}>
+              <SideTabs>
+                {ITEMS.map(item => (
+                  <Tab key={item.id} id={item.id}>
+                    {item.icon}
+                    {!isMobile && item.label}
+                  </Tab>
+                ))}
+              </SideTabs>
+              <ViewPort items={ITEMS} fill={fill} stroke={stroke} />
+            </SideTabsWrapper>
           </div>
         </DrawerContent>
       </Drawer>

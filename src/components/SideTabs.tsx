@@ -1,9 +1,15 @@
 'use client'
 
-import type { ReactNode } from 'react'
-import { CircleEllipsis } from 'lucide-react'
+import type {
+  Dispatch,
+  PropsWithChildren,
+  ReactNode,
+  RefObject,
+  SetStateAction,
+} from 'react'
+import { Slot } from '@radix-ui/react-slot'
 import { AnimatePresence, motion } from 'motion/react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { createContext, use, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { useIsMobile } from '../hooks/use-mobile'
@@ -16,8 +22,7 @@ export interface Item<T> {
 }
 
 interface Props {
-  items: Item<string>[]
-  defaultId?: string
+  defaultId: string
   className?: string
   gapPx?: number // tabs 区域与内容区间距（主轴方向）
   offsetX?: number // 线条从按钮偏移量，避免压住按钮圆角
@@ -31,8 +36,54 @@ interface Props {
   controlDown?: number
 }
 
-export function SideTabsWithCurve({
-  items,
+interface BoxState {
+  x: number
+  y: number
+  w: number
+  h: number
+  totalHeight: number
+}
+
+interface SideTabsContextValue {
+  active: string
+  setActive: Dispatch<SetStateAction<string>>
+  box: BoxState
+  outlineD: string
+  containerRef: RefObject<HTMLDivElement | null>
+  tabsRef: RefObject<HTMLDivElement | null>
+  btnRefs: RefObject<Record<string, HTMLButtonElement | null>>
+  contentRef: RefObject<HTMLDivElement | null>
+  computeBox: () => void
+  computeOutline: () => void
+  recomputeGeometry: () => void
+  defaultId: string
+  className?: string
+  gapPx: number
+  offsetX: number
+  minHeight: number
+  strokeWidth: number
+  orientation: 'horizontal' | 'vertical'
+  radius: number
+  controlDown: number
+  setBox: Dispatch<SetStateAction<BoxState>>
+}
+
+function callAll(...fns: Array<(() => void) | undefined>) {
+  return () => {
+    fns.forEach(fn => fn && fn())
+  }
+}
+
+const SideTabsContext = createContext<SideTabsContextValue | null>(null)
+function useSideTabsContext() {
+  const context = use(SideTabsContext)
+  if (!context) {
+    throw new Error('SideTabs components must be used within a SideTabsWrapper')
+  }
+  return context
+}
+
+export function SideTabsWrapper({
   defaultId,
   className,
   gapPx = 6,
@@ -41,26 +92,24 @@ export function SideTabsWithCurve({
   minHeight = 0,
   strokeWidth = 1,
   orientation = 'vertical',
-  stroke = 'gray',
-  fill = 'transparent',
   radius = 12,
   controlDown = 12,
-}: Props) {
-  const isMobile = useIsMobile()
-  const [active, setActive] = useState<string>(defaultId ?? items[0]?.id)
+  ...props
+}: PropsWithChildren<Props>) {
+  const [active, setActive] = useState<string>(defaultId)
 
   const containerRef = useRef<HTMLDivElement | null>(null)
   const tabsRef = useRef<HTMLDivElement | null>(null)
   const btnRefs = useRef<Record<string, HTMLButtonElement | null>>({})
   const contentRef = useRef<HTMLDivElement | null>(null)
 
-  // 右侧内容盒几何（容器坐标）
-  const [box, setBox] = useState({ x: 0, y: 0, w: 0, h: minHeight, totalHeight: minHeight })
+  // 容器几何（容器坐标）
+  const [box, setBox] = useState<BoxState>({ x: 0, y: 0, w: 0, h: minHeight, totalHeight: minHeight })
 
   // 闭合路径 d
   const [outlineD, setOutlineD] = useState('')
 
-  /** 计算右侧盒尺寸（随内容变化） */
+  /** 计算容器尺寸（随内容变化） */
   const computeBox = useCallback(() => {
     const container = containerRef.current
     const tabs = tabsRef.current
@@ -215,10 +264,16 @@ export function SideTabsWithCurve({
     setOutlineD(d)
   }, [active, box, offsetX, orientation, padding, radius, controlDown])
 
+  /** 统一调度几何与路径的重新计算 */
+  const recomputeGeometry = useCallback(() => {
+    computeBox()
+    requestAnimationFrame(() => computeOutline())
+  }, [computeBox, computeOutline])
+
   // 初始 & 依赖变化
   useEffect(() => {
-    computeBox()
-  }, [computeBox])
+    recomputeGeometry()
+  }, [recomputeGeometry])
   useEffect(() => {
     computeOutline()
   }, [computeOutline])
@@ -226,8 +281,7 @@ export function SideTabsWithCurve({
   // 监听尺寸/内容变化
   useEffect(() => {
     const ro = new ResizeObserver(() => {
-      computeBox()
-      requestAnimationFrame(() => computeOutline())
+      recomputeGeometry()
     })
     if (containerRef.current)
       ro.observe(containerRef.current)
@@ -237,8 +291,7 @@ export function SideTabsWithCurve({
       ro.observe(contentRef.current)
 
     const onScrollOrResize = () => {
-      computeBox()
-      requestAnimationFrame(() => computeOutline())
+      recomputeGeometry()
     }
     window.addEventListener('resize', onScrollOrResize)
     window.addEventListener('scroll', onScrollOrResize, true)
@@ -247,60 +300,107 @@ export function SideTabsWithCurve({
       window.removeEventListener('resize', onScrollOrResize)
       window.removeEventListener('scroll', onScrollOrResize, true)
     }
-  }, [computeBox, computeOutline])
+  }, [recomputeGeometry])
+
+  const value = useMemo<SideTabsContextValue>(() => ({
+    active,
+    setActive,
+    box,
+    outlineD,
+    containerRef,
+    tabsRef,
+    btnRefs,
+    contentRef,
+    computeBox,
+    computeOutline,
+    recomputeGeometry,
+    defaultId,
+    className,
+    gapPx,
+    offsetX,
+    minHeight,
+    strokeWidth,
+    orientation,
+    radius,
+    controlDown,
+    setBox,
+  }), [active, box, btnRefs, className, computeBox, computeOutline, containerRef, contentRef, controlDown, defaultId, gapPx, minHeight, offsetX, orientation, outlineD, radius, recomputeGeometry, setActive, setBox, strokeWidth, tabsRef])
 
   return (
-    <motion.div
-      ref={containerRef}
-      className={cn(
-        'relative mx-auto flex',
-        orientation === 'horizontal' ? 'flex-row' : 'flex-col',
-        className,
-      )}
-      animate={{ height: Math.max(minHeight, box.totalHeight) }}
-      transition={{
-        type: 'spring',
-        stiffness: 200,
-        damping: 30,
-        mass: 0.8,
-        restDelta: 0.001,
-      }}
-    >
-      <div
-        ref={tabsRef}
+    <SideTabsContext value={value}>
+      <motion.div
+        ref={containerRef}
         className={cn(
-          'flex gap-3',
-          orientation === 'horizontal' ? 'flex-col pr-4' : 'flex-row flex-wrap pb-4',
+          'relative mx-auto flex',
+          orientation === 'horizontal' ? 'flex-row' : 'flex-col',
+          className,
         )}
-      >
-        {items.map((it) => {
-          it.icon = it.icon ?? <CircleEllipsis />
+        animate={{ height: Math.max(minHeight, box.totalHeight) }}
+        transition={{
+          type: 'spring',
+          stiffness: 200,
+          damping: 30,
+          mass: 0.8,
+          restDelta: 0.001,
+        }}
+        {...props}
+      />
+    </SideTabsContext>
+  )
+}
 
-          return (
-            <Button
-              size={isMobile ? 'icon' : 'sm'}
-              key={it.id}
-              ref={(el) => { btnRefs.current[it.id] = el }}
-              variant={active === it.id ? 'default' : 'secondary'}
-              className={cn(
-                'justify-center transition-all duration-200 ease-in-out',
-              )}
-              onClick={() => {
-                setActive(it.id)
-                requestAnimationFrame(() => {
-                  computeBox()
-                  requestAnimationFrame(() => computeOutline())
-                })
-              }}
-            >
-              {it.icon}
-              {!isMobile && it.label}
-            </Button>
-          )
-        })}
-      </div>
+export function SideTabs({ orientation = 'vertical', ...props }: PropsWithChildren<{ orientation?: 'horizontal' | 'vertical' }>) {
+  const { tabsRef } = useSideTabsContext()
 
-      {/* 右侧绘制区域：使用绝对定位覆盖整个容器，按钮保持在普通流 */}
+  return (
+    <div
+      ref={tabsRef}
+      className={cn(
+        'flex gap-3',
+        orientation === 'horizontal' ? 'flex-col pr-4' : 'flex-row flex-wrap pb-4',
+      )}
+      {...props}
+    />
+  )
+}
+
+export function Tab({ asChild = false, onClick, id, ...props }: PropsWithChildren<{ asChild?: boolean, onClick?: () => void, id: string }>) {
+  const { setActive, recomputeGeometry, active, btnRefs } = useSideTabsContext()
+  const isMobile = useIsMobile()
+  const Comp = asChild ? Slot : Button
+
+  return (
+    <Comp
+      key={id}
+      size={isMobile ? 'icon' : 'sm'}
+      ref={(el) => { btnRefs.current[id] = el }}
+      variant={active === id ? 'default' : 'secondary'}
+      className={cn(
+        'justify-center transition-all duration-200 ease-in-out',
+      )}
+      onClick={callAll(() => {
+        setActive(id)
+        requestAnimationFrame(recomputeGeometry)
+      }, onClick)}
+      {...props}
+    />
+  )
+}
+
+export function ViewPort({
+  padding = 0,
+  fill = 'transparent',
+  stroke = 'gray',
+  strokeWidth = 1,
+  items,
+}: { padding?: number, fill?: string, stroke?: string, strokeWidth?: number, items: { id: string, content: ReactNode }[] }) {
+  const { box, outlineD, contentRef, active } = useSideTabsContext()
+  const activeItem = useMemo(
+    () => items.find(item => item.id === active),
+    [items, active],
+  )
+  return (
+    <>
       <svg
         className="absolute inset-0 block z-1"
         width="100%"
@@ -360,29 +460,26 @@ export function SideTabsWithCurve({
           >
             <div ref={contentRef}>
               <AnimatePresence mode="wait">
-                {items.map(it =>
-                  it.id === active
-                  && (
-                    <motion.div
-                      key={it.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={{
-                        duration: 0.3,
-                        ease: [0.25, 0.1, 0.25, 1.0],
-                      }}
-                      className="p-6"
-                    >
-                      {it.content}
-                    </motion.div>
-                  ),
+                {activeItem && (
+                  <motion.div
+                    key={activeItem.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{
+                      duration: 0.3,
+                      ease: [0.25, 0.1, 0.25, 1.0],
+                    }}
+                    className="p-6"
+                  >
+                    {activeItem.content}
+                  </motion.div>
                 )}
               </AnimatePresence>
             </div>
           </div>
         </foreignObject>
       </svg>
-    </motion.div>
+    </>
   )
 }

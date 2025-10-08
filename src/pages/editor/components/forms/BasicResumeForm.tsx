@@ -6,13 +6,7 @@ import { useState } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-} from '@/components/ui/form'
+import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -40,12 +34,12 @@ function BasicResumeForm({ className }: { className?: string }) {
     reValidateMode: 'onChange',
   })
 
-  const { fields, remove, prepend } = useFieldArray({
+  const { fields, remove, append } = useFieldArray({
     control: form.control,
     name: 'customFields',
   })
   function onAddField() {
-    prepend({ label: '', value: '' })
+    append({ label: '', value: '' })
   }
   const [open, setOpen] = useState(false)
 
@@ -213,7 +207,7 @@ function BasicResumeForm({ className }: { className?: string }) {
             name="weightKg"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>体重</FormLabel>
+                <FormLabel>体重(kg)</FormLabel>
                 <FormControl>
                   <FormControl>
                     <InputOTP

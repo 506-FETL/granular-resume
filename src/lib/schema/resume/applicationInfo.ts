@@ -9,6 +9,7 @@ export type ApplicationMajor = z.infer<typeof ApplicationMajorSchema>
 export const ApplicationInfoFormSchema = z.object({
   applicationSchool: ApplicationSchoolSchema,
   applicationMajor: ApplicationMajorSchema,
+  isHidden: z.boolean().default(false),
 }).partial()
 
 export type ApplicationInfoFormType = z.infer<typeof ApplicationInfoFormSchema>
@@ -16,4 +17,5 @@ export type ApplicationInfoFormType = z.infer<typeof ApplicationInfoFormSchema>
 export const DEFAULT_APPLICATION_INFO: ApplicationInfoFormType = {
   applicationSchool: undefined,
   applicationMajor: undefined,
+  isHidden: false,
 }

@@ -17,6 +17,7 @@ export const JobIntentFormSchema = z.object({
   intentionalCity: IntentionalCitySchema,
   expectedSalary: ExpectedSalarySchema,
   dateEntry: DateEntrySchema,
+  isHidden: z.boolean().default(false),
 }).partial()
 
 export type JobIntentFormType = z.infer<typeof JobIntentFormSchema>
@@ -26,4 +27,5 @@ export const DEFAULT_JOB_INTENT: JobIntentFormType = {
   intentionalCity: undefined,
   expectedSalary: undefined,
   dateEntry: '不填',
+  isHidden: false,
 }

@@ -22,9 +22,9 @@ const useResumeStore = create<ResumeState>()(
       applicationInfo: DEFAULT_APPLICATION_INFO,
       activeTabId: 'basics',
       updateActiveTabId: newActiveTab => set(() => ({ activeTabId: newActiveTab })),
-      updateJobIntent: newJobIntent => set(state => ({ jobIntent: { ...state.jobIntent, ...newJobIntent } })),
-      updateBasics: newBasics => set(state => ({ basics: { ...state.basics, ...newBasics } })),
-      updateApplicationInfo: newApplicationInfo => set(state => ({ applicationInfo: { ...state.applicationInfo, ...newApplicationInfo } })),
+      updateJobIntent: newJobIntent => set(() => ({ jobIntent: newJobIntent })),
+      updateBasics: newBasics => set(() => ({ basics: newBasics })),
+      updateApplicationInfo: newApplicationInfo => set(() => ({ applicationInfo: newApplicationInfo })),
     }),
     {
       name: 'resume-storage',
