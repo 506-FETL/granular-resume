@@ -53,11 +53,9 @@ export function SideTabsWithCurve({
   const tabsRef = useRef<HTMLDivElement | null>(null)
   const btnRefs = useRef<Record<string, HTMLButtonElement | null>>({})
   const contentRef = useRef<HTMLDivElement | null>(null)
-  const shrinkTimerRef = useRef<number | null>(null)
 
   // 右侧内容盒几何（容器坐标）
   const [box, setBox] = useState({ x: 0, y: 0, w: 0, h: minHeight, totalHeight: minHeight })
-  const [layoutHeight, setLayoutHeight] = useState(Math.max(minHeight, box.totalHeight))
 
   // 闭合路径 d
   const [outlineD, setOutlineD] = useState('')
@@ -225,35 +223,6 @@ export function SideTabsWithCurve({
     computeOutline()
   }, [computeOutline])
 
-  useEffect(() => {
-    const nextHeight = Math.max(minHeight, box.totalHeight)
-
-    if (nextHeight >= layoutHeight) {
-      if (shrinkTimerRef.current != null) {
-        window.clearTimeout(shrinkTimerRef.current)
-        shrinkTimerRef.current = null
-      }
-      if (layoutHeight !== nextHeight)
-        setLayoutHeight(nextHeight)
-      return
-    }
-
-    if (shrinkTimerRef.current != null)
-      window.clearTimeout(shrinkTimerRef.current)
-
-    shrinkTimerRef.current = window.setTimeout(() => {
-      shrinkTimerRef.current = null
-      setLayoutHeight(prev => (nextHeight < prev ? nextHeight : prev))
-    }, 220)
-
-    return () => {
-      if (shrinkTimerRef.current != null) {
-        window.clearTimeout(shrinkTimerRef.current)
-        shrinkTimerRef.current = null
-      }
-    }
-  }, [box.totalHeight, layoutHeight, minHeight])
-
   // 监听尺寸/内容变化
   useEffect(() => {
     const ro = new ResizeObserver(() => {
@@ -281,14 +250,21 @@ export function SideTabsWithCurve({
   }, [computeBox, computeOutline])
 
   return (
-    <div
+    <motion.div
       ref={containerRef}
       className={cn(
         'relative mx-auto flex',
         orientation === 'horizontal' ? 'flex-row' : 'flex-col',
         className,
       )}
-      style={{ height: layoutHeight }}
+      animate={{ height: Math.max(minHeight, box.totalHeight) }}
+      transition={{
+        type: 'spring',
+        stiffness: 200,
+        damping: 30,
+        mass: 0.8,
+        restDelta: 0.001,
+      }}
     >
       <div
         ref={tabsRef}
@@ -307,7 +283,7 @@ export function SideTabsWithCurve({
               ref={(el) => { btnRefs.current[it.id] = el }}
               variant={active === it.id ? 'default' : 'secondary'}
               className={cn(
-                'justify-center transition-all',
+                'justify-center transition-all duration-200 ease-in-out',
               )}
               onClick={() => {
                 setActive(it.id)
@@ -326,9 +302,9 @@ export function SideTabsWithCurve({
 
       {/* 右侧绘制区域：使用绝对定位覆盖整个容器，按钮保持在普通流 */}
       <svg
-        className="absolute inset-0 block -z-1"
+        className="absolute inset-0 block z-1"
         width="100%"
-        height={layoutHeight}
+        height="100%"
         style={{ overflow: 'visible', pointerEvents: 'none' }}
       >
         <defs>
@@ -342,7 +318,13 @@ export function SideTabsWithCurve({
             d={outlineD}
             initial={false}
             animate={{ d: outlineD }}
-            transition={{ type: 'spring', stiffness: 320, damping: 20 }}
+            transition={{
+              type: 'spring',
+              stiffness: 200,
+              damping: 30,
+              mass: 0.8,
+              restDelta: 0.001,
+            }}
             fill={fill}
             stroke={stroke}
             strokeWidth={strokeWidth}
@@ -357,7 +339,7 @@ export function SideTabsWithCurve({
       <svg
         className="absolute inset-0 block z-1"
         width="100%"
-        height={layoutHeight}
+        height="100%"
         style={{ overflow: 'visible', pointerEvents: 'none' }}
       >
         {/* 内容：被闭合路径“包裹”的区域（与盒几何一致） */}
@@ -383,8 +365,13 @@ export function SideTabsWithCurve({
                   && (
                     <motion.div
                       key={it.id}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{
+                        duration: 0.3,
+                        ease: [0.25, 0.1, 0.25, 1.0],
+                      }}
                       className="p-6"
                     >
                       {it.content}
@@ -396,6 +383,6 @@ export function SideTabsWithCurve({
           </div>
         </foreignObject>
       </svg>
-    </div>
+    </motion.div>
   )
 }

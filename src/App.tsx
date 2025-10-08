@@ -12,7 +12,7 @@ function App() {
     <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
       <AppSidebar variant="inset" />
       <SidebarInset className="relative overflow-hidden">
-        <SidebarHeader className="">
+        <SidebarHeader className="border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
           <SiteHeader />
         </SidebarHeader>
         <Suspense fallback={<Loading />}>
