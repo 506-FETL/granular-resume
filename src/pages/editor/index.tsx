@@ -45,6 +45,7 @@ function Editor() {
   const [open, setOpen] = useState(false)
   const { theme } = useTheme()
   const activeTabId = useResumeStore(state => state.activeTabId)
+  const updateActiveTabId = useResumeStore(state => state.updateActiveTabId)
   const isMobile = useIsMobile()
 
   const fill = theme === 'dark' ? '#0c0a09' : '#fafaf9'
@@ -56,7 +57,7 @@ function Editor() {
         <DrawerTrigger asChild>
           <RainbowButton
             variant="outline"
-            className="fixed bottom-4 left-1/2 z-1 -transform -translate-x-1/2"
+            className="fixed bottom-6 left-1/2 z-1 -transform -translate-x-1/2"
             size={isMobile ? 'icon' : 'default'}
           >
             <Edit />
@@ -72,7 +73,7 @@ function Editor() {
             <SideTabsWrapper defaultId={activeTabId}>
               <SideTabs>
                 {ITEMS.map(item => (
-                  <Tab key={item.id} id={item.id}>
+                  <Tab key={item.id} id={item.id} onClick={() => updateActiveTabId(item.id)}>
                     {item.icon}
                     {!isMobile && item.label}
                   </Tab>

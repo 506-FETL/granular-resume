@@ -61,7 +61,6 @@ function BasicResumeForm({ className }: { className?: string }) {
               </FormItem>
             )}
           />
-
           <FormField
             control={form.control}
             name="gender"

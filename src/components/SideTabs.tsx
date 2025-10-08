@@ -1,25 +1,12 @@
 'use client'
 
-import type {
-  Dispatch,
-  PropsWithChildren,
-  ReactNode,
-  RefObject,
-  SetStateAction,
-} from 'react'
+import type { Dispatch, PropsWithChildren, ReactNode, RefObject, SetStateAction } from 'react'
 import { Slot } from '@radix-ui/react-slot'
 import { AnimatePresence, motion } from 'motion/react'
 import { createContext, use, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
-import { useIsMobile } from '../hooks/use-mobile'
-
-export interface Item<T> {
-  id: T
-  label: string
-  content: ReactNode
-  icon?: ReactNode
-}
 
 interface Props {
   defaultId: string
@@ -56,16 +43,6 @@ interface SideTabsContextValue {
   computeBox: () => void
   computeOutline: () => void
   recomputeGeometry: () => void
-  defaultId: string
-  className?: string
-  gapPx: number
-  offsetX: number
-  minHeight: number
-  strokeWidth: number
-  orientation: 'horizontal' | 'vertical'
-  radius: number
-  controlDown: number
-  setBox: Dispatch<SetStateAction<BoxState>>
 }
 
 function callAll(...fns: Array<(() => void) | undefined>) {
@@ -349,7 +326,7 @@ export function SideTabsWrapper({
   )
 }
 
-export function SideTabs({ orientation = 'vertical', ...props }: PropsWithChildren<{ orientation?: 'horizontal' | 'vertical' }>) {
+export function SideTabs({ orientation = 'vertical', className, ...props }: PropsWithChildren<{ orientation?: 'horizontal' | 'vertical', className?: string }>) {
   const { tabsRef } = useSideTabsContext()
 
   return (
@@ -358,13 +335,14 @@ export function SideTabs({ orientation = 'vertical', ...props }: PropsWithChildr
       className={cn(
         'flex gap-3',
         orientation === 'horizontal' ? 'flex-col pr-4' : 'flex-row flex-wrap pb-4',
+        className,
       )}
       {...props}
     />
   )
 }
 
-export function Tab({ asChild = false, onClick, id, ...props }: PropsWithChildren<{ asChild?: boolean, onClick?: () => void, id: string }>) {
+export function Tab({ asChild = false, onClick, id, className, ...props }: PropsWithChildren<{ asChild?: boolean, onClick?: () => void, id: string, className?: string }>) {
   const { setActive, recomputeGeometry, active, btnRefs } = useSideTabsContext()
   const isMobile = useIsMobile()
   const Comp = asChild ? Slot : Button
@@ -377,6 +355,7 @@ export function Tab({ asChild = false, onClick, id, ...props }: PropsWithChildre
       variant={active === id ? 'default' : 'secondary'}
       className={cn(
         'justify-center transition-all duration-200 ease-in-out',
+        className,
       )}
       onClick={callAll(() => {
         setActive(id)
@@ -393,7 +372,8 @@ export function ViewPort({
   stroke = 'gray',
   strokeWidth = 1,
   items,
-}: { padding?: number, fill?: string, stroke?: string, strokeWidth?: number, items: { id: string, content: ReactNode }[] }) {
+  className,
+}: { padding?: number, fill?: string, stroke?: string, strokeWidth?: number, items: { id: string, content: ReactNode }[], className?: string }) {
   const { box, outlineD, contentRef, active } = useSideTabsContext()
   const activeItem = useMemo(
     () => items.find(item => item.id === active),
@@ -405,7 +385,7 @@ export function ViewPort({
         className="absolute inset-0 block z-1"
         width="100%"
         height="100%"
-        style={{ overflow: 'visible', pointerEvents: 'none' }}
+        style={{ overflow: 'visible', pointerEvents: 'none', zIndex: -1 }}
       >
         <defs>
           <filter id="soft-shadow" x="-20%" y="-20%" width="140%" height="140%">
@@ -418,13 +398,7 @@ export function ViewPort({
             d={outlineD}
             initial={false}
             animate={{ d: outlineD }}
-            transition={{
-              type: 'spring',
-              stiffness: 200,
-              damping: 30,
-              mass: 0.8,
-              restDelta: 0.001,
-            }}
+            transition={{ type: 'spring', stiffness: 240, damping: 20 }}
             fill={fill}
             stroke={stroke}
             strokeWidth={strokeWidth}
@@ -463,14 +437,14 @@ export function ViewPort({
                 {activeItem && (
                   <motion.div
                     key={activeItem.id}
-                    initial={{ opacity: 0, y: 10 }}
+                    initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{
-                      duration: 0.3,
+                      duration: 0.2,
                       ease: [0.25, 0.1, 0.25, 1.0],
                     }}
-                    className="p-6"
+                    className={cn('p-6', className)}
                   >
                     {activeItem.content}
                   </motion.div>
