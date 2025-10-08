@@ -37,7 +37,6 @@ export const BasicsSchema = z.object({
   nativePlace: z.string().trim(),
   customFields: z.array(CustomFieldSchema).default([]),
   politicalStatus: PoliticalStatusSchema,
-  isHidden: z.boolean().default(false),
 }).partial()
 
 export type BasicFormType = z.infer<typeof BasicsSchema>
@@ -56,5 +55,4 @@ export const DEFAULT_BASICS: BasicFormType = {
   nativePlace: undefined,
   politicalStatus: '不填',
   customFields: [],
-  isHidden: false,
 }

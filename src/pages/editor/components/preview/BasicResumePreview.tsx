@@ -13,7 +13,6 @@ function BasicResumePreview() {
     politicalStatus,
     customFields,
     heightCm,
-    isHidden,
     maritalStatus,
     nation,
     nativePlace,

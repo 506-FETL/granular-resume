@@ -6,6 +6,8 @@ import { SideTabs, SideTabsWrapper, Tab, ViewPort } from '@/components/SideTabs'
 import { useTheme } from '@/components/theme-provider'
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer'
 import { RainbowButton } from '@/components/ui/rainbow-button'
+import { Switch } from '@/components/ui/switch'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useIsMobile } from '@/hooks/use-mobile'
 import useResumeStore from '@/store/resume/form'
 import ApplicationInfoForm from './components/forms/ApplicationInfoForm'
@@ -46,6 +48,7 @@ function Editor() {
   const { theme } = useTheme()
   const activeTabId = useResumeStore(state => state.activeTabId)
   const updateActiveTabId = useResumeStore(state => state.updateActiveTabId)
+  const revertIsHidden = useResumeStore(state => state.revertIsHidden)
   const isMobile = useIsMobile()
 
   const fill = theme === 'dark' ? '#0c0a09' : '#fafaf9'
@@ -72,12 +75,34 @@ function Editor() {
           <div className="p-4 overflow-y-scroll overflow-x-hidden">
             <SideTabsWrapper defaultId={activeTabId}>
               <SideTabs>
-                {ITEMS.map(item => (
-                  <Tab key={item.id} id={item.id} onClick={() => updateActiveTabId(item.id)}>
-                    {item.icon}
-                    {!isMobile && item.label}
-                  </Tab>
-                ))}
+                {ITEMS.map((item) => {
+                  const isBasics = item.id === 'basics'
+
+                  return (
+                    <div key={item.id} className="flex flex-col items-center justify-end gap-2">
+                      {!isBasics && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div>
+                              <Switch
+                                // eslint-disable-next-line react-hooks/rules-of-hooks
+                                checked={useResumeStore(state => state.getIsHidden(item.id as Exclude<ORDERType, 'basics'>))}
+                                onCheckedChange={() => revertIsHidden(item.id as Exclude<ORDERType, 'basics'>)}
+                              />
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            点击可隐藏模块
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
+                      <Tab id={item.id} onClick={() => updateActiveTabId(item.id)}>
+                        {item.icon}
+                        {!isMobile && item.label}
+                      </Tab>
+                    </div>
+                  )
+                })}
               </SideTabs>
               <ViewPort items={ITEMS} fill={fill} stroke={stroke} />
             </SideTabsWrapper>

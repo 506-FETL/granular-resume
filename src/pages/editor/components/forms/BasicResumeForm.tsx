@@ -269,7 +269,7 @@ function BasicResumeForm({ className }: { className?: string }) {
           />
         </section>
         <Separator className="mt-6" />
-        <Button type="button" size={isMobile ? 'icon' : 'sm'} onClick={onAddField} className="mt-6">
+        <Button type="button" variant="outline" size={isMobile ? 'icon' : 'sm'} onClick={onAddField} className="mt-6">
           <Plus />
           { !isMobile && '添加自定义字段' }
         </Button>

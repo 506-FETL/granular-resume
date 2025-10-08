@@ -35,6 +35,7 @@ interface SideTabsContextValue {
   active: string
   setActive: Dispatch<SetStateAction<string>>
   box: BoxState
+  padding: number
   outlineD: string
   containerRef: RefObject<HTMLDivElement | null>
   tabsRef: RefObject<HTMLDivElement | null>
@@ -294,6 +295,7 @@ export function SideTabsWrapper({
     defaultId,
     className,
     gapPx,
+    padding,
     offsetX,
     minHeight,
     strokeWidth,
@@ -301,7 +303,7 @@ export function SideTabsWrapper({
     radius,
     controlDown,
     setBox,
-  }), [active, box, btnRefs, className, computeBox, computeOutline, containerRef, contentRef, controlDown, defaultId, gapPx, minHeight, offsetX, orientation, outlineD, radius, recomputeGeometry, setActive, setBox, strokeWidth, tabsRef])
+  }), [padding, active, box, btnRefs, className, computeBox, computeOutline, containerRef, contentRef, controlDown, defaultId, gapPx, minHeight, offsetX, orientation, outlineD, radius, recomputeGeometry, setActive, setBox, strokeWidth, tabsRef])
 
   return (
     <SideTabsContext value={value}>
@@ -367,14 +369,13 @@ export function Tab({ asChild = false, onClick, id, className, ...props }: Props
 }
 
 export function ViewPort({
-  padding = 0,
   fill = 'transparent',
   stroke = 'gray',
   strokeWidth = 1,
   items,
   className,
-}: { padding?: number, fill?: string, stroke?: string, strokeWidth?: number, items: { id: string, content: ReactNode }[], className?: string }) {
-  const { box, outlineD, contentRef, active } = useSideTabsContext()
+}: { fill?: string, stroke?: string, strokeWidth?: number, items: { id: string, content: ReactNode }[], className?: string }) {
+  const { box, outlineD, contentRef, active, padding } = useSideTabsContext()
   const activeItem = useMemo(
     () => items.find(item => item.id === active),
     [items, active],
