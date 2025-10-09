@@ -11,6 +11,8 @@ export default antfu({
     'no-console': 'error',
     'no-undef': 'error',
     'react-hooks-extra/no-direct-set-state-in-use-effect': 'off',
+    'no-alert': 'off',
   },
+  // '**/tiptap-*/**', --- IGNORE ---
   ignores: ['src/components/ui/*'],
 })
