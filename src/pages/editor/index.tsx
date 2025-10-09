@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import type { ReactNode } from 'react'
 import type { ORDERType } from '@/lib/schema'
 import { Briefcase, Edit, GraduationCap, UserRound } from 'lucide-react'
@@ -68,41 +69,35 @@ function Editor() {
           </RainbowButton>
         </DrawerTrigger>
         <DrawerContent className="h-140">
-          <DrawerHeader>
+          <DrawerHeader className="relative">
             <DrawerTitle>简历信息</DrawerTitle>
+            <DrawerDescription>实时同步</DrawerDescription>
           </DrawerHeader>
-          <DrawerDescription></DrawerDescription>
           <div className="p-4 overflow-y-scroll overflow-x-hidden">
             <SideTabsWrapper defaultId={activeTabId}>
               <SideTabs>
-                {ITEMS.map((item) => {
-                  const isBasics = item.id === 'basics'
-
-                  return (
-                    <div key={item.id} className="flex flex-col items-center justify-end gap-2">
-                      {!isBasics && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <div>
-                              <Switch
-                                // eslint-disable-next-line react-hooks/rules-of-hooks
-                                checked={useResumeStore(state => state.getIsHidden(item.id as Exclude<ORDERType, 'basics'>))}
-                                onCheckedChange={() => revertIsHidden(item.id as Exclude<ORDERType, 'basics'>)}
-                              />
-                            </div>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            点击可隐藏模块
-                          </TooltipContent>
-                        </Tooltip>
-                      )}
-                      <Tab id={item.id} onClick={() => updateActiveTabId(item.id)}>
-                        {item.icon}
-                        {!isMobile && item.label}
-                      </Tab>
-                    </div>
-                  )
-                })}
+                {ITEMS.map(item => (
+                  <div key={item.id} className="flex flex-col items-center justify-end gap-2">
+                    {item.id !== 'basics' && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div>
+                            <Switch
+                              checked={useResumeStore(state => state.getIsHidden(item.id as Exclude<ORDERType, 'basics'>))}
+                              onCheckedChange={() => revertIsHidden(item.id as Exclude<ORDERType, 'basics'>)}
+                            />
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>点击可隐藏模块</TooltipContent>
+                      </Tooltip>
+                    )}
+                    <Tab id={item.id} onClick={() => updateActiveTabId(item.id)}>
+                      {item.icon}
+                      {!isMobile && item.label}
+                    </Tab>
+                  </div>
+                ),
+                )}
               </SideTabs>
               <ViewPort items={ITEMS} fill={fill} stroke={stroke} />
             </SideTabsWrapper>

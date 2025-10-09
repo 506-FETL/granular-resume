@@ -1,5 +1,6 @@
-import type { ApplicationInfoFormType } from '@/lib/schema'
+import type { ApplicationInfoFormExcludeHidden } from '@/lib/schema'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
@@ -11,16 +12,21 @@ function ApplicationInfoForm({ className }: { className?: string }) {
   const applicationInfo = useResumeStore(state => state.applicationInfo)
   const updateApplicationInfo = useResumeStore(state => state.updateApplicationInfo)
 
-  const form = useForm<ApplicationInfoFormType>({
-    resolver: zodResolver(ResumeSchema.shape.applicationInfo),
+  const form = useForm<ApplicationInfoFormExcludeHidden>({
+    resolver: zodResolver(ResumeSchema.shape.applicationInfo.omit({ isHidden: true })),
     defaultValues: applicationInfo,
     mode: 'onChange',
     reValidateMode: 'onChange',
   })
 
-  form.watch((value) => {
-    updateApplicationInfo(value)
-  })
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (!name)
+        return
+      updateApplicationInfo({ [name]: value[name] })
+    })
+    return () => subscription.unsubscribe()
+  }, [form, updateApplicationInfo])
 
   return (
     <Form {...form}>

@@ -18,9 +18,10 @@ export const JobIntentFormSchema = z.object({
   expectedSalary: ExpectedSalarySchema,
   dateEntry: DateEntrySchema,
   isHidden: z.boolean().default(false),
-}).partial()
+}).partial().required({ isHidden: true })
 
 export type JobIntentFormType = z.infer<typeof JobIntentFormSchema>
+export type JobIntentFormExcludeHidden = Omit<JobIntentFormType, 'isHidden'>
 
 export const DEFAULT_JOB_INTENT: JobIntentFormType = {
   jobIntent: undefined,

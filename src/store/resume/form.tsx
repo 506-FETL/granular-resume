@@ -1,17 +1,19 @@
-import type { ApplicationInfoFormType, BasicFormType, JobIntentFormType, ORDERType } from '@/lib/schema'
+import type { ApplicationInfoFormExcludeHidden, ApplicationInfoFormType, BasicFormType, JobIntentFormExcludeHidden, JobIntentFormType, ORDERType } from '@/lib/schema'
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
-import { DEFAULT_APPLICATION_INFO, DEFAULT_BASICS, DEFAULT_JOB_INTENT } from '@/lib/schema'
+import { DEFAULT_APPLICATION_INFO, DEFAULT_BASICS, DEFAULT_JOB_INTENT, DEFAULT_ORDER } from '@/lib/schema'
 
 interface ResumeState {
   basics: BasicFormType
   jobIntent: JobIntentFormType
   applicationInfo: ApplicationInfoFormType
   activeTabId: ORDERType
+  order: ORDERType[]
   updateActiveTabId: (newActiveTab: ORDERType) => void
   updateBasics: (newBasics: BasicFormType) => void
-  updateJobIntent: (newJobIntent: JobIntentFormType) => void
-  updateApplicationInfo: (newApplicationInfo: ApplicationInfoFormType) => void
+  updateJobIntent: (newJobIntent: JobIntentFormExcludeHidden) => void
+  updateApplicationInfo: (newApplicationInfo: ApplicationInfoFormExcludeHidden) => void
+  updateOrder: (newOrder: ORDERType[]) => void
   revertIsHidden: (id: Exclude<ORDERType, 'basics'>) => void
   getIsHidden: (id: Exclude<ORDERType, 'basics'>) => boolean
 }
@@ -22,7 +24,9 @@ const useResumeStore = create<ResumeState>()(
       basics: DEFAULT_BASICS,
       jobIntent: DEFAULT_JOB_INTENT,
       applicationInfo: DEFAULT_APPLICATION_INFO,
+      order: DEFAULT_ORDER,
       activeTabId: 'basics',
+      updateOrder: newOrder => set(() => ({ order: newOrder })),
       updateActiveTabId: newActiveTab => set(() => ({ activeTabId: newActiveTab })),
       updateJobIntent: newJobIntent => set(state => ({ jobIntent: { ...state.jobIntent, ...newJobIntent } })),
       updateBasics: newBasics => set(state => ({ basics: { ...state.basics, ...newBasics } })),
@@ -36,13 +40,13 @@ const useResumeStore = create<ResumeState>()(
         })),
       getIsHidden: (id) => {
         const state = get()
-        return state[id].isHidden || false
+        return state[id].isHidden
       },
     }),
     {
       name: 'resume-storage',
       storage: createJSONStorage(() => localStorage),
-      version: 5,
+      version: 6,
     },
   ),
 )

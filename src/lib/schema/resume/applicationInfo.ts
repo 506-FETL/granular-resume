@@ -10,9 +10,10 @@ export const ApplicationInfoFormSchema = z.object({
   applicationSchool: ApplicationSchoolSchema,
   applicationMajor: ApplicationMajorSchema,
   isHidden: z.boolean().default(false),
-}).partial()
+}).partial().required({ isHidden: true })
 
 export type ApplicationInfoFormType = z.infer<typeof ApplicationInfoFormSchema>
+export type ApplicationInfoFormExcludeHidden = Omit<ApplicationInfoFormType, 'isHidden'>
 
 export const DEFAULT_APPLICATION_INFO: ApplicationInfoFormType = {
   applicationSchool: undefined,

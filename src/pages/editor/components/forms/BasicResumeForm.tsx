@@ -2,7 +2,8 @@ import type { BasicFormType, Gender, MaritalStatus, PoliticalStatus, WorkYears }
 import { zodResolver } from '@hookform/resolvers/zod'
 import { REGEXP_ONLY_DIGITS } from 'input-otp'
 import { ChevronDownIcon, Delete, Plus } from 'lucide-react'
-import { useState } from 'react'
+import { motion } from 'motion/react'
+import { useEffect, useState } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
@@ -43,9 +44,12 @@ function BasicResumeForm({ className }: { className?: string }) {
   }
   const [open, setOpen] = useState(false)
 
-  form.watch((value) => {
-    updateBasics(value)
-  })
+  useEffect(() => {
+    const subscription = form.watch((value) => {
+      updateBasics(value)
+    })
+    return () => subscription.unsubscribe()
+  }, [form, updateBasics])
 
   return (
     <Form {...form}>
@@ -275,7 +279,15 @@ function BasicResumeForm({ className }: { className?: string }) {
         </Button>
         <div className="mt-6 grid gap-4 justify-items-start sm:grid-cols-2 md:grid-cols-3">
           {fields.map((item, index) => (
-            <div key={item.id} className="flex gap-2 items-end">
+            <motion.div
+              key={item.id}
+              className="flex gap-2 items-end"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.2 }}
+              layout
+            >
               <FormField
                 control={form.control}
                 name={`customFields.${index}.label`}
@@ -309,7 +321,7 @@ function BasicResumeForm({ className }: { className?: string }) {
                 <Delete />
                 {!isMobile && '删除'}
               </Button>
-            </div>
+            </motion.div>
           ))}
         </div>
       </form>

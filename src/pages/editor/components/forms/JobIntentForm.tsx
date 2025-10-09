@@ -1,11 +1,11 @@
-import type { DateEntry, JobIntentFormType } from '@/lib/schema'
+import type { DateEntry, JobIntentFormExcludeHidden } from '@/lib/schema'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { REGEXP_ONLY_DIGITS } from 'input-otp'
+import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Separator } from '@/components/ui/separator'
 import { ResumeSchema } from '@/lib/schema'
 import { cn } from '@/lib/utils'
 import useResumeStore from '@/store/resume/form'
@@ -16,16 +16,22 @@ function JobIntentForm({ className }: { className?: string }) {
   const jobIntent = useResumeStore(state => state.jobIntent)
   const updateJobIntent = useResumeStore(state => state.updateJobIntent)
 
-  const form = useForm<JobIntentFormType>({
-    resolver: zodResolver(ResumeSchema.shape.jobIntent),
+  const form = useForm<JobIntentFormExcludeHidden>({
+    resolver: zodResolver(ResumeSchema.shape.jobIntent.omit({ isHidden: true })),
     defaultValues: jobIntent,
     mode: 'onChange',
     reValidateMode: 'onChange',
   })
 
-  form.watch((value) => {
-    updateJobIntent(value)
-  })
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (!name)
+        return
+
+      updateJobIntent({ [name]: value[name] })
+    })
+    return () => subscription.unsubscribe()
+  }, [form, updateJobIntent])
 
   return (
     <Form {...form}>
