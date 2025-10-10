@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form'
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { ResumeSchema } from '@/lib/schema'
+import { resumeSchema } from '@/lib/schema'
 import { cn } from '@/lib/utils'
 import useResumeStore from '@/store/resume/form'
 
@@ -14,10 +14,10 @@ const dateEntryOptions: DateEntry[] = ['不填', '随时到岗', '15天内', '1�
 
 function JobIntentForm({ className }: { className?: string }) {
   const jobIntent = useResumeStore(state => state.jobIntent)
-  const updateJobIntent = useResumeStore(state => state.updateJobIntent)
+  const updateForm = useResumeStore(state => state.updateForm)
 
   const form = useForm<JobIntentFormExcludeHidden>({
-    resolver: zodResolver(ResumeSchema.shape.jobIntent.omit({ isHidden: true })),
+    resolver: zodResolver(resumeSchema.shape.jobIntent.omit({ isHidden: true })),
     defaultValues: jobIntent,
     mode: 'onChange',
     reValidateMode: 'onChange',
@@ -28,10 +28,10 @@ function JobIntentForm({ className }: { className?: string }) {
       if (!name)
         return
 
-      updateJobIntent({ [name]: value[name] })
+      updateForm('jobIntent', { [name]: value[name] })
     })
     return () => subscription.unsubscribe()
-  }, [form, updateJobIntent])
+  }, [form, updateForm])
 
   return (
     <Form {...form}>

@@ -1,7 +1,7 @@
-import type { BasicFormType, Gender, MaritalStatus, PoliticalStatus, WorkYears } from '@/lib/schema'
+import type { BasicForm, Gender, MaritalStatus, PoliticalStatus, WorkYears } from '@/lib/schema'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { REGEXP_ONLY_DIGITS } from 'input-otp'
-import { ChevronDownIcon, Delete, Plus } from 'lucide-react'
+import { Cake, Delete, Plus } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useEffect, useState } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
@@ -14,7 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { ResumeSchema } from '@/lib/schema'
+import { resumeSchema } from '@/lib/schema'
 import { cn } from '@/lib/utils'
 import useResumeStore from '@/store/resume/form'
 
@@ -25,11 +25,11 @@ const politicalStatusOptions: PoliticalStatus[] = ['不填', '中共党员', '�
 
 function BasicResumeForm({ className }: { className?: string }) {
   const basics = useResumeStore(state => state.basics)
-  const updateBasics = useResumeStore(state => state.updateBasics)
+  const updateForm = useResumeStore(state => state.updateForm)
   const isMobile = useIsMobile()
 
-  const form = useForm<BasicFormType>({
-    resolver: zodResolver(ResumeSchema.shape.basics),
+  const form = useForm<BasicForm>({
+    resolver: zodResolver(resumeSchema.shape.basics),
     defaultValues: basics,
     mode: 'onChange',
     reValidateMode: 'onChange',
@@ -46,10 +46,10 @@ function BasicResumeForm({ className }: { className?: string }) {
 
   useEffect(() => {
     const subscription = form.watch((value) => {
-      updateBasics(value)
+      updateForm('basics', value)
     })
     return () => subscription.unsubscribe()
-  }, [form, updateBasics])
+  }, [form, updateForm])
 
   return (
     <Form {...form}>
@@ -73,7 +73,7 @@ function BasicResumeForm({ className }: { className?: string }) {
                 <FormLabel>性别</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                    <SelectTrigger><SelectValue placeholder="不填" /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder="请选择性别" /></SelectTrigger>
                   </FormControl>
                   <SelectContent>
                     {genderOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
@@ -97,7 +97,7 @@ function BasicResumeForm({ className }: { className?: string }) {
                           id="date"
                         >
                           {field.value ? field.value : '选择日期'}
-                          <ChevronDownIcon />
+                          <Cake />
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto overflow-hidden p-0" align="start">

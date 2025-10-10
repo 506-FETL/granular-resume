@@ -51,11 +51,8 @@ import { ListDropdownMenu } from '@/components/tiptap-ui/list-dropdown-menu'
 import { MarkButton } from '@/components/tiptap-ui/mark-button'
 import { TextAlignButton } from '@/components/tiptap-ui/text-align-button'
 import { UndoRedoButton } from '@/components/tiptap-ui/undo-redo-button'
-import { useCursorVisibility } from '@/hooks/use-cursor-visibility'
 // --- Hooks ---
 import { useIsMobile } from '@/hooks/use-mobile'
-
-import { useWindowSize } from '@/hooks/use-window-size'
 // --- Lib ---
 import { handleImageUpload, MAX_FILE_SIZE } from '@/lib/tiptap-utils'
 import '@/components/tiptap-node/blockquote-node/blockquote-node.scss'
@@ -96,10 +93,10 @@ function MainToolbarContent({
       <ToolbarSeparator />
 
       <ToolbarGroup>
-        <HeadingDropdownMenu levels={[1, 2, 3, 4]} portal={isMobile} />
+        <HeadingDropdownMenu levels={[1, 2, 3, 4]} portal />
         <ListDropdownMenu
           types={['bulletList', 'orderedList', 'taskList']}
-          portal={isMobile}
+          portal
         />
         <BlockquoteButton />
         <CodeBlockButton />
@@ -195,7 +192,6 @@ interface EditorProps {
 
 export function SimpleEditor({ content = '', onChange = arrowFn }: EditorProps) {
   const isMobile = useIsMobile()
-  const { height } = useWindowSize()
   const [mobileView, setMobileView] = React.useState<
     'main' | 'highlighter' | 'link'
   >('main')
@@ -245,29 +241,19 @@ export function SimpleEditor({ content = '', onChange = arrowFn }: EditorProps) 
     content,
   })
 
-  const rect = useCursorVisibility({
-    editor,
-    overlayHeight: toolbarRef.current?.getBoundingClientRect().height ?? 0,
-  })
-
   React.useEffect(() => {
     if (!isMobile && mobileView !== 'main') {
       setMobileView('main')
     }
   }, [isMobile, mobileView])
 
+  const editorContextValue = React.useMemo(() => ({ editor }), [editor])
+
   return (
-    <div className="simple-editor-wrapper">
-      <EditorContext value={{ editor }}>
+    <div className="simple-editor-wrapper min-w-full">
+      <EditorContext value={editorContextValue}>
         <Toolbar
           ref={toolbarRef}
-          style={{
-            ...(isMobile
-              ? {
-                  bottom: `calc(100% - ${height - rect.y}px)`,
-                }
-              : {}),
-          }}
         >
           {mobileView === 'main'
             ? (

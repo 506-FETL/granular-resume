@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import type { ReactNode } from 'react'
 import type { ORDERType } from '@/lib/schema'
-import { Briefcase, Edit, GraduationCap, UserRound } from 'lucide-react'
+import { Briefcase, Edit, GraduationCap, School, UserRound } from 'lucide-react'
 import { useState } from 'react'
 import { SideTabs, SideTabsWrapper, Tab, ViewPort } from '@/components/SideTabs'
 import { useTheme } from '@/components/theme-provider'
@@ -13,6 +13,7 @@ import { useIsMobile } from '@/hooks/use-mobile'
 import useResumeStore from '@/store/resume/form'
 import ApplicationInfoForm from './components/forms/ApplicationInfoForm'
 import BasicResumeForm from './components/forms/BasicResumeForm'
+import EduBackgroundForm from './components/forms/EduBackgroundForm'
 import JobIntentForm from './components/forms/JobIntentForm'
 import ResumePreview from './components/preview/BasicResumePreview'
 
@@ -39,8 +40,14 @@ const ITEMS: Item<ORDERType>[] = [
   {
     id: 'applicationInfo',
     label: '报考信息',
-    icon: <GraduationCap />,
+    icon: <School />,
     content: <ApplicationInfoForm />,
+  },
+  {
+    id: 'eduBackground',
+    label: '教育背景',
+    icon: <GraduationCap />,
+    content: <EduBackgroundForm />,
   },
 ]
 

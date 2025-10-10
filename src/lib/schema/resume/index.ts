@@ -1,19 +1,21 @@
 import { z } from 'zod'
-import { ApplicationInfoFormSchema } from './applicationInfo'
-import { BasicsSchema } from './basic'
-import { JobIntentFormSchema } from './jobIntent'
+import { applicationInfoFormSchema } from './applicationInfo'
+import { basicsSchema } from './basic'
+import { eduBackgroundFormSchema } from './eduBackground'
+import { jobIntentFormSchema } from './jobIntent'
 
-export const ResumeSchema = z.object({
-  basics: BasicsSchema,
-  jobIntent: JobIntentFormSchema,
-  applicationInfo: ApplicationInfoFormSchema,
+export const resumeSchema = z.object({
+  basics: basicsSchema,
+  jobIntent: jobIntentFormSchema,
+  applicationInfo: applicationInfoFormSchema,
+  eduBackground: eduBackgroundFormSchema,
 })
 
-export type ResumeSchemaType = z.infer<typeof ResumeSchema>
+export type ResumeSchema = z.infer<typeof resumeSchema>
 
 export * from './applicationInfo'
 export * from './basic'
 export * from './jobIntent'
 
-export type ORDERType = (keyof ResumeSchemaType)
-export const DEFAULT_ORDER: ORDERType[] = ['basics', 'jobIntent', 'applicationInfo']
+export type ORDERType = (keyof ResumeSchema)
+export const DEFAULT_ORDER: ORDERType[] = ['basics', 'jobIntent', 'applicationInfo', 'eduBackground']

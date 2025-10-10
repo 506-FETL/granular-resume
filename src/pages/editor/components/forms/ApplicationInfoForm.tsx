@@ -4,16 +4,16 @@ import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { ResumeSchema } from '@/lib/schema'
+import { resumeSchema } from '@/lib/schema'
 import { cn } from '@/lib/utils'
 import useResumeStore from '@/store/resume/form'
 
 function ApplicationInfoForm({ className }: { className?: string }) {
   const applicationInfo = useResumeStore(state => state.applicationInfo)
-  const updateApplicationInfo = useResumeStore(state => state.updateApplicationInfo)
+  const updateForm = useResumeStore(state => state.updateForm)
 
   const form = useForm<ApplicationInfoFormExcludeHidden>({
-    resolver: zodResolver(ResumeSchema.shape.applicationInfo.omit({ isHidden: true })),
+    resolver: zodResolver(resumeSchema.shape.applicationInfo.omit({ isHidden: true })),
     defaultValues: applicationInfo,
     mode: 'onChange',
     reValidateMode: 'onChange',
@@ -23,10 +23,10 @@ function ApplicationInfoForm({ className }: { className?: string }) {
     const subscription = form.watch((value, { name }) => {
       if (!name)
         return
-      updateApplicationInfo({ [name]: value[name] })
+      updateForm('applicationInfo', { [name]: value[name] })
     })
     return () => subscription.unsubscribe()
-  }, [form, updateApplicationInfo])
+  }, [form, updateForm])
 
   return (
     <Form {...form}>

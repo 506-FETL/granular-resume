@@ -1,29 +1,29 @@
 import { z } from 'zod'
 
-const JobIntentSchema = z.string().trim()
-export type JobIntent = z.infer<typeof JobIntentSchema>
+const jobIntentSchema = z.string().trim()
+export type JobIntent = z.infer<typeof jobIntentSchema>
 
-const IntentionalCitySchema = z.string().trim()
-export type IntentionalCity = z.infer<typeof IntentionalCitySchema>
+const intentionalCitySchema = z.string().trim()
+export type IntentionalCity = z.infer<typeof intentionalCitySchema>
 
-const ExpectedSalarySchema = z.number()
-export type ExpectedSalary = z.infer<typeof ExpectedSalarySchema>
+const expectedSalarySchema = z.number()
+export type ExpectedSalary = z.infer<typeof expectedSalarySchema>
 
-const DateEntrySchema = z.enum(['不填', '随时到岗', '15天内', '1个月内', '2个月内', '3个月内', '到岗时间另行商议']).default('不填')
-export type DateEntry = z.infer<typeof DateEntrySchema>
+const dateEntrySchema = z.enum(['不填', '随时到岗', '15天内', '1个月内', '2个月内', '3个月内', '到岗时间另行商议']).default('不填')
+export type DateEntry = z.infer<typeof dateEntrySchema>
 
-export const JobIntentFormSchema = z.object({
-  jobIntent: JobIntentSchema,
-  intentionalCity: IntentionalCitySchema,
-  expectedSalary: ExpectedSalarySchema,
-  dateEntry: DateEntrySchema,
+export const jobIntentFormSchema = z.object({
+  jobIntent: jobIntentSchema,
+  intentionalCity: intentionalCitySchema,
+  expectedSalary: expectedSalarySchema,
+  dateEntry: dateEntrySchema,
   isHidden: z.boolean().default(false),
 }).partial().required({ isHidden: true })
 
-export type JobIntentFormType = z.infer<typeof JobIntentFormSchema>
-export type JobIntentFormExcludeHidden = Omit<JobIntentFormType, 'isHidden'>
+export type JobIntentForm = z.infer<typeof jobIntentFormSchema>
+export type JobIntentFormExcludeHidden = Omit<JobIntentForm, 'isHidden'>
 
-export const DEFAULT_JOB_INTENT: JobIntentFormType = {
+export const DEFAULT_JOB_INTENT: JobIntentForm = {
   jobIntent: undefined,
   intentionalCity: undefined,
   expectedSalary: undefined,

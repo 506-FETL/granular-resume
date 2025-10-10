@@ -50,5 +50,8 @@
     "scss",
     "pcss",
     "postcss"
+  ],
+  "cSpell.words": [
+    "EMBA"
   ]
 }
