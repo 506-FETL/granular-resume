@@ -51,12 +51,12 @@
   vertical-align: middle;
   min-width: max-content;
 
-  &[data-orientation="vertical"] {
+  &[data-orientation='vertical'] {
     flex-direction: column;
     justify-content: center;
   }
 
-  &[data-orientation="horizontal"] {
+  &[data-orientation='horizontal'] {
     gap: 0.25rem;
     flex-direction: row;
     align-items: center;

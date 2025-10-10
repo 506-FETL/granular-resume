@@ -2,8 +2,8 @@
   font-size: 0.875rem;
   font-weight: 500;
   font-feature-settings:
-    "salt" on,
-    "cv01" on;
+    'salt' on,
+    'cv01' on;
   line-height: 1.15;
   height: 2rem;
   min-width: 2rem;
@@ -23,14 +23,14 @@
     outline: none;
   }
 
-  &[data-highlighted="true"],
-  &[data-focus-visible="true"] {
+  &[data-highlighted='true'],
+  &[data-focus-visible='true'] {
     background-color: var(--tt-button-hover-bg-color);
     color: var(--tt-button-hover-text-color);
     // outline: 2px solid var(--tt-button-active-icon-color);
   }
 
-  &[data-weight="small"] {
+  &[data-weight='small'] {
     width: 1.5rem;
     min-width: 1.5rem;
     padding-right: 0;
@@ -38,7 +38,7 @@
   }
 
   /* button size large */
-  &[data-size="large"] {
+  &[data-size='large'] {
     font-size: 0.9375rem;
     height: 2.375rem;
     min-width: 2.375rem;
@@ -46,7 +46,7 @@
   }
 
   /* button size small */
-  &[data-size="small"] {
+  &[data-size='small'] {
     font-size: 0.75rem;
     line-height: 1.2;
     height: 1.5rem;
@@ -63,7 +63,7 @@
     line-height: 1.5rem;
   }
 
-  &[data-text-trim="on"] {
+  &[data-text-trim='on'] {
     .tiptap-button-text {
       text-overflow: ellipsis;
       overflow: hidden;
@@ -84,12 +84,12 @@
     height: 1rem;
   }
 
-  &[data-size="large"] .tiptap-button-icon {
+  &[data-size='large'] .tiptap-button-icon {
     width: 1.125rem;
     height: 1.125rem;
   }
 
-  &[data-size="small"] .tiptap-button-icon {
+  &[data-size='small'] .tiptap-button-icon {
     width: 0.875rem;
     height: 0.875rem;
   }
@@ -100,12 +100,12 @@
     height: 1rem;
   }
 
-  &[data-size="large"] .tiptap-button-icon-sub {
+  &[data-size='large'] .tiptap-button-icon-sub {
     width: 1.125rem;
     height: 1.125rem;
   }
 
-  &[data-size="small"] .tiptap-button-icon-sub {
+  &[data-size='small'] .tiptap-button-icon-sub {
     width: 0.875rem;
     height: 0.875rem;
   }
@@ -116,12 +116,12 @@
     height: 0.75rem;
   }
 
-  &[data-size="large"] .tiptap-button-dropdown-arrows {
+  &[data-size='large'] .tiptap-button-dropdown-arrows {
     width: 0.875rem;
     height: 0.875rem;
   }
 
-  &[data-size="small"] .tiptap-button-dropdown-arrows {
+  &[data-size='small'] .tiptap-button-dropdown-arrows {
     width: 0.625rem;
     height: 0.625rem;
   }
@@ -132,12 +132,12 @@
     height: 0.625rem;
   }
 
-  &[data-size="large"] .tiptap-button-dropdown-small {
+  &[data-size='large'] .tiptap-button-dropdown-small {
     width: 0.75rem;
     height: 0.75rem;
   }
 
-  &[data-size="small"] .tiptap-button-dropdown-small {
+  &[data-size='small'] .tiptap-button-dropdown-small {
     width: 0.5rem;
     height: 0.5rem;
   }
@@ -146,24 +146,24 @@
   &:has(> svg):not(:has(> :not(svg))) {
     gap: 0.125rem;
 
-    &[data-size="large"],
-    &[data-size="small"] {
+    &[data-size='large'],
+    &[data-size='small'] {
       gap: 0.125rem;
     }
   }
 
   /* button only has 2 icons and one of them is dropdown small */
-  &:has(> svg:nth-of-type(2)):has(> .tiptap-button-dropdown-small):not(
-      :has(> svg:nth-of-type(3))
-    ):not(:has(> .tiptap-button-text)) {
+  &:has(> svg:nth-of-type(2)):has(> .tiptap-button-dropdown-small):not(:has(> svg:nth-of-type(3))):not(
+      :has(> .tiptap-button-text)
+    ) {
     gap: 0;
     padding-right: 0.25rem;
 
-    &[data-size="large"] {
+    &[data-size='large'] {
       padding-right: 0.375rem;
     }
 
-    &[data-size="small"] {
+    &[data-size='small'] {
       padding-right: 0.25rem;
     }
   }
@@ -175,11 +175,11 @@
     justify-content: center;
   }
 
-  &[data-size="large"] .tiptap-button-emoji {
+  &[data-size='large'] .tiptap-button-emoji {
     width: 1.125rem;
   }
 
-  &[data-size="small"] .tiptap-button-emoji {
+  &[data-size='small'] .tiptap-button-emoji {
     width: 0.875rem;
   }
 }
@@ -209,9 +209,9 @@
   }
 
   /* hover state of a button */
-  &:hover:not([data-active-item="true"]):not([disabled]),
-  &[data-active-item="true"]:not([disabled]),
-  &[data-highlighted]:not([disabled]):not([data-highlighted="false"]) {
+  &:hover:not([data-active-item='true']):not([disabled]),
+  &[data-active-item='true']:not([disabled]),
+  &[data-highlighted]:not([disabled]):not([data-highlighted='false']) {
     background-color: var(--tt-button-hover-bg-color);
     color: var(--tt-button-hover-text-color);
 
@@ -230,8 +230,8 @@
   }
 
   /* Active state of a button */
-  &[data-active-state="on"]:not([disabled]),
-  &[data-state="open"]:not([disabled]) {
+  &[data-active-state='on']:not([disabled]),
+  &[data-state='open']:not([disabled]) {
     background-color: var(--tt-button-active-bg-color);
     color: var(--tt-button-active-text-color);
 
@@ -253,7 +253,7 @@
     }
 
     /* Emphasized */
-    &[data-appearance="emphasized"] {
+    &[data-appearance='emphasized'] {
       background-color: var(--tt-button-active-bg-color-emphasized);
       color: var(--tt-button-active-text-color-emphasized);
 
@@ -276,7 +276,7 @@
     }
 
     /* Subdued */
-    &[data-appearance="subdued"] {
+    &[data-appearance='subdued'] {
       background-color: var(--tt-button-active-bg-color-subdued);
       color: var(--tt-button-active-text-color-subdued);
 

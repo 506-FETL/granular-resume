@@ -24,40 +24,40 @@
   }
 
   /* Animation states */
-  &[data-state="open"] {
+  &[data-state='open'] {
     animation:
       fadeIn 150ms cubic-bezier(0.16, 1, 0.3, 1),
       zoomIn 150ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  &[data-state="closed"] {
+  &[data-state='closed'] {
     animation:
       fadeOut 150ms cubic-bezier(0.16, 1, 0.3, 1),
       zoomOut 150ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   /* Position-based animations */
-  &[data-side="top"],
-  &[data-side="top-start"],
-  &[data-side="top-end"] {
+  &[data-side='top'],
+  &[data-side='top-start'],
+  &[data-side='top-end'] {
     animation: slideFromBottom 150ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  &[data-side="right"],
-  &[data-side="right-start"],
-  &[data-side="right-end"] {
+  &[data-side='right'],
+  &[data-side='right-start'],
+  &[data-side='right-end'] {
     animation: slideFromLeft 150ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  &[data-side="bottom"],
-  &[data-side="bottom-start"],
-  &[data-side="bottom-end"] {
+  &[data-side='bottom'],
+  &[data-side='bottom-start'],
+  &[data-side='bottom-end'] {
     animation: slideFromTop 150ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  &[data-side="left"],
-  &[data-side="left-start"],
-  &[data-side="left-end"] {
+  &[data-side='left'],
+  &[data-side='left-start'],
+  &[data-side='left-end'] {
     animation: slideFromRight 150ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 }

@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react"
+import { useEffect, useRef } from 'react'
 
 /**
  * Hook that executes a callback when the component unmounts.
@@ -6,7 +6,7 @@ import { useRef, useEffect } from "react"
  * @param callback Function to be called on component unmount
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const useUnmount = (callback: (...args: Array<any>) => any) => {
+export function useUnmount(callback: (...args: Array<any>) => any) {
   const ref = useRef(callback)
   ref.current = callback
 
@@ -14,7 +14,7 @@ export const useUnmount = (callback: (...args: Array<any>) => any) => {
     () => () => {
       ref.current()
     },
-    []
+    [],
   )
 }
 

@@ -1,25 +1,25 @@
-"use client"
-
-import * as React from "react"
-
-// --- Lib ---
-import { parseShortcutKeys } from "@/lib/tiptap-utils"
-
-// --- Hooks ---
-import { useTiptapEditor } from "@/hooks/use-tiptap-editor"
-
-// --- Tiptap UI ---
-import type { Mark, UseMarkConfig } from "@/components/tiptap-ui/mark-button"
-import { MARK_SHORTCUT_KEYS, useMark } from "@/components/tiptap-ui/mark-button"
+'use client'
 
 // --- UI Primitives ---
-import type { ButtonProps } from "@/components/tiptap-ui-primitive/button"
-import { Button } from "@/components/tiptap-ui-primitive/button"
-import { Badge } from "@/components/tiptap-ui-primitive/badge"
+import type { ButtonProps } from '@/components/tiptap-ui-primitive/button'
+
+// --- Tiptap UI ---
+import type { Mark, UseMarkConfig } from '@/components/tiptap-ui/mark-button'
+
+import * as React from 'react'
+
+import { Badge } from '@/components/tiptap-ui-primitive/badge'
+import { Button } from '@/components/tiptap-ui-primitive/button'
+
+import { MARK_SHORTCUT_KEYS, useMark } from '@/components/tiptap-ui/mark-button'
+// --- Hooks ---
+import { useTiptapEditor } from '@/hooks/use-tiptap-editor'
+// --- Lib ---
+import { parseShortcutKeys } from '@/lib/tiptap-utils'
 
 export interface MarkButtonProps
-  extends Omit<ButtonProps, "type">,
-    UseMarkConfig {
+  extends Omit<ButtonProps, 'type'>,
+  UseMarkConfig {
   /**
    * Optional text to display alongside the icon.
    */
@@ -46,78 +46,64 @@ export function MarkShortcutBadge({
  *
  * For custom button implementations, use the `useMark` hook instead.
  */
-export const MarkButton = React.forwardRef<HTMLButtonElement, MarkButtonProps>(
-  (
-    {
-      editor: providedEditor,
-      type,
-      text,
-      hideWhenUnavailable = false,
-      onToggled,
-      showShortcut = false,
-      onClick,
-      children,
-      ...buttonProps
+export function MarkButton({ ref, editor: providedEditor, type, text, hideWhenUnavailable = false, onToggled, showShortcut = false, onClick, children, ...buttonProps }: MarkButtonProps & { ref?: React.RefObject<HTMLButtonElement | null> }) {
+  const { editor } = useTiptapEditor(providedEditor)
+  const {
+    isVisible,
+    handleMark,
+    label,
+    canToggle,
+    isActive,
+    Icon,
+    shortcutKeys,
+  } = useMark({
+    editor,
+    type,
+    hideWhenUnavailable,
+    onToggled,
+  })
+
+  const handleClick = React.useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      onClick?.(event)
+      if (event.defaultPrevented)
+        return
+      handleMark()
     },
-    ref
-  ) => {
-    const { editor } = useTiptapEditor(providedEditor)
-    const {
-      isVisible,
-      handleMark,
-      label,
-      canToggle,
-      isActive,
-      Icon,
-      shortcutKeys,
-    } = useMark({
-      editor,
-      type,
-      hideWhenUnavailable,
-      onToggled,
-    })
+    [handleMark, onClick],
+  )
 
-    const handleClick = React.useCallback(
-      (event: React.MouseEvent<HTMLButtonElement>) => {
-        onClick?.(event)
-        if (event.defaultPrevented) return
-        handleMark()
-      },
-      [handleMark, onClick]
-    )
-
-    if (!isVisible) {
-      return null
-    }
-
-    return (
-      <Button
-        type="button"
-        disabled={!canToggle}
-        data-style="ghost"
-        data-active-state={isActive ? "on" : "off"}
-        data-disabled={!canToggle}
-        role="button"
-        tabIndex={-1}
-        aria-label={label}
-        aria-pressed={isActive}
-        tooltip={label}
-        onClick={handleClick}
-        {...buttonProps}
-        ref={ref}
-      >
-        {children ?? (
-          <>
-            <Icon className="tiptap-button-icon" />
-            {text && <span className="tiptap-button-text">{text}</span>}
-            {showShortcut && (
-              <MarkShortcutBadge type={type} shortcutKeys={shortcutKeys} />
-            )}
-          </>
-        )}
-      </Button>
-    )
+  if (!isVisible) {
+    return null
   }
-)
 
-MarkButton.displayName = "MarkButton"
+  return (
+    <Button
+      type="button"
+      disabled={!canToggle}
+      data-style="ghost"
+      data-active-state={isActive ? 'on' : 'off'}
+      data-disabled={!canToggle}
+      role="button"
+      tabIndex={-1}
+      aria-label={label}
+      aria-pressed={isActive}
+      tooltip={label}
+      onClick={handleClick}
+      {...buttonProps}
+      ref={ref}
+    >
+      {children ?? (
+        <>
+          <Icon className="tiptap-button-icon" />
+          {text && <span className="tiptap-button-text">{text}</span>}
+          {showShortcut && (
+            <MarkShortcutBadge type={type} shortcutKeys={shortcutKeys} />
+          )}
+        </>
+      )}
+    </Button>
+  )
+}
+
+MarkButton.displayName = 'MarkButton'

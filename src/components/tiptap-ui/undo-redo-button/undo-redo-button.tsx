@@ -1,31 +1,31 @@
-"use client"
+'use client'
 
-import * as React from "react"
-
-// --- Lib ---
-import { parseShortcutKeys } from "@/lib/tiptap-utils"
-
-// --- Hooks ---
-import { useTiptapEditor } from "@/hooks/use-tiptap-editor"
+// --- UI Primitives ---
+import type { ButtonProps } from '@/components/tiptap-ui-primitive/button'
 
 // --- Tiptap UI ---
 import type {
   UndoRedoAction,
   UseUndoRedoConfig,
-} from "@/components/tiptap-ui/undo-redo-button"
+} from '@/components/tiptap-ui/undo-redo-button'
+
+import * as React from 'react'
+
+import { Badge } from '@/components/tiptap-ui-primitive/badge'
+import { Button } from '@/components/tiptap-ui-primitive/button'
+
 import {
   UNDO_REDO_SHORTCUT_KEYS,
   useUndoRedo,
-} from "@/components/tiptap-ui/undo-redo-button"
-
-// --- UI Primitives ---
-import type { ButtonProps } from "@/components/tiptap-ui-primitive/button"
-import { Button } from "@/components/tiptap-ui-primitive/button"
-import { Badge } from "@/components/tiptap-ui-primitive/badge"
+} from '@/components/tiptap-ui/undo-redo-button'
+// --- Hooks ---
+import { useTiptapEditor } from '@/hooks/use-tiptap-editor'
+// --- Lib ---
+import { parseShortcutKeys } from '@/lib/tiptap-utils'
 
 export interface UndoRedoButtonProps
-  extends Omit<ButtonProps, "type">,
-    UseUndoRedoConfig {
+  extends Omit<ButtonProps, 'type'>,
+  UseUndoRedoConfig {
   /**
    * Optional text to display alongside the icon.
    */
@@ -52,75 +52,58 @@ export function HistoryShortcutBadge({
  *
  * For custom button implementations, use the `useHistory` hook instead.
  */
-export const UndoRedoButton = React.forwardRef<
-  HTMLButtonElement,
-  UndoRedoButtonProps
->(
-  (
-    {
-      editor: providedEditor,
+export function UndoRedoButton({ ref, editor: providedEditor, action, text, hideWhenUnavailable = false, onExecuted, showShortcut = false, onClick, children, ...buttonProps }: UndoRedoButtonProps & { ref?: React.RefObject<HTMLButtonElement | null> }) {
+  const { editor } = useTiptapEditor(providedEditor)
+  const { isVisible, handleAction, label, canExecute, Icon, shortcutKeys }
+    = useUndoRedo({
+      editor,
       action,
-      text,
-      hideWhenUnavailable = false,
+      hideWhenUnavailable,
       onExecuted,
-      showShortcut = false,
-      onClick,
-      children,
-      ...buttonProps
+    })
+
+  const handleClick = React.useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      onClick?.(event)
+      if (event.defaultPrevented)
+        return
+      handleAction()
     },
-    ref
-  ) => {
-    const { editor } = useTiptapEditor(providedEditor)
-    const { isVisible, handleAction, label, canExecute, Icon, shortcutKeys } =
-      useUndoRedo({
-        editor,
-        action,
-        hideWhenUnavailable,
-        onExecuted,
-      })
+    [handleAction, onClick],
+  )
 
-    const handleClick = React.useCallback(
-      (event: React.MouseEvent<HTMLButtonElement>) => {
-        onClick?.(event)
-        if (event.defaultPrevented) return
-        handleAction()
-      },
-      [handleAction, onClick]
-    )
-
-    if (!isVisible) {
-      return null
-    }
-
-    return (
-      <Button
-        type="button"
-        disabled={!canExecute}
-        data-style="ghost"
-        data-disabled={!canExecute}
-        role="button"
-        tabIndex={-1}
-        aria-label={label}
-        tooltip={label}
-        onClick={handleClick}
-        {...buttonProps}
-        ref={ref}
-      >
-        {children ?? (
-          <>
-            <Icon className="tiptap-button-icon" />
-            {text && <span className="tiptap-button-text">{text}</span>}
-            {showShortcut && (
-              <HistoryShortcutBadge
-                action={action}
-                shortcutKeys={shortcutKeys}
-              />
-            )}
-          </>
-        )}
-      </Button>
-    )
+  if (!isVisible) {
+    return null
   }
-)
 
-UndoRedoButton.displayName = "UndoRedoButton"
+  return (
+    <Button
+      type="button"
+      disabled={!canExecute}
+      data-style="ghost"
+      data-disabled={!canExecute}
+      role="button"
+      tabIndex={-1}
+      aria-label={label}
+      tooltip={label}
+      onClick={handleClick}
+      {...buttonProps}
+      ref={ref}
+    >
+      {children ?? (
+        <>
+          <Icon className="tiptap-button-icon" />
+          {text && <span className="tiptap-button-text">{text}</span>}
+          {showShortcut && (
+            <HistoryShortcutBadge
+              action={action}
+              shortcutKeys={shortcutKeys}
+            />
+          )}
+        </>
+      )}
+    </Button>
+  )
+}
+
+UndoRedoButton.displayName = 'UndoRedoButton'

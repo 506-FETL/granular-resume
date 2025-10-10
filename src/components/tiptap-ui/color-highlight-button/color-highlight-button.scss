@@ -8,7 +8,7 @@
   transition: transform 0.2s ease;
 
   &::after {
-    content: "";
+    content: '';
     position: absolute;
     width: 100%;
     height: 100%;
@@ -28,7 +28,7 @@
 }
 
 .tiptap-button {
-  &[data-active-state="on"] {
+  &[data-active-state='on'] {
     .tiptap-button-highlight {
       &::after {
         filter: brightness(80%);
@@ -37,7 +37,7 @@
   }
 
   .dark & {
-    &[data-active-state="on"] {
+    &[data-active-state='on'] {
       .tiptap-button-highlight {
         &::after {
           // Andere Eigenschaft für .dark Kontext

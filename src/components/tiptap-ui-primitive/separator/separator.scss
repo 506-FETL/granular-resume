@@ -10,13 +10,13 @@
   flex-shrink: 0;
   background-color: var(--tt-link-border-color);
 
-  &[data-orientation="horizontal"] {
+  &[data-orientation='horizontal'] {
     height: 1px;
     width: 100%;
     margin: 0.5rem 0;
   }
 
-  &[data-orientation="vertical"] {
+  &[data-orientation='vertical'] {
     height: 1.5rem;
     width: 1px;
   }
