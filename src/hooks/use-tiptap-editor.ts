@@ -1,5 +1,3 @@
-"use client"
-
 import * as React from "react"
 import type { Editor } from "@tiptap/react"
 import { useCurrentEditor, useEditorState } from "@tiptap/react"

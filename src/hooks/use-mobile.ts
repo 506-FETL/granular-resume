@@ -1,5 +1,3 @@
-"use client"
-
 import * as React from "react"
 
 export function useIsMobile(breakpoint = 768) {
