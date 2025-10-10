@@ -27,7 +27,13 @@ function EduBackgroundForm({ className }: { className?: string }) {
 
   const form = useForm<EduBackgroundFormExcludeHidden>({
     resolver: zodResolver(eduBackgroundFormSchemaExcludeHidden),
-    defaultValues: eduBackground,
+    defaultValues: {
+      schoolName: eduBackground.schoolName,
+      professional: eduBackground.professional,
+      degree: eduBackground.degree,
+      duration: eduBackground.duration,
+      eduInfo: eduBackground.eduInfo,
+    },
     mode: 'onChange',
     reValidateMode: 'onChange',
   })
@@ -41,7 +47,7 @@ function EduBackgroundForm({ className }: { className?: string }) {
 
   useEffect(() => {
     const subscription = form.watch((value) => {
-      updateForm('eduBackground', value as EduBackgroundFormExcludeHidden)
+      updateForm('eduBackground', value)
     })
     return () => subscription.unsubscribe()
   }, [form, updateForm])
@@ -86,7 +92,7 @@ function EduBackgroundForm({ className }: { className?: string }) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>就读时间</FormLabel>
-                <div className="flex items-center gap-2 w-8">
+                <div className="flex items-center gap-1 w-2">
                   <Popover open={open.start} onOpenChange={() => setOpen(prev => ({ ...prev, start: !prev.start }))}>
                     <PopoverTrigger asChild>
                       <Button variant="outline">
