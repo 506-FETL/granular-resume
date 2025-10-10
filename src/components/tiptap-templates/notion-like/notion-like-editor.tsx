@@ -1,7 +1,7 @@
 'use client'
 
 import type { TiptapCollabProvider } from '@tiptap-pro/provider'
-import type { Content } from '@tiptap/react'
+import type { Content, Editor } from '@tiptap/react'
 import type { Doc as YDoc } from 'yjs'
 import { Ai } from '@tiptap-pro/extension-ai'
 import { Collaboration, isChangeOrigin } from '@tiptap/extension-collaboration'
@@ -73,7 +73,7 @@ export interface NotionEditorProps {
   room: string
   placeholder?: string
   content?: Content
-  onChange?: (content: Content) => void
+  onChange?: (editor: Editor) => void
 }
 
 export interface EditorProviderProps {
@@ -173,7 +173,7 @@ export function EditorProvider(props: EditorProviderProps) {
     immediatelyRender: false,
     shouldRerenderOnTransaction: false,
     onUpdate: ({ editor }) => {
-      onChange(editor.getJSON())
+      onChange(editor)
     },
     onCreate: ({ editor }) => {
       editor.commands.setContent(content)
@@ -281,7 +281,7 @@ export function EditorProvider(props: EditorProviderProps) {
 
 interface ContentControlContext {
   content: Content | null
-  onChange: (content: Content) => void
+  onChange: (content: Editor) => void
 }
 
 const ContentStateContext = React.createContext<ContentControlContext | null>(null)
