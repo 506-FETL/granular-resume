@@ -150,7 +150,6 @@
   @import './styles/_keyframe-animations.scss';
   * {
     @apply border-border outline-ring/50;
-    scrollbar-width: none;
   }
   body {
     @apply bg-background text-foreground;

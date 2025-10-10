@@ -6,17 +6,29 @@ import type {
   JobIntentFormExcludeHidden,
   ORDERType,
 } from '@/lib/schema'
+import type { CampusExperienceForm, CampusExperienceFormExcludeHidden } from '@/lib/schema/resume/campusExperience'
 import type { EduBackgroundForm, EduBackgroundFormExcludeHidden } from '@/lib/schema/resume/eduBackground'
+import type { InternshipExperienceForm, InternshipExperienceFormExcludeHidden } from '@/lib/schema/resume/internshipExperience'
+import type { ProjectExperienceForm, ProjectExperienceFormExcludeHidden } from '@/lib/schema/resume/projectExperience'
+import type { WorkExperienceForm, WorkExperienceFormExcludeHidden } from '@/lib/schema/resume/workExperience'
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 import { DEFAULT_APPLICATION_INFO, DEFAULT_BASICS, DEFAULT_JOB_INTENT, DEFAULT_ORDER } from '@/lib/schema'
+import { DEFAULT_CAMPUS_EXPERIENCE } from '@/lib/schema/resume/campusExperience'
 import { DEFAULT_EDU_BACKGROUND } from '@/lib/schema/resume/eduBackground'
+import { DEFAULT_INTERNSHIP_EXPERIENCE } from '@/lib/schema/resume/internshipExperience'
+import { DEFAULT_PROJECT_EXPERIENCE } from '@/lib/schema/resume/projectExperience'
+import { DEFAULT_WORK_EXPERIENCE } from '@/lib/schema/resume/workExperience'
 
 interface FormDataMap {
   basics: BasicForm
   jobIntent: JobIntentForm
   applicationInfo: ApplicationInfoForm
   eduBackground: EduBackgroundForm
+  workExperience: WorkExperienceForm
+  internshipExperience: InternshipExperienceForm
+  campusExperience: CampusExperienceForm
+  projectExperience: ProjectExperienceForm
 }
 
 interface FormDataUpdateMap {
@@ -24,6 +36,10 @@ interface FormDataUpdateMap {
   jobIntent: JobIntentFormExcludeHidden
   applicationInfo: ApplicationInfoFormExcludeHidden
   eduBackground: EduBackgroundFormExcludeHidden
+  workExperience: WorkExperienceFormExcludeHidden
+  internshipExperience: InternshipExperienceFormExcludeHidden
+  campusExperience: CampusExperienceFormExcludeHidden
+  projectExperience: ProjectExperienceFormExcludeHidden
 }
 
 interface ResumeState extends FormDataMap {
@@ -43,6 +59,10 @@ const useResumeStore = create<ResumeState>()(
       jobIntent: DEFAULT_JOB_INTENT,
       applicationInfo: DEFAULT_APPLICATION_INFO,
       eduBackground: DEFAULT_EDU_BACKGROUND,
+      workExperience: DEFAULT_WORK_EXPERIENCE,
+      internshipExperience: DEFAULT_INTERNSHIP_EXPERIENCE,
+      campusExperience: DEFAULT_CAMPUS_EXPERIENCE,
+      projectExperience: DEFAULT_PROJECT_EXPERIENCE,
       order: DEFAULT_ORDER,
       activeTabId: 'basics',
       updateOrder: newOrder => set(() => ({ order: newOrder })),
@@ -63,7 +83,7 @@ const useResumeStore = create<ResumeState>()(
     {
       name: 'resume-storage',
       storage: createJSONStorage(() => localStorage),
-      version: 6,
+      version: 5,
     },
   ),
 )

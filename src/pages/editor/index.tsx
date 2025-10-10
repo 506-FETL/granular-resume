@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import type { ReactNode } from 'react'
 import type { ORDERType } from '@/lib/schema'
-import { Briefcase, Edit, GraduationCap, School, UserRound } from 'lucide-react'
+import { Briefcase, Building2, Code2, Edit, GraduationCap, School, Trophy, UserCheck, UserRound } from 'lucide-react'
 import { useState } from 'react'
 import { SideTabs, SideTabsWrapper, Tab, ViewPort } from '@/components/SideTabs'
 import { useTheme } from '@/components/theme-provider'
@@ -13,8 +13,12 @@ import { useIsMobile } from '@/hooks/use-mobile'
 import useResumeStore from '@/store/resume/form'
 import ApplicationInfoForm from './components/forms/ApplicationInfoForm'
 import BasicResumeForm from './components/forms/BasicResumeForm'
+import CampusExperienceForm from './components/forms/CampusExperienceForm'
 import EduBackgroundForm from './components/forms/EduBackgroundForm'
+import InternshipExperienceForm from './components/forms/InternshipExperienceForm'
 import JobIntentForm from './components/forms/JobIntentForm'
+import ProjectExperienceForm from './components/forms/ProjectExperienceForm'
+import WorkExperienceForm from './components/forms/WorkExperienceForm'
 import ResumePreview from './components/preview/BasicResumePreview'
 
 interface Item<T> {
@@ -48,6 +52,30 @@ const ITEMS: Item<ORDERType>[] = [
     label: '教育背景',
     icon: <GraduationCap />,
     content: <EduBackgroundForm />,
+  },
+  {
+    id: 'workExperience',
+    label: '工作经历',
+    icon: <Building2 />,
+    content: <WorkExperienceForm />,
+  },
+  {
+    id: 'internshipExperience',
+    label: '实习经验',
+    icon: <UserCheck />,
+    content: <InternshipExperienceForm />,
+  },
+  {
+    id: 'campusExperience',
+    label: '校园经历',
+    icon: <Trophy />,
+    content: <CampusExperienceForm />,
+  },
+  {
+    id: 'projectExperience',
+    label: '项目经验',
+    icon: <Code2 />,
+    content: <ProjectExperienceForm />,
   },
 ]
 

@@ -102,12 +102,11 @@ function BasicResumeForm({ className }: { className?: string }) {
                       </PopoverTrigger>
                       <PopoverContent className="w-auto overflow-hidden p-0" align="start">
                         <Calendar
-                          defaultMonth={new Date(2002, 1, 1)}
                           mode="single"
+                          defaultMonth={new Date(field.value || '2002-1-1')}
                           selected={field.value ? new Date(field.value) : undefined}
                           captionLayout="dropdown"
                           onSelect={(date) => {
-                            setOpen(false)
                             field.onChange(date && date.toLocaleDateString())
                           }}
                         />

@@ -226,7 +226,7 @@ export function SideTabsWrapper({
     const d
       = `M ${sx},${sy} `
         // 进入顶部：最后一个控制点与终点同高(yTop)，保证与水平顶边切线连续
-        + `C ${sx},${curveMidY} ${rightCtrlX},${yTop} ${entryRight},${yTop} `
+        + `C ${sx},${curveMidY} ${rightCtrlX},${yTop} ${entryRight - tailWidth * 0.1},${yTop} `
         + `L ${xt},${yTop} `
         + `A ${radius},${radius} 0 0 1 ${xr},${yr1} `
         + `L ${xr},${yr2} `
@@ -336,9 +336,10 @@ export function SideTabs({ orientation = 'vertical', className, ...props }: Prop
       ref={tabsRef}
       className={cn(
         'flex gap-3',
-        orientation === 'horizontal' ? 'flex-col pr-4' : 'flex-row flex-wrap pb-4',
+        orientation === 'horizontal' ? 'flex-col pr-4' : 'flex-row overflow-x-auto pb-4',
         className,
       )}
+      style={orientation === 'vertical' ? { scrollbarWidth: 'thin' } : undefined}
       {...props}
     />
   )
@@ -356,7 +357,7 @@ export function Tab({ asChild = false, onClick, id, className, ...props }: Props
       ref={(el) => { btnRefs.current[id] = el }}
       variant={active === id ? 'default' : 'secondary'}
       className={cn(
-        'justify-center transition-all duration-200 ease-in-out',
+        'justify-center transition-all duration-200 ease-in-out shrink-0',
         className,
       )}
       onClick={callAll(() => {

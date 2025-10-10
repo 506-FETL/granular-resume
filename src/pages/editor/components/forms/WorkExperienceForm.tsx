@@ -1,7 +1,7 @@
-import type { Degree, EduBackgroundFormExcludeHidden } from '@/lib/schema/resume/eduBackground'
+import type { WorkExperienceFormExcludeHidden } from '@/lib/schema/resume/workExperience'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { IconMichelinBibGourmand } from '@tabler/icons-react'
-import { Baby, Delete, Plus } from 'lucide-react'
+import { IconDoorExit } from '@tabler/icons-react'
+import { Delete, Laptop, Plus } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useEffect, useState } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
@@ -11,28 +11,24 @@ import { Calendar } from '@/components/ui/calendar'
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { eduBackgroundFormSchemaExcludeHidden } from '@/lib/schema/resume/eduBackground'
+import { workExperienceFormSchemaExcludeHidden } from '@/lib/schema/resume/workExperience'
 import { cn } from '@/lib/utils'
 import useResumeStore from '@/store/resume/form'
 
-const degreeOptions: Degree[] = ['不填', '初中', '高中', '中专', '大专', '本科', '学士', '硕士', '博士', 'MBA', 'EMBA', '其他']
-
-function EduBackgroundForm({ className }: { className?: string }) {
-  const eduBackground = useResumeStore(state => state.eduBackground)
+function WorkExperienceForm({ className }: { className?: string }) {
+  const workExperience = useResumeStore(state => state.workExperience)
   const updateForm = useResumeStore(state => state.updateForm)
   const isMobile = useIsMobile()
 
-  const form = useForm<EduBackgroundFormExcludeHidden>({
-    resolver: zodResolver(eduBackgroundFormSchemaExcludeHidden),
+  const form = useForm<WorkExperienceFormExcludeHidden>({
+    resolver: zodResolver(workExperienceFormSchemaExcludeHidden),
     defaultValues: {
-      schoolName: eduBackground.schoolName,
-      professional: eduBackground.professional,
-      degree: eduBackground.degree,
-      duration: eduBackground.duration,
-      eduInfo: eduBackground.eduInfo,
+      companyName: workExperience.companyName,
+      position: workExperience.position,
+      workDuration: workExperience.workDuration,
+      workInfo: workExperience.workInfo,
     },
     mode: 'onChange',
     reValidateMode: 'onChange',
@@ -40,18 +36,19 @@ function EduBackgroundForm({ className }: { className?: string }) {
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
-    name: 'eduInfo',
+    name: 'workInfo',
   })
 
   const [open, setOpen] = useState({ start: false, end: false })
 
+  // Auto-save form changes, excluding isHidden
   useEffect(() => {
     const subscription = form.watch((value, { name }) => {
       if (!name) {
         return
       }
 
-      updateForm('eduBackground', value)
+      updateForm('workExperience', value)
     })
     return () => subscription.unsubscribe()
   }, [form, updateForm])
@@ -62,46 +59,46 @@ function EduBackgroundForm({ className }: { className?: string }) {
 
   return (
     <Form {...form}>
-      <form id="edu-background-form" className={cn(className)}>
+      <form id="work-experience-form" className={cn(className)}>
         <section className="grid gap-4 justify-items-start sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
           <FormField
-            name="schoolName"
+            name="companyName"
             control={form.control}
             render={({ field }) => (
               <FormItem>
-                <FormLabel>学校</FormLabel>
+                <FormLabel>公司名称</FormLabel>
                 <FormControl>
-                  <Input placeholder="请输入学校名称" {...field} />
+                  <Input placeholder="请输入公司名称" {...field} />
                 </FormControl>
               </FormItem>
             )}
           />
 
           <FormField
-            name="professional"
+            name="position"
             control={form.control}
             render={({ field }) => (
               <FormItem>
-                <FormLabel>专业</FormLabel>
+                <FormLabel>职位</FormLabel>
                 <FormControl>
-                  <Input placeholder="请输入所学专业" {...field} />
+                  <Input placeholder="请输入职位" {...field} />
                 </FormControl>
               </FormItem>
             )}
           />
 
           <FormField
-            name="duration"
+            name="workDuration"
             control={form.control}
             render={({ field }) => (
               <FormItem>
-                <FormLabel>就读时间</FormLabel>
+                <FormLabel>在职时间</FormLabel>
                 <div className="flex items-center gap-1 w-2">
                   <Popover open={open.start} onOpenChange={() => setOpen(prev => ({ ...prev, start: !prev.start }))}>
                     <PopoverTrigger asChild>
                       <Button variant="outline">
-                        {field.value?.[0] || '入学年月'}
-                        <Baby />
+                        {field.value?.[0] || '入职年月'}
+                        <Laptop />
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent align="start" className="w-auto">
@@ -118,12 +115,12 @@ function EduBackgroundForm({ className }: { className?: string }) {
                     </PopoverContent>
                   </Popover>
 
-                  <Separator />
+                  <Separator className="w-4 shrink-0" />
                   <Popover open={open.end} onOpenChange={() => setOpen(prev => ({ ...prev, end: !prev.end }))}>
                     <PopoverTrigger asChild>
                       <Button variant="outline">
-                        {field.value?.[1] || '毕业年月'}
-                        <IconMichelinBibGourmand className="ml-auto" />
+                        {field.value?.[1] || '离职年月'}
+                        <IconDoorExit />
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent align="start" className="w-auto">
@@ -143,33 +140,11 @@ function EduBackgroundForm({ className }: { className?: string }) {
               </FormItem>
             )}
           />
-
-          <FormField
-            name="degree"
-            control={form.control}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>学历</FormLabel>
-                <FormControl>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="请选择学历" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {degreeOptions.map(option => (
-                        <SelectItem key={option} value={option}>{option}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </FormControl>
-              </FormItem>
-            )}
-          />
         </section>
         <Separator className="mt-6" />
         <Button type="button" variant="outline" size={isMobile ? 'icon' : 'sm'} onClick={onAddField} className="mt-6">
           <Plus />
-          { !isMobile && '添加教育背景' }
+          {!isMobile && '添加工作经历'}
         </Button>
         <div className="mt-4 space-y-4 w-full">
           {fields.map((item, index) => (
@@ -183,7 +158,7 @@ function EduBackgroundForm({ className }: { className?: string }) {
               layout
             >
               <FormField
-                name={`eduInfo.${index}.content`}
+                name={`workInfo.${index}.content`}
                 control={form.control}
                 render={({ field }) => (
                   <FormItem>
@@ -217,4 +192,4 @@ function EduBackgroundForm({ className }: { className?: string }) {
   )
 }
 
-export default EduBackgroundForm
+export default WorkExperienceForm
