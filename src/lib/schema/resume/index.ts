@@ -6,6 +6,7 @@ import { eduBackgroundFormSchema } from './eduBackground'
 import { internshipExperienceFormSchema } from './internshipExperience'
 import { jobIntentFormSchema } from './jobIntent'
 import { projectExperienceFormSchema } from './projectExperience'
+import { skillSpecialtyFormSchema } from './skillSpecialty'
 import { workExperienceFormSchema } from './workExperience'
 
 export const resumeSchema = z.object({
@@ -17,6 +18,7 @@ export const resumeSchema = z.object({
   internshipExperience: internshipExperienceFormSchema,
   campusExperience: campusExperienceFormSchema,
   projectExperience: projectExperienceFormSchema,
+  skillSpecialty: skillSpecialtyFormSchema,
 })
 
 export type ResumeSchema = z.infer<typeof resumeSchema>
@@ -26,4 +28,4 @@ export * from './basic'
 export * from './jobIntent'
 
 export type ORDERType = (keyof ResumeSchema)
-export const DEFAULT_ORDER: ORDERType[] = ['basics', 'jobIntent', 'applicationInfo', 'eduBackground', 'workExperience', 'internshipExperience', 'campusExperience', 'projectExperience']
+export const DEFAULT_ORDER: ORDERType[] = ['basics', 'jobIntent', 'applicationInfo', 'eduBackground', 'workExperience', 'internshipExperience', 'campusExperience', 'projectExperience', 'skillSpecialty']

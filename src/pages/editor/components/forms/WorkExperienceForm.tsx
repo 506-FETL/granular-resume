@@ -1,4 +1,5 @@
 import type { WorkExperienceFormExcludeHidden } from '@/lib/schema/resume/workExperience'
+import type { ShallowPartial } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { IconDoorExit } from '@tabler/icons-react'
 import { Laptop, Plus, Trash2 } from 'lucide-react'
@@ -22,7 +23,7 @@ function WorkExperienceForm({ className }: { className?: string }) {
   const updateForm = useResumeStore(state => state.updateForm)
   const isMobile = useIsMobile()
 
-  const form = useForm<WorkExperienceFormExcludeHidden>({
+  const form = useForm({
     resolver: zodResolver(workExperienceFormSchemaExcludeHidden),
     defaultValues: {
       items: workExperience.items || DEFAULT_WORK_EXPERIENCE.items,
@@ -38,7 +39,7 @@ function WorkExperienceForm({ className }: { className?: string }) {
 
   useEffect(() => {
     const subscription = form.watch((value) => {
-      updateForm('workExperience', value as WorkExperienceFormExcludeHidden)
+      updateForm('workExperience', value as ShallowPartial<WorkExperienceFormExcludeHidden>)
     })
     return () => subscription.unsubscribe()
   }, [form, updateForm])

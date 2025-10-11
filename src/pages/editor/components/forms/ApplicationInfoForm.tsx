@@ -1,4 +1,3 @@
-import type { ApplicationInfoFormExcludeHidden } from '@/lib/schema'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
@@ -12,7 +11,7 @@ function ApplicationInfoForm({ className }: { className?: string }) {
   const applicationInfo = useResumeStore(state => state.applicationInfo)
   const updateForm = useResumeStore(state => state.updateForm)
 
-  const form = useForm<ApplicationInfoFormExcludeHidden>({
+  const form = useForm({
     resolver: zodResolver(resumeSchema.shape.applicationInfo.omit({ isHidden: true })),
     defaultValues: applicationInfo,
     mode: 'onChange',
@@ -20,10 +19,8 @@ function ApplicationInfoForm({ className }: { className?: string }) {
   })
 
   useEffect(() => {
-    const subscription = form.watch((value, { name }) => {
-      if (!name)
-        return
-      updateForm('applicationInfo', { [name]: value[name] })
+    const subscription = form.watch((value) => {
+      updateForm('applicationInfo', value)
     })
     return () => subscription.unsubscribe()
   }, [form, updateForm])

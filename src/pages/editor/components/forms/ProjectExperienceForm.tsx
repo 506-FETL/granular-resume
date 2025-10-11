@@ -1,4 +1,5 @@
 import type { ProjectExperienceFormExcludeHidden } from '@/lib/schema/resume/projectExperience'
+import type { ShallowPartial } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { IconDoorExit } from '@tabler/icons-react'
 import { Laptop, Plus, Trash2 } from 'lucide-react'
@@ -22,7 +23,7 @@ function ProjectExperienceForm({ className }: { className?: string }) {
   const updateForm = useResumeStore(state => state.updateForm)
   const isMobile = useIsMobile()
 
-  const form = useForm<ProjectExperienceFormExcludeHidden>({
+  const form = useForm({
     resolver: zodResolver(projectExperienceFormSchemaExcludeHidden),
     defaultValues: {
       items: projectExperience.items || DEFAULT_PROJECT_EXPERIENCE.items,
@@ -38,7 +39,7 @@ function ProjectExperienceForm({ className }: { className?: string }) {
 
   useEffect(() => {
     const subscription = form.watch((value) => {
-      updateForm('projectExperience', value as ProjectExperienceFormExcludeHidden)
+      updateForm('projectExperience', value as ShallowPartial<ProjectExperienceFormExcludeHidden>)
     })
     return () => subscription.unsubscribe()
   }, [form, updateForm])

@@ -1,29 +1,32 @@
 import { z } from 'zod'
 
-const companyName = z.string().trim()
+const companyName = z.string().trim().default('')
 export type CompanyName = z.infer<typeof companyName>
 
-const position = z.string().trim()
+const position = z.string().trim().default('')
 export type Position = z.infer<typeof position>
 
-const workDuration = z.array(z.string().trim().optional()).length(2)
+const workDuration = z.array(z.string().trim()).length(2).default(['', ''])
 export type WorkDuration = z.infer<typeof workDuration>
+
+const workInfo = z.string().trim().default('')
+export type WorkInfo = z.infer<typeof workInfo>
 
 // 单个工作经历项
 const workExperienceItemSchema = z.object({
-  companyName: companyName.optional(),
-  position: position.optional(),
-  workDuration: workDuration.optional(),
-  workInfo: z.string().trim().optional(), // 工作经历描述
+  companyName,
+  position,
+  workDuration,
+  workInfo,
 })
 export type WorkExperienceItem = z.infer<typeof workExperienceItemSchema>
 
 // 工作经历列表
 const workExperienceListSchema = z.array(workExperienceItemSchema).default([{
-  companyName: undefined,
-  position: undefined,
-  workDuration: [],
-  workInfo: undefined,
+  companyName: '',
+  position: '',
+  workDuration: ['', ''],
+  workInfo: '',
 }])
 
 const workExperienceBaseSchema = z.object({
@@ -32,19 +35,19 @@ const workExperienceBaseSchema = z.object({
 
 export const workExperienceFormSchema = workExperienceBaseSchema.extend({
   isHidden: z.boolean().default(false),
-}).partial().required({ isHidden: true })
+})
 
-export const workExperienceFormSchemaExcludeHidden = workExperienceBaseSchema.partial()
+export const workExperienceFormSchemaExcludeHidden = workExperienceBaseSchema
 
 export type WorkExperienceForm = z.infer<typeof workExperienceFormSchema>
 export type WorkExperienceFormExcludeHidden = z.infer<typeof workExperienceFormSchemaExcludeHidden>
 
 export const DEFAULT_WORK_EXPERIENCE: WorkExperienceForm = {
   items: [{
-    companyName: undefined,
-    position: undefined,
-    workDuration: [],
-    workInfo: undefined,
+    companyName: '',
+    position: '',
+    workDuration: ['', ''],
+    workInfo: '',
   }],
   isHidden: false,
 }

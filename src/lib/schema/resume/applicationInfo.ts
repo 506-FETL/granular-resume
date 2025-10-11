@@ -1,22 +1,27 @@
 import { z } from 'zod'
 
-const applicationSchoolSchema = z.string().trim()
+const applicationSchoolSchema = z.string().trim().default('')
 export type ApplicationSchool = z.infer<typeof applicationSchoolSchema>
 
-const applicationMajorSchema = z.string().trim()
+const applicationMajorSchema = z.string().trim().default('')
 export type ApplicationMajor = z.infer<typeof applicationMajorSchema>
 
-export const applicationInfoFormSchema = z.object({
+const applicationInfoBaseSchema = z.object({
   applicationSchool: applicationSchoolSchema,
   applicationMajor: applicationMajorSchema,
+})
+
+export const applicationInfoFormSchema = applicationInfoBaseSchema.extend({
   isHidden: z.boolean().default(true),
-}).partial().required({ isHidden: true })
+})
+
+export const applicationInfoFormSchemaExcludeHidden = applicationInfoBaseSchema
 
 export type ApplicationInfoForm = z.infer<typeof applicationInfoFormSchema>
-export type ApplicationInfoFormExcludeHidden = Omit<ApplicationInfoForm, 'isHidden'>
+export type ApplicationInfoFormExcludeHidden = z.infer<typeof applicationInfoFormSchemaExcludeHidden>
 
 export const DEFAULT_APPLICATION_INFO: ApplicationInfoForm = {
-  applicationSchool: undefined,
-  applicationMajor: undefined,
+  applicationSchool: '',
+  applicationMajor: '',
   isHidden: true,
 }

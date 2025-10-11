@@ -1,4 +1,5 @@
 import type { InternshipExperienceFormExcludeHidden } from '@/lib/schema/resume/internshipExperience'
+import type { ShallowPartial } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { IconDoorExit } from '@tabler/icons-react'
 import { Laptop, Plus, Trash2 } from 'lucide-react'
@@ -22,7 +23,7 @@ function InternshipExperienceForm({ className }: { className?: string }) {
   const updateForm = useResumeStore(state => state.updateForm)
   const isMobile = useIsMobile()
 
-  const form = useForm<InternshipExperienceFormExcludeHidden>({
+  const form = useForm({
     resolver: zodResolver(internshipExperienceFormSchemaExcludeHidden),
     defaultValues: {
       items: internshipExperience.items || DEFAULT_INTERNSHIP_EXPERIENCE.items,
@@ -38,7 +39,7 @@ function InternshipExperienceForm({ className }: { className?: string }) {
 
   useEffect(() => {
     const subscription = form.watch((value) => {
-      updateForm('internshipExperience', value as InternshipExperienceFormExcludeHidden)
+      updateForm('internshipExperience', value as ShallowPartial<InternshipExperienceFormExcludeHidden>)
     })
     return () => subscription.unsubscribe()
   }, [form, updateForm])

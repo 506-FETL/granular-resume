@@ -10,6 +10,7 @@ import type { CampusExperienceForm, CampusExperienceFormExcludeHidden } from '@/
 import type { EduBackgroundForm, EduBackgroundFormExcludeHidden } from '@/lib/schema/resume/eduBackground'
 import type { InternshipExperienceForm, InternshipExperienceFormExcludeHidden } from '@/lib/schema/resume/internshipExperience'
 import type { ProjectExperienceForm, ProjectExperienceFormExcludeHidden } from '@/lib/schema/resume/projectExperience'
+import type { SkillSpecialtyForm, SkillSpecialtyFormExcludeHidden } from '@/lib/schema/resume/skillSpecialty'
 import type { WorkExperienceForm, WorkExperienceFormExcludeHidden } from '@/lib/schema/resume/workExperience'
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
@@ -18,6 +19,7 @@ import { DEFAULT_CAMPUS_EXPERIENCE } from '@/lib/schema/resume/campusExperience'
 import { DEFAULT_EDU_BACKGROUND } from '@/lib/schema/resume/eduBackground'
 import { DEFAULT_INTERNSHIP_EXPERIENCE } from '@/lib/schema/resume/internshipExperience'
 import { DEFAULT_PROJECT_EXPERIENCE } from '@/lib/schema/resume/projectExperience'
+import { DEFAULT_SKILL_SPECIALTY } from '@/lib/schema/resume/skillSpecialty'
 import { DEFAULT_WORK_EXPERIENCE } from '@/lib/schema/resume/workExperience'
 
 interface FormDataMap {
@@ -29,6 +31,7 @@ interface FormDataMap {
   internshipExperience: InternshipExperienceForm
   campusExperience: CampusExperienceForm
   projectExperience: ProjectExperienceForm
+  skillSpecialty: SkillSpecialtyForm
 }
 
 interface FormDataUpdateMap {
@@ -40,13 +43,14 @@ interface FormDataUpdateMap {
   internshipExperience: InternshipExperienceFormExcludeHidden
   campusExperience: CampusExperienceFormExcludeHidden
   projectExperience: ProjectExperienceFormExcludeHidden
+  skillSpecialty: SkillSpecialtyFormExcludeHidden
 }
 
 interface ResumeState extends FormDataMap {
   activeTabId: ORDERType
   order: ORDERType[]
   updateActiveTabId: (newActiveTab: ORDERType) => void
-  updateForm: <K extends keyof FormDataUpdateMap>(key: K, data: FormDataUpdateMap[K]) => void
+  updateForm: <K extends keyof FormDataUpdateMap>(key: K, data: Partial<FormDataUpdateMap[K]>) => void
   updateOrder: (newOrder: ORDERType[]) => void
   revertIsHidden: (id: Exclude<ORDERType, 'basics'>) => void
   getIsHidden: (id: Exclude<ORDERType, 'basics'>) => boolean
@@ -63,6 +67,7 @@ const useResumeStore = create<ResumeState>()(
       internshipExperience: DEFAULT_INTERNSHIP_EXPERIENCE,
       campusExperience: DEFAULT_CAMPUS_EXPERIENCE,
       projectExperience: DEFAULT_PROJECT_EXPERIENCE,
+      skillSpecialty: DEFAULT_SKILL_SPECIALTY,
       order: DEFAULT_ORDER,
       activeTabId: 'basics',
       updateOrder: newOrder => set(() => ({ order: newOrder })),
@@ -83,7 +88,7 @@ const useResumeStore = create<ResumeState>()(
     {
       name: 'resume-storage',
       storage: createJSONStorage(() => localStorage),
-      version: 6,
+      version: 7,
     },
   ),
 )

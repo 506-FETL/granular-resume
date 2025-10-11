@@ -1,29 +1,32 @@
 import { z } from 'zod'
 
-const projectName = z.string().trim()
+const projectName = z.string().trim().default('')
 export type ProjectName = z.infer<typeof projectName>
 
-const participantRole = z.string().trim()
+const participantRole = z.string().trim().default('')
 export type ParticipantRole = z.infer<typeof participantRole>
 
-const projectDuration = z.array(z.string().trim().optional()).length(2)
+const projectDuration = z.array(z.string().trim()).length(2).default(['', ''])
 export type ProjectDuration = z.infer<typeof projectDuration>
+
+const projectInfo = z.string().trim().default('')
+export type ProjectInfo = z.infer<typeof projectInfo>
 
 // 单个项目经验项
 const projectExperienceItemSchema = z.object({
-  projectName: projectName.optional(),
-  participantRole: participantRole.optional(),
-  projectDuration: projectDuration.optional(),
-  projectInfo: z.string().trim().optional(), // 项目经验描述
+  projectName,
+  participantRole,
+  projectDuration,
+  projectInfo,
 })
 export type ProjectExperienceItem = z.infer<typeof projectExperienceItemSchema>
 
 // 项目经验列表
 const projectExperienceListSchema = z.array(projectExperienceItemSchema).default([{
-  projectName: undefined,
-  participantRole: undefined,
-  projectDuration: [],
-  projectInfo: undefined,
+  projectName: '',
+  participantRole: '',
+  projectDuration: ['', ''],
+  projectInfo: '',
 }])
 
 const projectExperienceBaseSchema = z.object({
@@ -32,19 +35,19 @@ const projectExperienceBaseSchema = z.object({
 
 export const projectExperienceFormSchema = projectExperienceBaseSchema.extend({
   isHidden: z.boolean().default(false),
-}).partial().required({ isHidden: true })
+})
 
-export const projectExperienceFormSchemaExcludeHidden = projectExperienceBaseSchema.partial()
+export const projectExperienceFormSchemaExcludeHidden = projectExperienceBaseSchema
 
 export type ProjectExperienceForm = z.infer<typeof projectExperienceFormSchema>
 export type ProjectExperienceFormExcludeHidden = z.infer<typeof projectExperienceFormSchemaExcludeHidden>
 
 export const DEFAULT_PROJECT_EXPERIENCE: ProjectExperienceForm = {
   items: [{
-    projectName: undefined,
-    participantRole: undefined,
-    projectDuration: [],
-    projectInfo: undefined,
+    projectName: '',
+    participantRole: '',
+    projectDuration: ['', ''],
+    projectInfo: '',
   }],
   isHidden: false,
 }

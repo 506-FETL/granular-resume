@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import type { ReactNode } from 'react'
 import type { ORDERType } from '@/lib/schema'
-import { Briefcase, Building2, Code2, Edit, GraduationCap, School, Trophy, UserCheck, UserRound } from 'lucide-react'
+import { Briefcase, Building2, Code2, Edit, GraduationCap, Lightbulb, School, Trophy, UserCheck, UserRound } from 'lucide-react'
 import { useState } from 'react'
 import { SideTabs, SideTabsWrapper, Tab, ViewPort } from '@/components/SideTabs'
 import { useTheme } from '@/components/theme-provider'
@@ -18,6 +18,7 @@ import EduBackgroundForm from './components/forms/EduBackgroundForm'
 import InternshipExperienceForm from './components/forms/InternshipExperienceForm'
 import JobIntentForm from './components/forms/JobIntentForm'
 import ProjectExperienceForm from './components/forms/ProjectExperienceForm'
+import SkillSpecialtyForm from './components/forms/SkillSpecialtyForm'
 import WorkExperienceForm from './components/forms/WorkExperienceForm'
 import ResumePreview from './components/preview/BasicResumePreview'
 
@@ -76,6 +77,12 @@ const ITEMS: Item<ORDERType>[] = [
     label: '项目经验',
     icon: <Code2 />,
     content: <ProjectExperienceForm />,
+  },
+  {
+    id: 'skillSpecialty',
+    label: '技能特长',
+    icon: <Lightbulb />,
+    content: <SkillSpecialtyForm />,
   },
 ]
 

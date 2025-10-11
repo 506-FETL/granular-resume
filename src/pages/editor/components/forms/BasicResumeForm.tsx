@@ -1,4 +1,4 @@
-import type { BasicForm, Gender, MaritalStatus, PoliticalStatus, WorkYears } from '@/lib/schema'
+import type { Gender, MaritalStatus, PoliticalStatus, WorkYears } from '@/lib/schema'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { REGEXP_ONLY_DIGITS } from 'input-otp'
 import { Cake, Delete, Plus } from 'lucide-react'
@@ -28,7 +28,7 @@ function BasicResumeForm({ className }: { className?: string }) {
   const updateForm = useResumeStore(state => state.updateForm)
   const isMobile = useIsMobile()
 
-  const form = useForm<BasicForm>({
+  const form = useForm({
     resolver: zodResolver(resumeSchema.shape.basics),
     defaultValues: basics,
     mode: 'onChange',

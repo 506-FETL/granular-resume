@@ -1,4 +1,5 @@
 import type { Degree, EduBackgroundFormExcludeHidden } from '@/lib/schema/resume/eduBackground'
+import type { ShallowPartial } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { IconMichelinBibGourmand } from '@tabler/icons-react'
 import { Baby, Plus, Trash2 } from 'lucide-react'
@@ -25,7 +26,7 @@ function EduBackgroundForm({ className }: { className?: string }) {
   const updateForm = useResumeStore(state => state.updateForm)
   const isMobile = useIsMobile()
 
-  const form = useForm<EduBackgroundFormExcludeHidden>({
+  const form = useForm({
     resolver: zodResolver(eduBackgroundFormSchemaExcludeHidden),
     defaultValues: {
       items: eduBackground.items || DEFAULT_EDU_BACKGROUND.items,
@@ -41,7 +42,7 @@ function EduBackgroundForm({ className }: { className?: string }) {
 
   useEffect(() => {
     const subscription = form.watch((value) => {
-      updateForm('eduBackground', value as EduBackgroundFormExcludeHidden)
+      updateForm('eduBackground', value as ShallowPartial<EduBackgroundFormExcludeHidden>)
     })
     return () => subscription.unsubscribe()
   }, [form, updateForm])

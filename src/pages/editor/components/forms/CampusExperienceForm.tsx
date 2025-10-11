@@ -1,4 +1,5 @@
 import type { CampusExperienceFormExcludeHidden } from '@/lib/schema/resume/campusExperience'
+import type { ShallowPartial } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { IconDoorExit } from '@tabler/icons-react'
 import { Laptop, Plus, Trash2 } from 'lucide-react'
@@ -22,7 +23,7 @@ function CampusExperienceForm({ className }: { className?: string }) {
   const updateForm = useResumeStore(state => state.updateForm)
   const isMobile = useIsMobile()
 
-  const form = useForm<CampusExperienceFormExcludeHidden>({
+  const form = useForm({
     resolver: zodResolver(campusExperienceFormSchemaExcludeHidden),
     defaultValues: {
       items: campusExperience.items || DEFAULT_CAMPUS_EXPERIENCE.items,
@@ -38,7 +39,7 @@ function CampusExperienceForm({ className }: { className?: string }) {
 
   useEffect(() => {
     const subscription = form.watch((value) => {
-      updateForm('campusExperience', value as CampusExperienceFormExcludeHidden)
+      updateForm('campusExperience', value as ShallowPartial<CampusExperienceFormExcludeHidden>)
     })
     return () => subscription.unsubscribe()
   }, [form, updateForm])

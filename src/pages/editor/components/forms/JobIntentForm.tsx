@@ -1,4 +1,4 @@
-import type { DateEntry, JobIntentFormExcludeHidden } from '@/lib/schema'
+import type { DateEntry } from '@/lib/schema'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { REGEXP_ONLY_DIGITS } from 'input-otp'
 import { useEffect } from 'react'
@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form'
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { resumeSchema } from '@/lib/schema'
+import { jobIntentFormSchemaExcludeHidden } from '@/lib/schema/resume/jobIntent'
 import { cn } from '@/lib/utils'
 import useResumeStore from '@/store/resume/form'
 
@@ -16,19 +16,24 @@ function JobIntentForm({ className }: { className?: string }) {
   const jobIntent = useResumeStore(state => state.jobIntent)
   const updateForm = useResumeStore(state => state.updateForm)
 
-  const form = useForm<JobIntentFormExcludeHidden>({
-    resolver: zodResolver(resumeSchema.shape.jobIntent.omit({ isHidden: true })),
+  const form = useForm({
+    resolver: zodResolver(jobIntentFormSchemaExcludeHidden),
     defaultValues: jobIntent,
     mode: 'onChange',
     reValidateMode: 'onChange',
   })
 
   useEffect(() => {
-    const subscription = form.watch((value, { name }) => {
-      if (!name)
-        return
-
-      updateForm('jobIntent', { [name]: value[name] })
+    const subscription = form.watch((value) => {
+      // 确保所有字段都已定义后再更新
+      if (value && typeof value === 'object') {
+        updateForm('jobIntent', {
+          jobIntent: value.jobIntent,
+          intentionalCity: value.intentionalCity,
+          expectedSalary: value.expectedSalary,
+          dateEntry: value.dateEntry,
+        })
+      }
     })
     return () => subscription.unsubscribe()
   }, [form, updateForm])

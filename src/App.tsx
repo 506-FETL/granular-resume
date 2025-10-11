@@ -6,6 +6,7 @@ import { SiteHeader } from '@/components/dashboard/site-header'
 import { ThemeProvider } from '@/components/theme-provider'
 import { SidebarHeader, SidebarInset } from '@/components/ui/sidebar'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Toaster } from '@/components/ui/sonner'
 
 function App() {
   return (
@@ -15,11 +16,12 @@ function App() {
         <SidebarHeader className="border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
           <SiteHeader />
         </SidebarHeader>
-        <Suspense fallback={<Loading />}>
-          <div className="p-4">
+        <div className="p-4">
+          <Suspense fallback={<Loading />}>
             {useRoutes(routes)}
-          </div>
-        </Suspense>
+          </Suspense>
+        </div>
+        <Toaster position="top-right" richColors />
       </SidebarInset>
     </ThemeProvider>
   )
