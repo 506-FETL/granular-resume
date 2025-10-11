@@ -1,9 +1,9 @@
 import type { InternshipExperienceFormExcludeHidden } from '@/lib/schema/resume/internshipExperience'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { IconDoorExit } from '@tabler/icons-react'
-import { Delete, Laptop, Plus } from 'lucide-react'
+import { Laptop, Plus, Trash2 } from 'lucide-react'
 import { motion } from 'motion/react'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor'
 import { Button } from '@/components/ui/button'
@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Separator } from '@/components/ui/separator'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { internshipExperienceFormSchemaExcludeHidden } from '@/lib/schema/resume/internshipExperience'
+import { DEFAULT_INTERNSHIP_EXPERIENCE, internshipExperienceFormSchemaExcludeHidden } from '@/lib/schema/resume/internshipExperience'
 import { cn } from '@/lib/utils'
 import useResumeStore from '@/store/resume/form'
 
@@ -25,10 +25,7 @@ function InternshipExperienceForm({ className }: { className?: string }) {
   const form = useForm<InternshipExperienceFormExcludeHidden>({
     resolver: zodResolver(internshipExperienceFormSchemaExcludeHidden),
     defaultValues: {
-      companyName: internshipExperience.companyName,
-      position: internshipExperience.position,
-      internshipDuration: internshipExperience.internshipDuration,
-      internshipInfo: internshipExperience.internshipInfo,
+      items: internshipExperience.items || DEFAULT_INTERNSHIP_EXPERIENCE.items,
     },
     mode: 'onChange',
     reValidateMode: 'onChange',
@@ -36,135 +33,150 @@ function InternshipExperienceForm({ className }: { className?: string }) {
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
-    name: 'internshipInfo',
+    name: 'items',
   })
 
-  const [open, setOpen] = useState({ start: false, end: false })
-
-  // Auto-save form changes, excluding isHidden
   useEffect(() => {
-    const subscription = form.watch((value, { name }) => {
-      if (!name) {
-        return
-      }
-
-      updateForm('internshipExperience', value)
+    const subscription = form.watch((value) => {
+      updateForm('internshipExperience', value as InternshipExperienceFormExcludeHidden)
     })
     return () => subscription.unsubscribe()
   }, [form, updateForm])
 
-  function onAddField() {
-    append({ content: '' })
+  function onAddItem() {
+    append(DEFAULT_INTERNSHIP_EXPERIENCE.items![0])
   }
 
   return (
     <Form {...form}>
-      <form id="internship-experience-form" className={cn(className)}>
-        <section className="grid gap-4 justify-items-start sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-          <FormField
-            name="companyName"
-            control={form.control}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>公司名称</FormLabel>
-                <FormControl>
-                  <Input placeholder="请输入公司名称" {...field} />
-                </FormControl>
-              </FormItem>
-            )}
-          />
+      <form id="internship-experience-form" className={cn('space-y-6', className)}>
+        {fields.map((item, index) => (
+          <motion.div
+            key={item.id}
+            initial={{ opacity: 0, scale: 0.96, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.96, y: -20 }}
+            transition={{
+              duration: 0.3,
+              ease: [0.25, 0.1, 0.25, 1.0],
+            }}
+            layout
+          >
+            {index > 0 && <Separator className="my-6" />}
 
-          <FormField
-            name="position"
-            control={form.control}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>职位</FormLabel>
-                <FormControl>
-                  <Input placeholder="请输入职位" {...field} />
-                </FormControl>
-              </FormItem>
-            )}
-          />
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-medium text-muted-foreground">
+                  实习经验
+                  {' '}
+                  {fields.length > 1 ? `#${index + 1}` : ''}
+                </h3>
+                {fields.length > 1 && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => remove(index)}
+                    className="h-8 text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    {!isMobile && <span className="ml-1">删除</span>}
+                  </Button>
+                )}
+              </div>
 
-          <FormField
-            name="internshipDuration"
-            control={form.control}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>实习时间</FormLabel>
-                <div className="flex items-center gap-1 w-2">
-                  <Popover open={open.start} onOpenChange={() => setOpen(prev => ({ ...prev, start: !prev.start }))}>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline">
-                        {field.value?.[0] || '开始时间'}
-                        <Laptop />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent align="start" className="w-auto">
-                      <Calendar
-                        mode="single"
-                        captionLayout="dropdown"
-                        defaultMonth={new Date(field.value?.[0] || '2002-1-1')}
-                        disabled={date => date > new Date()}
-                        selected={field.value?.[0] ? new Date(field.value[0]) : undefined}
-                        onSelect={(date) => {
-                          field.onChange([date && date.toLocaleDateString(), field.value?.[1]])
-                        }}
-                      />
-                    </PopoverContent>
-                  </Popover>
+              <section className="grid gap-4 justify-items-start sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                <FormField
+                  name={`items.${index}.companyName`}
+                  control={form.control}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>公司名称</FormLabel>
+                      <FormControl>
+                        <Input placeholder="请输入公司名称" {...field} />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
 
-                  <Separator className="w-4 shrink-0" />
-                  <Popover open={open.end} onOpenChange={() => setOpen(prev => ({ ...prev, end: !prev.end }))}>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline">
-                        {field.value?.[1] || '结束时间'}
-                        <IconDoorExit />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent align="start" className="w-auto">
-                      <Calendar
-                        mode="single"
-                        captionLayout="dropdown"
-                        defaultMonth={new Date(field.value?.[1] || '2002-1-1')}
-                        selected={field.value?.[1] ? new Date(field.value[1]) : undefined}
-                        disabled={date => date > new Date()}
-                        onSelect={(date) => {
-                          field.onChange([field.value?.[0], date && date.toLocaleDateString()])
-                        }}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-              </FormItem>
-            )}
-          />
-        </section>
-        <Separator className="mt-6" />
-        <Button type="button" variant="outline" size={isMobile ? 'icon' : 'sm'} onClick={onAddField} className="mt-6">
-          <Plus />
-          {!isMobile && '添加实习经历'}
-        </Button>
-        <div className="mt-4 space-y-4 w-full">
-          {fields.map((item, index) => (
-            <motion.div
-              key={item.id}
-              className="flex flex-col gap-4"
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.2 }}
-              layout
-            >
+                <FormField
+                  name={`items.${index}.position`}
+                  control={form.control}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>职位</FormLabel>
+                      <FormControl>
+                        <Input placeholder="请输入职位" {...field} />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  name={`items.${index}.internshipDuration`}
+                  control={form.control}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>实习时间</FormLabel>
+                      <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button variant="outline" className="w-full sm:w-auto justify-start text-left font-normal">
+                              {field.value?.[0] || '开始时间'}
+                              <Laptop className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent align="start" className="w-auto p-0">
+                            <Calendar
+                              mode="single"
+                              captionLayout="dropdown"
+                              defaultMonth={new Date(field.value?.[0] || '2002-1-1')}
+                              disabled={date => date > new Date()}
+                              selected={field.value?.[0] ? new Date(field.value[0]) : undefined}
+                              onSelect={(date) => {
+                                field.onChange([date?.toLocaleDateString(), field.value?.[1]])
+                              }}
+                            />
+                          </PopoverContent>
+                        </Popover>
+
+                        <span className="text-muted-foreground hidden sm:inline">-</span>
+
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button variant="outline" className="w-full sm:w-auto justify-start text-left font-normal">
+                              {field.value?.[1] || '结束时间'}
+                              <IconDoorExit className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent align="start" className="w-auto p-0">
+                            <Calendar
+                              mode="single"
+                              captionLayout="dropdown"
+                              defaultMonth={new Date(field.value?.[1] || '2002-1-1')}
+                              selected={field.value?.[1] ? new Date(field.value[1]) : undefined}
+                              disabled={date => date > new Date()}
+                              onSelect={(date) => {
+                                field.onChange([field.value?.[0], date?.toLocaleDateString()])
+                              }}
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+              </section>
+
               <FormField
-                name={`internshipInfo.${index}.content`}
+                name={`items.${index}.internshipInfo`}
                 control={form.control}
                 render={({ field }) => (
                   <FormItem>
+                    <FormLabel>实习描述</FormLabel>
                     <FormControl>
                       <SimpleEditor
-                        content={field.value}
+                        content={field.value || ''}
                         onChange={(editor) => {
                           field.onChange(editor.getHTML())
                         }}
@@ -173,20 +185,20 @@ function InternshipExperienceForm({ className }: { className?: string }) {
                   </FormItem>
                 )}
               />
-              <Button
-                type="button"
-                variant="destructive"
-                onClick={() => remove(index)}
-                size={isMobile ? 'sm' : 'sm'}
-                className="sm:w-auto w-full sm:self-start sm:mt-0"
-              >
-                <Delete />
-                {!isMobile && '删除'}
-              </Button>
-            </motion.div>
-          ),
-          )}
-        </div>
+            </div>
+          </motion.div>
+        ))}
+
+        <Button
+          type="button"
+          variant="outline"
+          size={isMobile ? 'sm' : 'default'}
+          onClick={onAddItem}
+          className="w-full sm:w-auto"
+        >
+          <Plus className="h-4 w-4" />
+          {!isMobile && <span className="ml-2">添加实习经验</span>}
+        </Button>
       </form>
     </Form>
   )

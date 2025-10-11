@@ -9,19 +9,25 @@ export type Position = z.infer<typeof position>
 const internshipDuration = z.array(z.string().trim().optional()).length(2)
 export type InternshipDuration = z.infer<typeof internshipDuration>
 
-const customFieldSchema = z.object({
-  content: z.string().trim().optional(),
-}).optional()
-export type CustomField = z.infer<typeof customFieldSchema>
+// 单个实习经验项
+const internshipExperienceItemSchema = z.object({
+  companyName: companyName.optional(),
+  position: position.optional(),
+  internshipDuration: internshipDuration.optional(),
+  internshipInfo: z.string().trim().optional(), // 实习经历描述
+})
+export type InternshipExperienceItem = z.infer<typeof internshipExperienceItemSchema>
 
-const internshipInfo = z.array(customFieldSchema).default([])
-export type InternshipInfo = z.infer<typeof internshipInfo>
+// 实习经验列表
+const internshipExperienceListSchema = z.array(internshipExperienceItemSchema).default([{
+  companyName: undefined,
+  position: undefined,
+  internshipDuration: [],
+  internshipInfo: undefined,
+}])
 
 const internshipExperienceBaseSchema = z.object({
-  companyName,
-  position,
-  internshipDuration,
-  internshipInfo,
+  items: internshipExperienceListSchema,
 })
 
 export const internshipExperienceFormSchema = internshipExperienceBaseSchema.extend({
@@ -34,9 +40,11 @@ export type InternshipExperienceForm = z.infer<typeof internshipExperienceFormSc
 export type InternshipExperienceFormExcludeHidden = z.infer<typeof internshipExperienceFormSchemaExcludeHidden>
 
 export const DEFAULT_INTERNSHIP_EXPERIENCE: InternshipExperienceForm = {
-  companyName: undefined,
-  position: undefined,
-  internshipDuration: [],
-  internshipInfo: [],
+  items: [{
+    companyName: undefined,
+    position: undefined,
+    internshipDuration: [],
+    internshipInfo: undefined,
+  }],
   isHidden: false,
 }

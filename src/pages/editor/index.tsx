@@ -118,7 +118,7 @@ function Editor() {
                         <TooltipTrigger asChild>
                           <div>
                             <Switch
-                              checked={useResumeStore(state => state.getIsHidden(item.id as Exclude<ORDERType, 'basics'>))}
+                              checked={!useResumeStore(state => state.getIsHidden(item.id as Exclude<ORDERType, 'basics'>))}
                               onCheckedChange={() => revertIsHidden(item.id as Exclude<ORDERType, 'basics'>)}
                             />
                           </div>

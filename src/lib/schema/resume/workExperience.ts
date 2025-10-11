@@ -9,19 +9,25 @@ export type Position = z.infer<typeof position>
 const workDuration = z.array(z.string().trim().optional()).length(2)
 export type WorkDuration = z.infer<typeof workDuration>
 
-const customFieldSchema = z.object({
-  content: z.string().trim().optional(),
-}).optional()
-export type CustomField = z.infer<typeof customFieldSchema>
+// 单个工作经历项
+const workExperienceItemSchema = z.object({
+  companyName: companyName.optional(),
+  position: position.optional(),
+  workDuration: workDuration.optional(),
+  workInfo: z.string().trim().optional(), // 工作经历描述
+})
+export type WorkExperienceItem = z.infer<typeof workExperienceItemSchema>
 
-const workInfo = z.array(customFieldSchema).default([])
-export type WorkInfo = z.infer<typeof workInfo>
+// 工作经历列表
+const workExperienceListSchema = z.array(workExperienceItemSchema).default([{
+  companyName: undefined,
+  position: undefined,
+  workDuration: [],
+  workInfo: undefined,
+}])
 
 const workExperienceBaseSchema = z.object({
-  companyName,
-  position,
-  workDuration,
-  workInfo,
+  items: workExperienceListSchema,
 })
 
 export const workExperienceFormSchema = workExperienceBaseSchema.extend({
@@ -34,9 +40,11 @@ export type WorkExperienceForm = z.infer<typeof workExperienceFormSchema>
 export type WorkExperienceFormExcludeHidden = z.infer<typeof workExperienceFormSchemaExcludeHidden>
 
 export const DEFAULT_WORK_EXPERIENCE: WorkExperienceForm = {
-  companyName: undefined,
-  position: undefined,
-  workDuration: [],
-  workInfo: [],
+  items: [{
+    companyName: undefined,
+    position: undefined,
+    workDuration: [],
+    workInfo: undefined,
+  }],
   isHidden: false,
 }

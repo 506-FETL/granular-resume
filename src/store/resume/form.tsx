@@ -83,7 +83,7 @@ const useResumeStore = create<ResumeState>()(
     {
       name: 'resume-storage',
       storage: createJSONStorage(() => localStorage),
-      version: 5,
+      version: 6,
     },
   ),
 )

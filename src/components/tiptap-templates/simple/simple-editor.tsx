@@ -1,6 +1,6 @@
 'use client'
 
-import type { Content, Editor } from '@tiptap/react'
+import type { Editor } from '@tiptap/react'
 import { Highlight } from '@tiptap/extension-highlight'
 
 import { Image } from '@tiptap/extension-image'
@@ -23,6 +23,7 @@ import { LinkIcon } from '@/components/tiptap-icons/link-icon'
 import { HorizontalRule } from '@/components/tiptap-node/horizontal-rule-node/horizontal-rule-node-extension'
 // --- Tiptap Node ---
 import { ImageUploadNode } from '@/components/tiptap-node/image-upload-node/image-upload-node-extension'
+// --- Components ---
 // --- UI Primitives ---
 import { Button } from '@/components/tiptap-ui-primitive/button'
 import { Spacer } from '@/components/tiptap-ui-primitive/spacer'
@@ -53,12 +54,14 @@ import { TextAlignButton } from '@/components/tiptap-ui/text-align-button'
 import { UndoRedoButton } from '@/components/tiptap-ui/undo-redo-button'
 // --- Hooks ---
 import { useIsMobile } from '@/hooks/use-mobile'
-// --- Lib ---
-import { handleImageUpload, MAX_FILE_SIZE } from '@/lib/tiptap-utils'
-import '@/components/tiptap-node/blockquote-node/blockquote-node.scss'
 
+import { handleImageUpload, MAX_FILE_SIZE } from '@/lib/tiptap-utils'
+
+// --- Lib ---
+import '@/components/tiptap-node/blockquote-node/blockquote-node.scss'
 import '@/components/tiptap-node/code-block-node/code-block-node.scss'
 import '@/components/tiptap-node/horizontal-rule-node/horizontal-rule-node.scss'
+
 import '@/components/tiptap-node/list-node/list-node.scss'
 
 import '@/components/tiptap-node/image-node/image-node.scss'
@@ -66,11 +69,8 @@ import '@/components/tiptap-node/image-node/image-node.scss'
 import '@/components/tiptap-node/heading-node/heading-node.scss'
 
 import '@/components/tiptap-node/paragraph-node/paragraph-node.scss'
-
 // --- Styles ---
 import '@/components/tiptap-templates/simple/simple-editor.scss'
-
-function arrowFn() {}
 
 function MainToolbarContent({
   onHighlighterClick,
@@ -93,10 +93,10 @@ function MainToolbarContent({
       <ToolbarSeparator />
 
       <ToolbarGroup>
-        <HeadingDropdownMenu levels={[1, 2, 3, 4]} portal />
+        <HeadingDropdownMenu levels={[1, 2, 3, 4]} portal={isMobile} />
         <ListDropdownMenu
           types={['bulletList', 'orderedList', 'taskList']}
-          portal
+          portal={isMobile}
         />
         <BlockquoteButton />
         <CodeBlockButton />
@@ -185,12 +185,12 @@ function MobileToolbarContent({
   )
 }
 
-interface EditorProps {
-  content?: Content
-  onChange?: (editor: Editor) => void
-}
+function arrowFn() {}
 
-export function SimpleEditor({ content = '', onChange = arrowFn }: EditorProps) {
+export function SimpleEditor({
+  content = '',
+  onChange = arrowFn,
+}: { content?: string, onChange?: (editor: Editor) => void }) {
   const isMobile = useIsMobile()
   const [mobileView, setMobileView] = React.useState<
     'main' | 'highlighter' | 'link'
@@ -200,9 +200,6 @@ export function SimpleEditor({ content = '', onChange = arrowFn }: EditorProps) 
   const editor = useEditor({
     immediatelyRender: false,
     shouldRerenderOnTransaction: false,
-    onUpdate: ({ editor }) => {
-      onChange(editor)
-    },
     editorProps: {
       attributes: {
         'autocomplete': 'off',
@@ -211,6 +208,9 @@ export function SimpleEditor({ content = '', onChange = arrowFn }: EditorProps) 
         'aria-label': 'Main content area, start typing to enter text.',
         'class': 'simple-editor',
       },
+    },
+    onUpdate: ({ editor }) => {
+      onChange(editor)
     },
     extensions: [
       StarterKit.configure({
@@ -250,11 +250,9 @@ export function SimpleEditor({ content = '', onChange = arrowFn }: EditorProps) 
   const editorContextValue = React.useMemo(() => ({ editor }), [editor])
 
   return (
-    <div className="simple-editor-wrapper min-w-full">
+    <div className="simple-editor-wrapper">
       <EditorContext value={editorContextValue}>
-        <Toolbar
-          ref={toolbarRef}
-        >
+        <Toolbar ref={toolbarRef}>
           {mobileView === 'main'
             ? (
                 <MainToolbarContent

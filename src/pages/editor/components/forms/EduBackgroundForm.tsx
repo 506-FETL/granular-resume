@@ -1,9 +1,9 @@
 import type { Degree, EduBackgroundFormExcludeHidden } from '@/lib/schema/resume/eduBackground'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { IconMichelinBibGourmand } from '@tabler/icons-react'
-import { Baby, Delete, Plus } from 'lucide-react'
+import { Baby, Plus, Trash2 } from 'lucide-react'
 import { motion } from 'motion/react'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor'
 import { Button } from '@/components/ui/button'
@@ -14,7 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { eduBackgroundFormSchemaExcludeHidden } from '@/lib/schema/resume/eduBackground'
+import { DEFAULT_EDU_BACKGROUND, eduBackgroundFormSchemaExcludeHidden } from '@/lib/schema/resume/eduBackground'
 import { cn } from '@/lib/utils'
 import useResumeStore from '@/store/resume/form'
 
@@ -28,11 +28,7 @@ function EduBackgroundForm({ className }: { className?: string }) {
   const form = useForm<EduBackgroundFormExcludeHidden>({
     resolver: zodResolver(eduBackgroundFormSchemaExcludeHidden),
     defaultValues: {
-      schoolName: eduBackground.schoolName,
-      professional: eduBackground.professional,
-      degree: eduBackground.degree,
-      duration: eduBackground.duration,
-      eduInfo: eduBackground.eduInfo,
+      items: eduBackground.items || DEFAULT_EDU_BACKGROUND.items,
     },
     mode: 'onChange',
     reValidateMode: 'onChange',
@@ -40,156 +36,171 @@ function EduBackgroundForm({ className }: { className?: string }) {
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
-    name: 'eduInfo',
+    name: 'items',
   })
 
-  const [open, setOpen] = useState({ start: false, end: false })
-
   useEffect(() => {
-    const subscription = form.watch((value, { name }) => {
-      if (!name) {
-        return
-      }
-
-      updateForm('eduBackground', value)
+    const subscription = form.watch((value) => {
+      updateForm('eduBackground', value as EduBackgroundFormExcludeHidden)
     })
     return () => subscription.unsubscribe()
   }, [form, updateForm])
 
-  function onAddField() {
-    append({ content: '' })
+  function onAddItem() {
+    append(DEFAULT_EDU_BACKGROUND.items![0])
   }
 
   return (
     <Form {...form}>
-      <form id="edu-background-form" className={cn(className)}>
-        <section className="grid gap-4 justify-items-start sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-          <FormField
-            name="schoolName"
-            control={form.control}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>学校</FormLabel>
-                <FormControl>
-                  <Input placeholder="请输入学校名称" {...field} />
-                </FormControl>
-              </FormItem>
-            )}
-          />
+      <form id="edu-background-form" className={cn('space-y-6', className)}>
+        {fields.map((item, index) => (
+          <motion.div
+            key={item.id}
+            initial={{ opacity: 0, scale: 0.96, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.96, y: -20 }}
+            transition={{
+              duration: 0.3,
+              ease: [0.25, 0.1, 0.25, 1.0],
+            }}
+            layout
+          >
+            {index > 0 && <Separator className="my-6" />}
 
-          <FormField
-            name="professional"
-            control={form.control}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>专业</FormLabel>
-                <FormControl>
-                  <Input placeholder="请输入所学专业" {...field} />
-                </FormControl>
-              </FormItem>
-            )}
-          />
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-medium text-muted-foreground">
+                  教育背景
+                  {fields.length > 1 ? `#${index + 1}` : ''}
+                </h3>
+                {fields.length > 1 && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => remove(index)}
+                    className="h-8 text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    {!isMobile && <span className="ml-1">删除</span>}
+                  </Button>
+                )}
+              </div>
 
-          <FormField
-            name="duration"
-            control={form.control}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>就读时间</FormLabel>
-                <div className="flex items-center gap-1 w-2">
-                  <Popover open={open.start} onOpenChange={() => setOpen(prev => ({ ...prev, start: !prev.start }))}>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline">
-                        {field.value?.[0] || '入学年月'}
-                        <Baby />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent align="start" className="w-auto">
-                      <Calendar
-                        mode="single"
-                        captionLayout="dropdown"
-                        defaultMonth={new Date(field.value?.[0] || '2002-1-1')}
-                        disabled={date => date > new Date()}
-                        selected={field.value?.[0] ? new Date(field.value[0]) : undefined}
-                        onSelect={(date) => {
-                          field.onChange([date && date.toLocaleDateString(), field.value?.[1]])
-                        }}
-                      />
-                    </PopoverContent>
-                  </Popover>
+              <section className="grid gap-4 justify-items-start sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+                <FormField
+                  name={`items.${index}.schoolName`}
+                  control={form.control}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>学校</FormLabel>
+                      <FormControl>
+                        <Input placeholder="请输入学校名称" {...field} />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
 
-                  <Separator />
-                  <Popover open={open.end} onOpenChange={() => setOpen(prev => ({ ...prev, end: !prev.end }))}>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline">
-                        {field.value?.[1] || '毕业年月'}
-                        <IconMichelinBibGourmand className="ml-auto" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent align="start" className="w-auto">
-                      <Calendar
-                        mode="single"
-                        captionLayout="dropdown"
-                        defaultMonth={new Date(field.value?.[1] || '2002-1-1')}
-                        selected={field.value?.[1] ? new Date(field.value[1]) : undefined}
-                        disabled={date => date > new Date()}
-                        onSelect={(date) => {
-                          field.onChange([field.value?.[0], date && date.toLocaleDateString()])
-                        }}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-              </FormItem>
-            )}
-          />
+                <FormField
+                  name={`items.${index}.professional`}
+                  control={form.control}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>专业</FormLabel>
+                      <FormControl>
+                        <Input placeholder="请输入所学专业" {...field} />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
 
-          <FormField
-            name="degree"
-            control={form.control}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>学历</FormLabel>
-                <FormControl>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="请选择学历" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {degreeOptions.map(option => (
-                        <SelectItem key={option} value={option}>{option}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </FormControl>
-              </FormItem>
-            )}
-          />
-        </section>
-        <Separator className="mt-6" />
-        <Button type="button" variant="outline" size={isMobile ? 'icon' : 'sm'} onClick={onAddField} className="mt-6">
-          <Plus />
-          { !isMobile && '添加教育背景' }
-        </Button>
-        <div className="mt-4 space-y-4 w-full">
-          {fields.map((item, index) => (
-            <motion.div
-              key={item.id}
-              className="flex flex-col gap-4"
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.2 }}
-              layout
-            >
+                <FormField
+                  name={`items.${index}.duration`}
+                  control={form.control}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>就读时间</FormLabel>
+                      <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button variant="outline" className="w-full sm:w-auto justify-start text-left font-normal">
+                              {field.value?.[0] || '入学年月'}
+                              <Baby className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent align="start" className="w-auto p-0">
+                            <Calendar
+                              mode="single"
+                              captionLayout="dropdown"
+                              defaultMonth={new Date(field.value?.[0] || '2002-1-1')}
+                              disabled={date => date > new Date()}
+                              selected={field.value?.[0] ? new Date(field.value[0]) : undefined}
+                              onSelect={(date) => {
+                                field.onChange([date?.toLocaleDateString(), field.value?.[1]])
+                              }}
+                            />
+                          </PopoverContent>
+                        </Popover>
+
+                        <span className="text-muted-foreground hidden sm:inline">-</span>
+
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button variant="outline" className="w-full sm:w-auto justify-start text-left font-normal">
+                              {field.value?.[1] || '毕业年月'}
+                              <IconMichelinBibGourmand className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent align="start" className="w-auto p-0">
+                            <Calendar
+                              mode="single"
+                              captionLayout="dropdown"
+                              defaultMonth={new Date(field.value?.[1] || '2002-1-1')}
+                              selected={field.value?.[1] ? new Date(field.value[1]) : undefined}
+                              disabled={date => date > new Date()}
+                              onSelect={(date) => {
+                                field.onChange([field.value?.[0], date?.toLocaleDateString()])
+                              }}
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  name={`items.${index}.degree`}
+                  control={form.control}
+                  render={({ field }) => (
+                    <FormItem className="w-full">
+                      <FormLabel>学历</FormLabel>
+                      <FormControl>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="请选择学历" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {degreeOptions.map(option => (
+                              <SelectItem key={option} value={option}>{option}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </section>
+
               <FormField
-                name={`eduInfo.${index}.content`}
+                name={`items.${index}.eduInfo`}
                 control={form.control}
                 render={({ field }) => (
                   <FormItem>
+                    <FormLabel>教育背景描述</FormLabel>
                     <FormControl>
                       <SimpleEditor
-                        content={field.value}
+                        content={field.value || ''}
                         onChange={(editor) => {
                           field.onChange(editor.getHTML())
                         }}
@@ -198,20 +209,20 @@ function EduBackgroundForm({ className }: { className?: string }) {
                   </FormItem>
                 )}
               />
-              <Button
-                type="button"
-                variant="destructive"
-                onClick={() => remove(index)}
-                size={isMobile ? 'sm' : 'sm'}
-                className="sm:w-auto w-full sm:self-start sm:mt-0"
-              >
-                <Delete />
-                {!isMobile && '删除'}
-              </Button>
-            </motion.div>
-          ),
-          )}
-        </div>
+            </div>
+          </motion.div>
+        ))}
+
+        <Button
+          type="button"
+          variant="outline"
+          size={isMobile ? 'sm' : 'default'}
+          onClick={onAddItem}
+          className="w-full sm:w-auto"
+        >
+          <Plus className="h-4 w-4" />
+          {!isMobile && <span className="ml-2">添加教育背景</span>}
+        </Button>
       </form>
     </Form>
   )

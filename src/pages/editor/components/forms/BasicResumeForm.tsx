@@ -280,11 +280,8 @@ function BasicResumeForm({ className }: { className?: string }) {
           {fields.map((item, index) => (
             <motion.div
               key={item.id}
-              className="flex gap-2 items-end"
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.2 }}
+              className="flex gap-2 items-end"
               layout
             >
               <FormField

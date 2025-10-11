@@ -226,7 +226,7 @@ export function SideTabsWrapper({
     const d
       = `M ${sx},${sy} `
         // 进入顶部：最后一个控制点与终点同高(yTop)，保证与水平顶边切线连续
-        + `C ${sx},${curveMidY} ${rightCtrlX},${yTop} ${entryRight - tailWidth * 0.1},${yTop} `
+        + `C ${sx},${curveMidY} ${rightCtrlX},${yTop} ${entryRight - tailWidth * 0.2},${yTop} `
         + `L ${xt},${yTop} `
         + `A ${radius},${radius} 0 0 1 ${xr},${yr1} `
         + `L ${xr},${yr2} `

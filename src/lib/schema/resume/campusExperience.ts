@@ -9,19 +9,25 @@ export type Role = z.infer<typeof role>
 const duration = z.array(z.string().trim().optional()).length(2)
 export type Duration = z.infer<typeof duration>
 
-const customFieldSchema = z.object({
-  content: z.string().trim().optional(),
-}).optional()
-export type CustomField = z.infer<typeof customFieldSchema>
+// 单个校园经历项
+const campusExperienceItemSchema = z.object({
+  experienceName: experienceName.optional(),
+  role: role.optional(),
+  duration: duration.optional(),
+  campusInfo: z.string().trim().optional(), // 校园经历描述
+})
+export type CampusExperienceItem = z.infer<typeof campusExperienceItemSchema>
 
-const campusInfo = z.array(customFieldSchema).default([])
-export type CampusInfo = z.infer<typeof campusInfo>
+// 校园经历列表
+const campusExperienceListSchema = z.array(campusExperienceItemSchema).default([{
+  experienceName: undefined,
+  role: undefined,
+  duration: [],
+  campusInfo: undefined,
+}])
 
 const campusExperienceBaseSchema = z.object({
-  experienceName,
-  role,
-  duration,
-  campusInfo,
+  items: campusExperienceListSchema,
 })
 
 export const campusExperienceFormSchema = campusExperienceBaseSchema.extend({
@@ -34,9 +40,11 @@ export type CampusExperienceForm = z.infer<typeof campusExperienceFormSchema>
 export type CampusExperienceFormExcludeHidden = z.infer<typeof campusExperienceFormSchemaExcludeHidden>
 
 export const DEFAULT_CAMPUS_EXPERIENCE: CampusExperienceForm = {
-  experienceName: undefined,
-  role: undefined,
-  duration: [],
-  campusInfo: [],
+  items: [{
+    experienceName: undefined,
+    role: undefined,
+    duration: [],
+    campusInfo: undefined,
+  }],
   isHidden: false,
 }
