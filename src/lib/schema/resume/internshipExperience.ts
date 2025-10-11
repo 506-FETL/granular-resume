@@ -1,10 +1,7 @@
 import { z } from 'zod'
 
 const companyName = z.string().trim().default('')
-export type CompanyName = z.infer<typeof companyName>
-
 const position = z.string().trim().default('')
-export type Position = z.infer<typeof position>
 
 const internshipDuration = z.array(z.string().trim()).length(2).default(['', ''])
 export type InternshipDuration = z.infer<typeof internshipDuration>

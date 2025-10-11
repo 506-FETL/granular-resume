@@ -10,7 +10,7 @@ const degree = z.enum(['不填', '初中', '高中', '中专', '大专', '本科
 export type Degree = z.infer<typeof degree>
 
 const duration = z.array(z.string().trim()).length(2).default(['', ''])
-export type Duration = z.infer<typeof duration>
+export type EduDuration = z.infer<typeof duration>
 
 const eduInfo = z.string().trim().default('')
 export type EduInfo = z.infer<typeof eduInfo>

@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import type { ReactNode } from 'react'
 import type { ORDERType } from '@/lib/schema'
-import { Briefcase, Building2, Code2, Edit, GraduationCap, Lightbulb, School, Trophy, UserCheck, UserRound } from 'lucide-react'
+import { Award, Briefcase, Building2, Code2, Edit, GraduationCap, Heart, Lightbulb, MessageSquare, School, Trophy, UserCheck, UserRound } from 'lucide-react'
 import { useState } from 'react'
 import { SideTabs, SideTabsWrapper, Tab, ViewPort } from '@/components/SideTabs'
 import { useTheme } from '@/components/theme-provider'
@@ -15,9 +15,12 @@ import ApplicationInfoForm from './components/forms/ApplicationInfoForm'
 import BasicResumeForm from './components/forms/BasicResumeForm'
 import CampusExperienceForm from './components/forms/CampusExperienceForm'
 import EduBackgroundForm from './components/forms/EduBackgroundForm'
+import HobbiesForm from './components/forms/HobbiesForm'
+import HonorsCertificatesForm from './components/forms/HonorsCertificatesForm'
 import InternshipExperienceForm from './components/forms/InternshipExperienceForm'
 import JobIntentForm from './components/forms/JobIntentForm'
 import ProjectExperienceForm from './components/forms/ProjectExperienceForm'
+import SelfEvaluationForm from './components/forms/SelfEvaluationForm'
 import SkillSpecialtyForm from './components/forms/SkillSpecialtyForm'
 import WorkExperienceForm from './components/forms/WorkExperienceForm'
 import ResumePreview from './components/preview/BasicResumePreview'
@@ -83,6 +86,24 @@ const ITEMS: Item<ORDERType>[] = [
     label: '技能特长',
     icon: <Lightbulb />,
     content: <SkillSpecialtyForm />,
+  },
+  {
+    id: 'honorsCertificates',
+    label: '荣誉证书',
+    icon: <Award />,
+    content: <HonorsCertificatesForm />,
+  },
+  {
+    id: 'selfEvaluation',
+    label: '自我评价',
+    icon: <MessageSquare />,
+    content: <SelfEvaluationForm />,
+  },
+  {
+    id: 'hobbies',
+    label: '兴趣爱好',
+    icon: <Heart />,
+    content: <HobbiesForm />,
   },
 ]
 

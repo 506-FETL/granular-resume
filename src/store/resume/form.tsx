@@ -8,8 +8,11 @@ import type {
 } from '@/lib/schema'
 import type { CampusExperienceForm, CampusExperienceFormExcludeHidden } from '@/lib/schema/resume/campusExperience'
 import type { EduBackgroundForm, EduBackgroundFormExcludeHidden } from '@/lib/schema/resume/eduBackground'
+import type { HobbiesForm, HobbiesFormExcludeHidden } from '@/lib/schema/resume/hobbies'
+import type { HonorsCertificatesForm, HonorsCertificatesFormExcludeHidden } from '@/lib/schema/resume/honorsCertificates'
 import type { InternshipExperienceForm, InternshipExperienceFormExcludeHidden } from '@/lib/schema/resume/internshipExperience'
 import type { ProjectExperienceForm, ProjectExperienceFormExcludeHidden } from '@/lib/schema/resume/projectExperience'
+import type { SelfEvaluationForm, SelfEvaluationFormExcludeHidden } from '@/lib/schema/resume/selfEvaluation'
 import type { SkillSpecialtyForm, SkillSpecialtyFormExcludeHidden } from '@/lib/schema/resume/skillSpecialty'
 import type { WorkExperienceForm, WorkExperienceFormExcludeHidden } from '@/lib/schema/resume/workExperience'
 import { create } from 'zustand'
@@ -17,8 +20,11 @@ import { createJSONStorage, persist } from 'zustand/middleware'
 import { DEFAULT_APPLICATION_INFO, DEFAULT_BASICS, DEFAULT_JOB_INTENT, DEFAULT_ORDER } from '@/lib/schema'
 import { DEFAULT_CAMPUS_EXPERIENCE } from '@/lib/schema/resume/campusExperience'
 import { DEFAULT_EDU_BACKGROUND } from '@/lib/schema/resume/eduBackground'
+import { DEFAULT_HOBBIES } from '@/lib/schema/resume/hobbies'
+import { DEFAULT_HONORS_CERTIFICATES } from '@/lib/schema/resume/honorsCertificates'
 import { DEFAULT_INTERNSHIP_EXPERIENCE } from '@/lib/schema/resume/internshipExperience'
 import { DEFAULT_PROJECT_EXPERIENCE } from '@/lib/schema/resume/projectExperience'
+import { DEFAULT_SELF_EVALUATION } from '@/lib/schema/resume/selfEvaluation'
 import { DEFAULT_SKILL_SPECIALTY } from '@/lib/schema/resume/skillSpecialty'
 import { DEFAULT_WORK_EXPERIENCE } from '@/lib/schema/resume/workExperience'
 
@@ -32,6 +38,9 @@ interface FormDataMap {
   campusExperience: CampusExperienceForm
   projectExperience: ProjectExperienceForm
   skillSpecialty: SkillSpecialtyForm
+  honorsCertificates: HonorsCertificatesForm
+  selfEvaluation: SelfEvaluationForm
+  hobbies: HobbiesForm
 }
 
 interface FormDataUpdateMap {
@@ -44,6 +53,9 @@ interface FormDataUpdateMap {
   campusExperience: CampusExperienceFormExcludeHidden
   projectExperience: ProjectExperienceFormExcludeHidden
   skillSpecialty: SkillSpecialtyFormExcludeHidden
+  honorsCertificates: HonorsCertificatesFormExcludeHidden
+  selfEvaluation: SelfEvaluationFormExcludeHidden
+  hobbies: HobbiesFormExcludeHidden
 }
 
 interface ResumeState extends FormDataMap {
@@ -68,6 +80,9 @@ const useResumeStore = create<ResumeState>()(
       campusExperience: DEFAULT_CAMPUS_EXPERIENCE,
       projectExperience: DEFAULT_PROJECT_EXPERIENCE,
       skillSpecialty: DEFAULT_SKILL_SPECIALTY,
+      honorsCertificates: DEFAULT_HONORS_CERTIFICATES,
+      selfEvaluation: DEFAULT_SELF_EVALUATION,
+      hobbies: DEFAULT_HOBBIES,
       order: DEFAULT_ORDER,
       activeTabId: 'basics',
       updateOrder: newOrder => set(() => ({ order: newOrder })),
@@ -88,7 +103,7 @@ const useResumeStore = create<ResumeState>()(
     {
       name: 'resume-storage',
       storage: createJSONStorage(() => localStorage),
-      version: 7,
+      version: 10,
     },
   ),
 )

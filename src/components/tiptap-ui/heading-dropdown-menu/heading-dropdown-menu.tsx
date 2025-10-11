@@ -65,7 +65,7 @@ export function HeadingDropdownMenu({ ref, editor: providedEditor, levels = [1, 
   }
 
   return (
-    <DropdownMenu modal open={isOpen} onOpenChange={handleOpenChange}>
+    <DropdownMenu open={isOpen} onOpenChange={handleOpenChange}>
       <DropdownMenuTrigger asChild>
         <Button
           type="button"
@@ -86,7 +86,17 @@ export function HeadingDropdownMenu({ ref, editor: providedEditor, levels = [1, 
         </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="start" portal={portal}>
+      <DropdownMenuContent
+        align="start"
+        portal={portal}
+        onInteractOutside={(e) => {
+          // Prevent closing when clicking on the trigger button
+          const target = e.target as HTMLElement
+          if (target.closest('[role="button"]')) {
+            e.preventDefault()
+          }
+        }}
+      >
         <Card>
           <CardBody>
             <ButtonGroup>

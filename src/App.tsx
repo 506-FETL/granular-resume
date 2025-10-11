@@ -11,25 +11,25 @@ import { Toaster } from '@/components/ui/sonner'
 function App() {
   return (
     <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-      <AppSidebar variant="inset" />
-      <SidebarInset className="relative overflow-hidden">
-        <SidebarHeader className="border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
-          <SiteHeader />
-        </SidebarHeader>
-        <div className="p-4">
-          <Suspense fallback={<Loading />}>
+      <Suspense fallback={<Loading />}>
+        <AppSidebar variant="inset" />
+        <SidebarInset className="relative overflow-hidden">
+          <SidebarHeader className="border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
+            <SiteHeader />
+          </SidebarHeader>
+          <div className="p-4">
             {useRoutes(routes)}
-          </Suspense>
-        </div>
-        <Toaster position="top-right" richColors />
-      </SidebarInset>
+          </div>
+          <Toaster position="top-right" richColors />
+        </SidebarInset>
+      </Suspense>
     </ThemeProvider>
   )
 }
 
 function Loading() {
   return (
-    <div className="w-full min-h-screen flex items-center justify-center px-4">
+    <div className="w-full h-screen flex items-center justify-center px-4 bg-background">
       <div className="flex flex-col space-y-6 w-full max-w-md">
         <Skeleton className="h-48 w-full rounded-xl" />
         <div className="space-y-3">
