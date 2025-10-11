@@ -33,6 +33,11 @@
   outline: none;
   caret-color: var(--tt-cursor-color);
 
+  // 确保在所有平台上文本可选择且光标可见
+  -webkit-user-select: text;
+  user-select: text;
+  cursor: text;
+
   // Paragraph spacing
   p:not(:first-child) {
     font-size: 1rem;

@@ -141,6 +141,12 @@ body,
   flex: 1;
   padding: 2rem 2.5rem;
   min-height: 100%;
+
+  // 确保光标在所有设备上可见
+  caret-color: var(--tt-cursor-color);
+  -webkit-user-select: text;
+  user-select: text;
+  cursor: text;
 }
 
 @media screen and (max-width: 768px) {
@@ -152,5 +158,8 @@ body,
 @media screen and (max-width: 480px) {
   .simple-editor-content .tiptap.ProseMirror.simple-editor {
     padding: 1rem 1.5rem;
+    // 移动端特别强调光标可见性
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
 }
