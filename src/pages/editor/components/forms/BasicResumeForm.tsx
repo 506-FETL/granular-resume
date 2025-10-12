@@ -54,7 +54,7 @@ function BasicResumeForm({ className }: { className?: string }) {
   return (
     <Form {...form}>
       <form id="basic-resume-form" className={cn(className)}>
-        <section className="grid gap-4 justify-items-start sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        <motion.div layout className="grid gap-4 justify-items-start sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           <FormField
             control={form.control}
             name="name"
@@ -270,7 +270,7 @@ function BasicResumeForm({ className }: { className?: string }) {
               </FormItem>
             )}
           />
-        </section>
+        </motion.div>
         <Separator className="mt-6" />
         <Button type="button" variant="outline" size={isMobile ? 'icon' : 'sm'} onClick={onAddField} className="mt-6">
           <Plus />

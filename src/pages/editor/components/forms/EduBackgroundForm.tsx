@@ -55,17 +55,8 @@ function EduBackgroundForm({ className }: { className?: string }) {
     <Form {...form}>
       <form id="edu-background-form" className={cn('space-y-6', className)}>
         {fields.map((item, index) => (
-          <motion.div
-            key={item.id}
-            initial={{ opacity: 0, scale: 0.96, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.96, y: -20 }}
-            transition={{
-              duration: 0.3,
-              ease: [0.25, 0.1, 0.25, 1.0],
-            }}
-            layout
-          >
+          <motion.div key={item.id} layout>
+
             {index > 0 && <Separator className="my-6" />}
 
             <div className="space-y-4">

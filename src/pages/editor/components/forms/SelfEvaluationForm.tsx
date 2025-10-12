@@ -1,6 +1,7 @@
 import type { SelfEvaluationFormExcludeHidden } from '@/lib/schema/resume/selfEvaluation'
 import type { ShallowPartial } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { motion } from 'motion/react'
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor'
@@ -31,24 +32,26 @@ function SelfEvaluationForm({ className }: { className?: string }) {
 
   return (
     <Form {...form}>
-      <form id="self-evaluation-form" className={cn('space-y-6', className)}>
-        <FormField
-          name="content"
-          control={form.control}
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>自我评价</FormLabel>
-              <FormControl>
-                <SimpleEditor
-                  content={field.value || ''}
-                  onChange={(editor) => {
-                    field.onChange(editor.getHTML())
-                  }}
-                />
-              </FormControl>
-            </FormItem>
-          )}
-        />
+      <form id="self-evaluation-form">
+        <div className={cn('space-y-6', className)}>
+          <FormField
+            name="content"
+            control={form.control}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>自我评价</FormLabel>
+                <FormControl>
+                  <SimpleEditor
+                    content={field.value || ''}
+                    onChange={(editor) => {
+                      field.onChange(editor.getHTML())
+                    }}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        </div>
       </form>
     </Form>
   )
