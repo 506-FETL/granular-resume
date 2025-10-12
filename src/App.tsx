@@ -11,18 +11,18 @@ import { Toaster } from '@/components/ui/sonner'
 function App() {
   return (
     <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-      <Suspense fallback={<Loading />}>
-        <AppSidebar variant="inset" />
-        <SidebarInset className="relative overflow-hidden">
-          <SidebarHeader className="border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
-            <SiteHeader />
-          </SidebarHeader>
+      <AppSidebar variant="inset" />
+      <SidebarInset className="relative overflow-hidden">
+        <SidebarHeader className="border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
+          <SiteHeader />
+        </SidebarHeader>
+        <Suspense fallback={<Loading />}>
           <div className="p-4">
             {useRoutes(routes)}
           </div>
-          <Toaster position="top-right" richColors />
-        </SidebarInset>
-      </Suspense>
+        </Suspense>
+        <Toaster position="top-right" richColors />
+      </SidebarInset>
     </ThemeProvider>
   )
 }
