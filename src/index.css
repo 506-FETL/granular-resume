@@ -176,14 +176,3 @@
     --sidebar-ring: oklch(0.439 0 0);
   }
 }
-
-/* ================= Resume Page Utilities ================= */
-.w-a4-w {
-  width: 210mm;
-}
-.h-a4-h {
-  height: 297mm;
-}
-.resume-page-padding {
-  padding: 16mm 18mm 18mm;
-}

@@ -1,18 +1,28 @@
-import antfu from '@antfu/eslint-config'
+import js from '@eslint/js'
+import globals from 'globals'
+import reactHooks from 'eslint-plugin-react-hooks'
+import reactRefresh from 'eslint-plugin-react-refresh'
+import tseslint from 'typescript-eslint'
+import { defineConfig, globalIgnores } from 'eslint/config'
 
-export default antfu({
-  formatters: true,
-  typescript: true,
-  react: true,
-  rules: {
-    'no-unused-vars': 'warn',
-    'ts/no-unused-vars': 'warn',
-    'unused-imports/no-unused-vars': 'warn',
-    'no-console': 'error',
-    'no-undef': 'error',
-    'react-hooks-extra/no-direct-set-state-in-use-effect': 'off',
-    'no-alert': 'off',
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      js.configs.recommended,
+      tseslint.configs.recommended,
+      reactHooks.configs['recommended-latest'],
+      reactRefresh.configs.vite,
+    ],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: globals.browser,
+    },
+    rules: {
+      'no-unused-vars': 'warn',
+      'no-console': 'warn',
+      'no-undef': 'error',
+    },
   },
-  // '**/tiptap-*/**', --- IGNORE ---
-  ignores: ['src/components/ui/*'],
-})
+])

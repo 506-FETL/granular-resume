@@ -1,11 +1,32 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import type { ReactNode } from 'react'
 import type { ORDERType } from '@/lib/schema'
-import { Award, Briefcase, Building2, Code2, Edit, GraduationCap, Heart, Lightbulb, MessageSquare, School, Trophy, UserCheck, UserRound } from 'lucide-react'
+import {
+  Award,
+  Briefcase,
+  Building2,
+  Code2,
+  Edit,
+  GraduationCap,
+  Heart,
+  Lightbulb,
+  MessageSquare,
+  School,
+  Trophy,
+  UserCheck,
+  UserRound,
+} from 'lucide-react'
 import { useState } from 'react'
 import { SideTabs, SideTabsWrapper, Tab, ViewPort } from '@/components/SideTabs'
 import { useTheme } from '@/components/theme-provider'
-import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer'
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from '@/components/ui/drawer'
 import { RainbowButton } from '@/components/ui/rainbow-button'
 import { Switch } from '@/components/ui/switch'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -110,9 +131,9 @@ const ITEMS: Item<ORDERType>[] = [
 function Editor() {
   const [open, setOpen] = useState(false)
   const { theme } = useTheme()
-  const activeTabId = useResumeStore(state => state.activeTabId)
-  const updateActiveTabId = useResumeStore(state => state.updateActiveTabId)
-  const revertIsHidden = useResumeStore(state => state.revertIsHidden)
+  const activeTabId = useResumeStore((state) => state.activeTabId)
+  const updateActiveTabId = useResumeStore((state) => state.updateActiveTabId)
+  const revertIsHidden = useResumeStore((state) => state.revertIsHidden)
   const isMobile = useIsMobile()
 
   const fill = theme === 'dark' ? '#0c0a09' : '#fafaf9'
@@ -123,30 +144,32 @@ function Editor() {
       <Drawer open={open} onOpenChange={setOpen} handleOnly>
         <DrawerTrigger asChild>
           <RainbowButton
-            variant="outline"
-            className="fixed bottom-6 left-1/2 z-1 -transform -translate-x-1/2"
+            variant='outline'
+            className='fixed bottom-6 left-1/2 z-1 -transform -translate-x-1/2'
             size={isMobile ? 'icon' : 'default'}
           >
             <Edit />
             {!isMobile && '编辑简历'}
           </RainbowButton>
         </DrawerTrigger>
-        <DrawerContent className="h-140">
-          <DrawerHeader className="relative">
+        <DrawerContent className='h-140'>
+          <DrawerHeader className='relative'>
             <DrawerTitle>简历信息</DrawerTitle>
             <DrawerDescription>实时同步</DrawerDescription>
           </DrawerHeader>
-          <div className="p-4 overflow-y-scroll overflow-x-hidden">
+          <div className='p-4 overflow-y-scroll overflow-x-hidden'>
             <SideTabsWrapper defaultId={activeTabId}>
               <SideTabs>
-                {ITEMS.map(item => (
-                  <div key={item.id} className="flex flex-col items-center justify-end gap-2">
+                {ITEMS.map((item) => (
+                  <div key={item.id} className='flex flex-col items-center justify-end gap-2'>
                     {item.id !== 'basics' && (
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <div>
                             <Switch
-                              checked={!useResumeStore(state => state.getIsHidden(item.id as Exclude<ORDERType, 'basics'>))}
+                              checked={
+                                !useResumeStore((state) => state.getIsHidden(item.id as Exclude<ORDERType, 'basics'>))
+                              }
                               onCheckedChange={() => revertIsHidden(item.id as Exclude<ORDERType, 'basics'>)}
                             />
                           </div>
@@ -154,13 +177,16 @@ function Editor() {
                         <TooltipContent>点击可隐藏模块</TooltipContent>
                       </Tooltip>
                     )}
-                    <Tab id={item.id} onClick={() => updateActiveTabId(item.id)}>
+                    <Tab
+                      id={item.id}
+                      onClick={() => updateActiveTabId(item.id)}
+                      disabled={useResumeStore((state) => state.getIsHidden(item.id as Exclude<ORDERType, 'basics'>))}
+                    >
                       {item.icon}
                       {!isMobile && item.label}
                     </Tab>
                   </div>
-                ),
-                )}
+                ))}
               </SideTabs>
               <ViewPort items={ITEMS} fill={fill} stroke={stroke} />
             </SideTabsWrapper>
@@ -168,7 +194,7 @@ function Editor() {
         </DrawerContent>
       </Drawer>
 
-      <div className="max-w-screen-2xl mx-auto">
+      <div className='max-w-screen-2xl mx-auto'>
         <ResumePreview />
       </div>
     </>
