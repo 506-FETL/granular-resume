@@ -22,12 +22,14 @@ const projectExperienceItemSchema = z.object({
 export type ProjectExperienceItem = z.infer<typeof projectExperienceItemSchema>
 
 // 项目经验列表
-const projectExperienceListSchema = z.array(projectExperienceItemSchema).default([{
-  projectName: '',
-  participantRole: '',
-  projectDuration: ['', ''],
-  projectInfo: '',
-}])
+const projectExperienceListSchema = z.array(projectExperienceItemSchema).default([
+  {
+    projectName: '',
+    participantRole: '',
+    projectDuration: ['', ''],
+    projectInfo: '',
+  },
+])
 
 const projectExperienceBaseSchema = z.object({
   items: projectExperienceListSchema,
@@ -43,11 +45,13 @@ export type ProjectExperienceForm = z.infer<typeof projectExperienceFormSchema>
 export type ProjectExperienceFormExcludeHidden = z.infer<typeof projectExperienceFormSchemaExcludeHidden>
 
 export const DEFAULT_PROJECT_EXPERIENCE: ProjectExperienceForm = {
-  items: [{
-    projectName: '',
-    participantRole: '',
-    projectDuration: ['', ''],
-    projectInfo: '',
-  }],
+  items: [
+    {
+      projectName: '',
+      participantRole: '',
+      projectDuration: ['', ''],
+      projectInfo: '',
+    },
+  ],
   isHidden: false,
 }

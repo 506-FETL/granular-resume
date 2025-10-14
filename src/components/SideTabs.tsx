@@ -1,23 +1,9 @@
 'use client'
 
-import type {
-  Dispatch,
-  PropsWithChildren,
-  ReactNode,
-  RefObject,
-  SetStateAction,
-} from 'react'
+import type { Dispatch, PropsWithChildren, ReactNode, RefObject, SetStateAction } from 'react'
 import { Slot } from '@radix-ui/react-slot'
 import { AnimatePresence, motion } from 'motion/react'
-import {
-  createContext,
-  use,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import { createContext, use, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
@@ -219,10 +205,7 @@ export function SideTabsWrapper({
     }
 
     const availableWidth = xr - xl
-    const tailWidth = Math.max(
-      Math.min(availableWidth * 0.6, 160),
-      Math.min(availableWidth, 48),
-    )
+    const tailWidth = Math.max(Math.min(availableWidth * 0.6, 160), Math.min(availableWidth, 48))
     if (tailWidth <= 0) {
       setOutlineD('')
       return
@@ -294,66 +277,26 @@ export function SideTabsWrapper({
     }
   }, [recomputeGeometry])
 
-  const value = useMemo<SideTabsContextValue>(
-    () => ({
-      active,
-      setActive,
-      box,
-      outlineD,
-      containerRef,
-      tabsRef,
-      btnRefs,
-      contentRef,
-      computeBox,
-      computeOutline,
-      recomputeGeometry,
-      defaultId,
-      className,
-      gapPx,
-      padding,
-      offsetX,
-      minHeight,
-      strokeWidth,
-      orientation,
-      radius,
-      controlDown,
-      setBox,
-    }),
-    [
-      padding,
-      active,
-      box,
-      btnRefs,
-      className,
-      computeBox,
-      computeOutline,
-      containerRef,
-      contentRef,
-      controlDown,
-      defaultId,
-      gapPx,
-      minHeight,
-      offsetX,
-      orientation,
-      outlineD,
-      radius,
-      recomputeGeometry,
-      setActive,
-      setBox,
-      strokeWidth,
-      tabsRef,
-    ],
-  )
+  const value: SideTabsContextValue = {
+    active,
+    setActive,
+    box,
+    outlineD,
+    containerRef,
+    tabsRef,
+    btnRefs,
+    contentRef,
+    computeBox,
+    computeOutline,
+    recomputeGeometry,
+    padding,
+  }
 
   return (
     <SideTabsContext value={value}>
       <motion.div
         ref={containerRef}
-        className={cn(
-          'relative mx-auto flex',
-          orientation === 'horizontal' ? 'flex-row' : 'flex-col',
-          className,
-        )}
+        className={cn('relative mx-auto flex', orientation === 'horizontal' ? 'flex-row' : 'flex-col', className)}
         animate={{ height: Math.max(minHeight, box.totalHeight) }}
         transition={{
           type: 'spring',
@@ -414,10 +357,7 @@ export function Tab({
         btnRefs.current[id] = el
       }}
       variant={active === id ? 'default' : 'secondary'}
-      className={cn(
-        'justify-center transition-all duration-200 ease-in-out shrink-0',
-        className,
-      )}
+      className={cn('justify-center transition-all duration-200 ease-in-out shrink-0', className)}
       onClick={callAll(() => {
         setActive(id)
         requestAnimationFrame(recomputeGeometry)
@@ -441,10 +381,7 @@ export function ViewPort({
   className?: string
 }) {
   const { box, outlineD, contentRef, active, padding } = useSideTabsContext()
-  const activeItem = useMemo(
-    () => items.find((item) => item.id === active),
-    [items, active],
-  )
+  const activeItem = useMemo(() => items.find((item) => item.id === active), [items, active])
   return (
     <>
       <svg
@@ -482,12 +419,7 @@ export function ViewPort({
         style={{ overflow: 'visible', pointerEvents: 'none' }}
       >
         {/* 内容：被闭合路径“包裹”的区域（与盒几何一致） */}
-        <foreignObject
-          x={box.x}
-          y={box.y}
-          width={Math.max(box.w, 0)}
-          height={Math.max(box.h, 0)}
-        >
+        <foreignObject x={box.x} y={box.y} width={Math.max(box.w, 0)} height={Math.max(box.h, 0)}>
           <div
             style={{
               width: '100%',

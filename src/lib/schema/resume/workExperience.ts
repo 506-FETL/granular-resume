@@ -19,12 +19,14 @@ const workExperienceItemSchema = z.object({
 export type WorkExperienceItem = z.infer<typeof workExperienceItemSchema>
 
 // 工作经历列表
-const workExperienceListSchema = z.array(workExperienceItemSchema).default([{
-  companyName: '',
-  position: '',
-  workDuration: ['', ''],
-  workInfo: '',
-}])
+const workExperienceListSchema = z.array(workExperienceItemSchema).default([
+  {
+    companyName: '',
+    position: '',
+    workDuration: ['', ''],
+    workInfo: '',
+  },
+])
 
 const workExperienceBaseSchema = z.object({
   items: workExperienceListSchema,
@@ -40,11 +42,13 @@ export type WorkExperienceForm = z.infer<typeof workExperienceFormSchema>
 export type WorkExperienceFormExcludeHidden = z.infer<typeof workExperienceFormSchemaExcludeHidden>
 
 export const DEFAULT_WORK_EXPERIENCE: WorkExperienceForm = {
-  items: [{
-    companyName: '',
-    position: '',
-    workDuration: ['', ''],
-    workInfo: '',
-  }],
+  items: [
+    {
+      companyName: '',
+      position: '',
+      workDuration: ['', ''],
+      workInfo: '',
+    },
+  ],
   isHidden: false,
 }

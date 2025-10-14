@@ -1,6 +1,20 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import type { ReactNode } from 'react'
+import { SideTabs, SideTabsWrapper, Tab, ViewPort } from '@/components/SideTabs'
+import { useTheme } from '@/components/theme-provider'
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from '@/components/ui/drawer'
+import { RainbowButton } from '@/components/ui/rainbow-button'
+import { Switch } from '@/components/ui/switch'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { useIsMobile } from '@/hooks/use-mobile'
 import type { ORDERType } from '@/lib/schema'
+import useResumeStore from '@/store/resume/form'
 import {
   Award,
   Briefcase,
@@ -16,22 +30,8 @@ import {
   UserCheck,
   UserRound,
 } from 'lucide-react'
+import type { ReactNode } from 'react'
 import { useState } from 'react'
-import { SideTabs, SideTabsWrapper, Tab, ViewPort } from '@/components/SideTabs'
-import { useTheme } from '@/components/theme-provider'
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from '@/components/ui/drawer'
-import { RainbowButton } from '@/components/ui/rainbow-button'
-import { Switch } from '@/components/ui/switch'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { useIsMobile } from '@/hooks/use-mobile'
-import useResumeStore from '@/store/resume/form'
 import ApplicationInfoForm from './components/forms/ApplicationInfoForm'
 import BasicResumeForm from './components/forms/BasicResumeForm'
 import CampusExperienceForm from './components/forms/CampusExperienceForm'

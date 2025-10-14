@@ -42,5 +42,18 @@ export * from './selfEvaluation'
 export * from './skillSpecialty'
 export * from './workExperience'
 
-export type ORDERType = (keyof ResumeSchema)
-export const DEFAULT_ORDER: ORDERType[] = ['basics', 'jobIntent', 'applicationInfo', 'eduBackground', 'workExperience', 'internshipExperience', 'campusExperience', 'projectExperience', 'skillSpecialty', 'honorsCertificates', 'selfEvaluation', 'hobbies']
+export type ORDERType = keyof ResumeSchema
+export const DEFAULT_ORDER: ORDERType[] = [
+  'basics',
+  'jobIntent',
+  'applicationInfo',
+  'eduBackground',
+  'workExperience',
+  'internshipExperience',
+  'campusExperience',
+  'projectExperience',
+  'skillSpecialty',
+  'honorsCertificates',
+  'selfEvaluation',
+  'hobbies',
+]

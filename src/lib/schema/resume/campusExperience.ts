@@ -22,12 +22,14 @@ const campusExperienceItemSchema = z.object({
 export type CampusExperienceItem = z.infer<typeof campusExperienceItemSchema>
 
 // 校园经历列表
-const campusExperienceListSchema = z.array(campusExperienceItemSchema).default([{
-  experienceName: '',
-  role: '',
-  duration: ['', ''],
-  campusInfo: '',
-}])
+const campusExperienceListSchema = z.array(campusExperienceItemSchema).default([
+  {
+    experienceName: '',
+    role: '',
+    duration: ['', ''],
+    campusInfo: '',
+  },
+])
 
 const campusExperienceBaseSchema = z.object({
   items: campusExperienceListSchema,
@@ -43,11 +45,13 @@ export type CampusExperienceForm = z.infer<typeof campusExperienceFormSchema>
 export type CampusExperienceFormExcludeHidden = z.infer<typeof campusExperienceFormSchemaExcludeHidden>
 
 export const DEFAULT_CAMPUS_EXPERIENCE: CampusExperienceForm = {
-  items: [{
-    experienceName: '',
-    role: '',
-    duration: ['', ''],
-    campusInfo: '',
-  }],
+  items: [
+    {
+      experienceName: '',
+      role: '',
+      duration: ['', ''],
+      campusInfo: '',
+    },
+  ],
   isHidden: false,
 }

@@ -14,7 +14,7 @@ export const PRESET_CERTIFICATES = [
   '10大肖年领军人才',
 ] as const
 
-export type PresetCertificate = typeof PRESET_CERTIFICATES[number]
+export type PresetCertificate = (typeof PRESET_CERTIFICATES)[number]
 
 // 证书项 schema - 简单的对象包含 name 字段
 export const certificateItemSchema = z.object({

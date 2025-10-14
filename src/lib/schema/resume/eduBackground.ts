@@ -6,7 +6,9 @@ export type SchoolName = z.infer<typeof schoolName>
 const professional = z.string().trim().default('')
 export type Professional = z.infer<typeof professional>
 
-const degree = z.enum(['不填', '初中', '高中', '中专', '大专', '本科', '学士', '硕士', '博士', 'MBA', 'EMBA', '其他']).default('不填')
+const degree = z
+  .enum(['不填', '初中', '高中', '中专', '大专', '本科', '学士', '硕士', '博士', 'MBA', 'EMBA', '其他'])
+  .default('不填')
 export type Degree = z.infer<typeof degree>
 
 const duration = z.array(z.string().trim()).length(2).default(['', ''])
@@ -26,13 +28,15 @@ const eduBackgroundItemSchema = z.object({
 export type EduBackgroundItem = z.infer<typeof eduBackgroundItemSchema>
 
 // 教育背景列表
-const eduBackgroundListSchema = z.array(eduBackgroundItemSchema).default([{
-  schoolName: '',
-  professional: '',
-  degree: '不填',
-  duration: ['', ''],
-  eduInfo: '',
-}])
+const eduBackgroundListSchema = z.array(eduBackgroundItemSchema).default([
+  {
+    schoolName: '',
+    professional: '',
+    degree: '不填',
+    duration: ['', ''],
+    eduInfo: '',
+  },
+])
 
 const eduBackgroundBaseSchema = z.object({
   items: eduBackgroundListSchema,
@@ -48,12 +52,14 @@ export type EduBackgroundForm = z.infer<typeof eduBackgroundFormSchema>
 export type EduBackgroundFormExcludeHidden = z.infer<typeof eduBackgroundFormSchemaExcludeHidden>
 
 export const DEFAULT_EDU_BACKGROUND: EduBackgroundForm = {
-  items: [{
-    schoolName: '',
-    professional: '',
-    degree: '不填',
-    duration: ['', ''],
-    eduInfo: '',
-  }],
+  items: [
+    {
+      schoolName: '',
+      professional: '',
+      degree: '不填',
+      duration: ['', ''],
+      eduInfo: '',
+    },
+  ],
   isHidden: false,
 }

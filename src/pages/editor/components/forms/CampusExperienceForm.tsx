@@ -1,11 +1,3 @@
-import type { CampusExperienceFormExcludeHidden } from '@/lib/schema/resume/campusExperience'
-import type { ShallowPartial } from '@/lib/utils'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { IconDoorExit } from '@tabler/icons-react'
-import { Laptop, Plus, Trash2 } from 'lucide-react'
-import { motion } from 'motion/react'
-import { useEffect } from 'react'
-import { useFieldArray, useForm } from 'react-hook-form'
 import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
@@ -14,12 +6,20 @@ import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Separator } from '@/components/ui/separator'
 import { useIsMobile } from '@/hooks/use-mobile'
+import type { CampusExperienceFormExcludeHidden } from '@/lib/schema/resume/campusExperience'
 import {
   campusExperienceFormSchemaExcludeHidden,
   DEFAULT_CAMPUS_EXPERIENCE,
 } from '@/lib/schema/resume/campusExperience'
+import type { ShallowPartial } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 import useResumeStore from '@/store/resume/form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { IconDoorExit } from '@tabler/icons-react'
+import { Laptop, Plus, Trash2 } from 'lucide-react'
+import { motion } from 'motion/react'
+import { useEffect } from 'react'
+import { useFieldArray, useForm } from 'react-hook-form'
 
 function CampusExperienceForm({ className }: { className?: string }) {
   const campusExperience = useResumeStore((state) => state.campusExperience)

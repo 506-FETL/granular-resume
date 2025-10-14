@@ -79,6 +79,8 @@ const useResumeStore = create<ResumeState>()(
     (set, get) => ({
       basics: DEFAULT_BASICS,
       jobIntent: DEFAULT_JOB_INTENT,
+      order: DEFAULT_ORDER,
+      activeTabId: 'basics',
       applicationInfo: DEFAULT_APPLICATION_INFO,
       eduBackground: DEFAULT_EDU_BACKGROUND,
       workExperience: DEFAULT_WORK_EXPERIENCE,
@@ -89,8 +91,6 @@ const useResumeStore = create<ResumeState>()(
       honorsCertificates: DEFAULT_HONORS_CERTIFICATES,
       selfEvaluation: DEFAULT_SELF_EVALUATION,
       hobbies: DEFAULT_HOBBIES,
-      order: DEFAULT_ORDER,
-      activeTabId: 'basics',
       updateOrder: (newOrder) => set(() => ({ order: newOrder })),
       updateActiveTabId: (newActiveTab) => set(() => ({ activeTabId: newActiveTab })),
       updateForm: (key, data) => set((state) => ({ [key]: { ...state[key], ...data } })),

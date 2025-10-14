@@ -34,7 +34,7 @@ export const PRESET_SKILLS = [
   '英语',
 ] as const
 
-export type PresetSkill = typeof PRESET_SKILLS[number]
+export type PresetSkill = (typeof PRESET_SKILLS)[number]
 
 // 单个技能特长项
 export const skillItemSchema = z.object({

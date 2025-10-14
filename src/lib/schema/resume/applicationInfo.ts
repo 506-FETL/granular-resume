@@ -16,7 +16,6 @@ export const applicationInfoFormSchema = applicationInfoBaseSchema.extend({
 })
 
 export const applicationInfoFormSchemaExcludeHidden = applicationInfoBaseSchema
-
 export type ApplicationInfoForm = z.infer<typeof applicationInfoFormSchema>
 export type ApplicationInfoFormExcludeHidden = z.infer<typeof applicationInfoFormSchemaExcludeHidden>
 

@@ -14,9 +14,8 @@ export const PRESET_HOBBIES = [
   '桌游',
   '王者荣耀',
   '吃鸡',
-] as const
-
-export type PresetHobby = typeof PRESET_HOBBIES[number]
+]
+export type PresetHobby = (typeof PRESET_HOBBIES)[number]
 
 // 爱好项 schema - 简单的对象包含 name 字段
 export const hobbyItemSchema = z.object({

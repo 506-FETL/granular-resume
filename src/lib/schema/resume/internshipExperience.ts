@@ -19,12 +19,14 @@ const internshipExperienceItemSchema = z.object({
 export type InternshipExperienceItem = z.infer<typeof internshipExperienceItemSchema>
 
 // 实习经验列表
-const internshipExperienceListSchema = z.array(internshipExperienceItemSchema).default([{
-  companyName: '',
-  position: '',
-  internshipDuration: ['', ''],
-  internshipInfo: '',
-}])
+const internshipExperienceListSchema = z.array(internshipExperienceItemSchema).default([
+  {
+    companyName: '',
+    position: '',
+    internshipDuration: ['', ''],
+    internshipInfo: '',
+  },
+])
 
 const internshipExperienceBaseSchema = z.object({
   items: internshipExperienceListSchema,
@@ -40,11 +42,13 @@ export type InternshipExperienceForm = z.infer<typeof internshipExperienceFormSc
 export type InternshipExperienceFormExcludeHidden = z.infer<typeof internshipExperienceFormSchemaExcludeHidden>
 
 export const DEFAULT_INTERNSHIP_EXPERIENCE: InternshipExperienceForm = {
-  items: [{
-    companyName: '',
-    position: '',
-    internshipDuration: ['', ''],
-    internshipInfo: '',
-  }],
+  items: [
+    {
+      companyName: '',
+      position: '',
+      internshipDuration: ['', ''],
+      internshipInfo: '',
+    },
+  ],
   isHidden: false,
 }

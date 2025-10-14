@@ -1,12 +1,12 @@
-import { zodResolver } from '@hookform/resolvers/zod'
-import { motion } from 'motion/react'
-import { useEffect } from 'react'
-import { useForm } from 'react-hook-form'
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { resumeSchema } from '@/lib/schema'
 import { cn } from '@/lib/utils'
 import useResumeStore from '@/store/resume/form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { motion } from 'motion/react'
+import { useEffect } from 'react'
+import { useForm } from 'react-hook-form'
 
 function ApplicationInfoForm({ className }: { className?: string }) {
   const applicationInfo = useResumeStore((state) => state.applicationInfo)
