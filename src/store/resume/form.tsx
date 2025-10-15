@@ -1,77 +1,62 @@
-import type {
-  ApplicationInfoForm,
-  ApplicationInfoFormExcludeHidden,
-  BasicForm,
-  JobIntentForm,
-  JobIntentFormExcludeHidden,
-  ORDERType,
+import {
+  DEFAULT_APPLICATION_INFO,
+  DEFAULT_BASICS,
+  DEFAULT_CAMPUS_EXPERIENCE,
+  DEFAULT_EDU_BACKGROUND,
+  DEFAULT_HOBBIES,
+  DEFAULT_HONORS_CERTIFICATES,
+  DEFAULT_INTERNSHIP_EXPERIENCE,
+  DEFAULT_JOB_INTENT,
+  DEFAULT_ORDER,
+  DEFAULT_PROJECT_EXPERIENCE,
+  DEFAULT_SELF_EVALUATION,
+  DEFAULT_SKILL_SPECIALTY,
+  DEFAULT_VISIBILITY,
+  DEFAULT_WORK_EXPERIENCE,
+  type ApplicationInfoFormType,
+  type BasicFormType,
+  type CampusExperienceFormType,
+  type EduBackgroundFormType,
+  type HobbiesFormType,
+  type HonorsCertificatesFormType,
+  type InternshipExperienceFormType,
+  type JobIntentFormType,
+  type ORDERType,
+  type ProjectExperienceFormType,
+  type SelfEvaluationFormType,
+  type SkillSpecialtyFormType,
+  type VisibilityItemsType,
+  type WorkExperienceFormType,
 } from '@/lib/schema'
-import { DEFAULT_APPLICATION_INFO, DEFAULT_BASICS, DEFAULT_JOB_INTENT, DEFAULT_ORDER } from '@/lib/schema'
-import type { CampusExperienceForm, CampusExperienceFormExcludeHidden } from '@/lib/schema/resume/campusExperience'
-import { DEFAULT_CAMPUS_EXPERIENCE } from '@/lib/schema/resume/campusExperience'
-import type { EduBackgroundForm, EduBackgroundFormExcludeHidden } from '@/lib/schema/resume/eduBackground'
-import { DEFAULT_EDU_BACKGROUND } from '@/lib/schema/resume/eduBackground'
-import type { HobbiesForm, HobbiesFormExcludeHidden } from '@/lib/schema/resume/hobbies'
-import { DEFAULT_HOBBIES } from '@/lib/schema/resume/hobbies'
-import type {
-  HonorsCertificatesForm,
-  HonorsCertificatesFormExcludeHidden,
-} from '@/lib/schema/resume/honorsCertificates'
-import { DEFAULT_HONORS_CERTIFICATES } from '@/lib/schema/resume/honorsCertificates'
-import type {
-  InternshipExperienceForm,
-  InternshipExperienceFormExcludeHidden,
-} from '@/lib/schema/resume/internshipExperience'
-import { DEFAULT_INTERNSHIP_EXPERIENCE } from '@/lib/schema/resume/internshipExperience'
-import type { ProjectExperienceForm, ProjectExperienceFormExcludeHidden } from '@/lib/schema/resume/projectExperience'
-import { DEFAULT_PROJECT_EXPERIENCE } from '@/lib/schema/resume/projectExperience'
-import type { SelfEvaluationForm, SelfEvaluationFormExcludeHidden } from '@/lib/schema/resume/selfEvaluation'
-import { DEFAULT_SELF_EVALUATION } from '@/lib/schema/resume/selfEvaluation'
-import type { SkillSpecialtyForm, SkillSpecialtyFormExcludeHidden } from '@/lib/schema/resume/skillSpecialty'
-import { DEFAULT_SKILL_SPECIALTY } from '@/lib/schema/resume/skillSpecialty'
-import type { WorkExperienceForm, WorkExperienceFormExcludeHidden } from '@/lib/schema/resume/workExperience'
-import { DEFAULT_WORK_EXPERIENCE } from '@/lib/schema/resume/workExperience'
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 
+// 表单数据映射（纯数据，不包含 isHidden）
 interface FormDataMap {
-  basics: BasicForm
-  jobIntent: JobIntentForm
-  applicationInfo: ApplicationInfoForm
-  eduBackground: EduBackgroundForm
-  workExperience: WorkExperienceForm
-  internshipExperience: InternshipExperienceForm
-  campusExperience: CampusExperienceForm
-  projectExperience: ProjectExperienceForm
-  skillSpecialty: SkillSpecialtyForm
-  honorsCertificates: HonorsCertificatesForm
-  selfEvaluation: SelfEvaluationForm
-  hobbies: HobbiesForm
-}
-
-interface FormDataUpdateMap {
-  basics: BasicForm
-  jobIntent: JobIntentFormExcludeHidden
-  applicationInfo: ApplicationInfoFormExcludeHidden
-  eduBackground: EduBackgroundFormExcludeHidden
-  workExperience: WorkExperienceFormExcludeHidden
-  internshipExperience: InternshipExperienceFormExcludeHidden
-  campusExperience: CampusExperienceFormExcludeHidden
-  projectExperience: ProjectExperienceFormExcludeHidden
-  skillSpecialty: SkillSpecialtyFormExcludeHidden
-  honorsCertificates: HonorsCertificatesFormExcludeHidden
-  selfEvaluation: SelfEvaluationFormExcludeHidden
-  hobbies: HobbiesFormExcludeHidden
+  basics: BasicFormType
+  jobIntent: JobIntentFormType
+  applicationInfo: ApplicationInfoFormType
+  eduBackground: EduBackgroundFormType
+  workExperience: WorkExperienceFormType
+  internshipExperience: InternshipExperienceFormType
+  campusExperience: CampusExperienceFormType
+  projectExperience: ProjectExperienceFormType
+  skillSpecialty: SkillSpecialtyFormType
+  honorsCertificates: HonorsCertificatesFormType
+  selfEvaluation: SelfEvaluationFormType
+  hobbies: HobbiesFormType
 }
 
 interface ResumeState extends FormDataMap {
   activeTabId: ORDERType
   order: ORDERType[]
+  visibility: { [key in VisibilityItemsType]: boolean }
+  toggleVisibility: (id: VisibilityItemsType) => void
+  getVisibility: (id: VisibilityItemsType) => boolean
+  setVisibility: (id: VisibilityItemsType, isHidden: boolean) => void
   updateActiveTabId: (newActiveTab: ORDERType) => void
-  updateForm: <K extends keyof FormDataUpdateMap>(key: K, data: Partial<FormDataUpdateMap[K]>) => void
+  updateForm: <K extends keyof FormDataMap>(key: K, data: Partial<FormDataMap[K]>) => void
   updateOrder: (newOrder: ORDERType[]) => void
-  revertIsHidden: (id: Exclude<ORDERType, 'basics'>) => void
-  getIsHidden: (id: Exclude<ORDERType, 'basics'>) => boolean
 }
 
 const useResumeStore = create<ResumeState>()(
@@ -91,25 +76,18 @@ const useResumeStore = create<ResumeState>()(
       honorsCertificates: DEFAULT_HONORS_CERTIFICATES,
       selfEvaluation: DEFAULT_SELF_EVALUATION,
       hobbies: DEFAULT_HOBBIES,
+      visibility: DEFAULT_VISIBILITY,
       updateOrder: (newOrder) => set(() => ({ order: newOrder })),
       updateActiveTabId: (newActiveTab) => set(() => ({ activeTabId: newActiveTab })),
       updateForm: (key, data) => set((state) => ({ [key]: { ...state[key], ...data } })),
-      revertIsHidden: (id) =>
-        set((state) => ({
-          [id]: {
-            ...state[id],
-            isHidden: !state[id].isHidden,
-          },
-        })),
-      getIsHidden: (id) => {
-        const state = get()
-        return state[id].isHidden
-      },
+      toggleVisibility: (id) => set((state) => ({ visibility: { ...state.visibility, [id]: !state.visibility[id] } })),
+      getVisibility: (id) => get().visibility[id],
+      setVisibility: (id, isHidden) => set((state) => ({ visibility: { ...state.visibility, [id]: isHidden } })),
     }),
     {
       name: 'resume-storage',
       storage: createJSONStorage(() => localStorage),
-      version: 10,
+      version: 11,
     },
   ),
 )

@@ -13,7 +13,7 @@ function ApplicationInfoForm({ className }: { className?: string }) {
   const updateForm = useResumeStore((state) => state.updateForm)
 
   const form = useForm({
-    resolver: zodResolver(resumeSchema.shape.applicationInfo.omit({ isHidden: true })),
+    resolver: zodResolver(resumeSchema.shape.applicationInfo),
     defaultValues: applicationInfo,
     mode: 'onChange',
     reValidateMode: 'onChange',

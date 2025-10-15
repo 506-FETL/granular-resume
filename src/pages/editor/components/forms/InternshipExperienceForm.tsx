@@ -6,11 +6,11 @@ import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Separator } from '@/components/ui/separator'
 import { useIsMobile } from '@/hooks/use-mobile'
-import type { InternshipExperienceFormExcludeHidden } from '@/lib/schema/resume/internshipExperience'
 import {
   DEFAULT_INTERNSHIP_EXPERIENCE,
-  internshipExperienceFormSchemaExcludeHidden,
-} from '@/lib/schema/resume/internshipExperience'
+  internshipExperienceFormSchema,
+  type InternshipExperienceFormType,
+} from '@/lib/schema'
 import type { ShallowPartial } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 import useResumeStore from '@/store/resume/form'
@@ -27,7 +27,7 @@ function InternshipExperienceForm({ className }: { className?: string }) {
   const isMobile = useIsMobile()
 
   const form = useForm({
-    resolver: zodResolver(internshipExperienceFormSchemaExcludeHidden),
+    resolver: zodResolver(internshipExperienceFormSchema),
     defaultValues: {
       items: internshipExperience.items || DEFAULT_INTERNSHIP_EXPERIENCE.items,
     },
@@ -42,7 +42,7 @@ function InternshipExperienceForm({ className }: { className?: string }) {
 
   useEffect(() => {
     const subscription = form.watch((value) => {
-      updateForm('internshipExperience', value as ShallowPartial<InternshipExperienceFormExcludeHidden>)
+      updateForm('internshipExperience', value as ShallowPartial<InternshipExperienceFormType>)
     })
     return () => subscription.unsubscribe()
   }, [form, updateForm])

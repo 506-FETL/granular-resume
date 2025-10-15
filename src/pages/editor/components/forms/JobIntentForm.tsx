@@ -2,7 +2,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import type { DateEntry } from '@/lib/schema'
-import { jobIntentFormSchemaExcludeHidden } from '@/lib/schema/resume/jobIntent'
+import { jobIntentFormSchema } from '@/lib/schema'
 import { cn } from '@/lib/utils'
 import useResumeStore from '@/store/resume/form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -10,6 +10,7 @@ import { REGEXP_ONLY_DIGITS } from 'input-otp'
 import { motion } from 'motion/react'
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
 
 const dateEntryOptions: DateEntry[] = [
   '不填',
@@ -26,7 +27,7 @@ function JobIntentForm({ className }: { className?: string }) {
   const updateForm = useResumeStore((state) => state.updateForm)
 
   const form = useForm({
-    resolver: zodResolver(jobIntentFormSchemaExcludeHidden),
+    resolver: zodResolver(jobIntentFormSchema),
     defaultValues: jobIntent,
     mode: 'onChange',
     reValidateMode: 'onChange',
@@ -34,15 +35,7 @@ function JobIntentForm({ className }: { className?: string }) {
 
   useEffect(() => {
     const subscription = form.watch((value) => {
-      // 确保所有字段都已定义后再更新
-      if (value && typeof value === 'object') {
-        updateForm('jobIntent', {
-          jobIntent: value.jobIntent,
-          intentionalCity: value.intentionalCity,
-          expectedSalary: value.expectedSalary,
-          dateEntry: value.dateEntry,
-        })
-      }
+      updateForm('jobIntent', value)
     })
     return () => subscription.unsubscribe()
   }, [form, updateForm])
@@ -92,7 +85,10 @@ function JobIntentForm({ className }: { className?: string }) {
                     value={field.value ?? ''}
                     onChange={(e) => {
                       const v = e.target.value
-                      field.onChange(v === '' ? undefined : Number(v))
+                      if (Number(v) < 0) {
+                        toast.error('倒贴上班吗，有点意思')
+                      }
+                      field.onChange(v && Number(v))
                     }}
                   />
                 </FormControl>

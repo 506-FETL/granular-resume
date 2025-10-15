@@ -1,21 +1,23 @@
 import { z } from 'zod'
-import { applicationInfoFormSchema } from './applicationInfo'
-import { basicsSchema } from './basic'
-import { campusExperienceFormSchema } from './campusExperience'
-import { eduBackgroundFormSchema } from './eduBackground'
-import { hobbiesFormSchema } from './hobbies'
-import { honorsCertificatesFormSchema } from './honorsCertificates'
-import { internshipExperienceFormSchema } from './internshipExperience'
-import { jobIntentFormSchema } from './jobIntent'
-import { projectExperienceFormSchema } from './projectExperience'
-import { selfEvaluationFormSchema } from './selfEvaluation'
-import { skillSpecialtyFormSchema } from './skillSpecialty'
-import { workExperienceFormSchema } from './workExperience'
+import {
+  applicationInfoForm,
+  basicsSchema,
+  campusExperienceFormSchema,
+  eduBackgroundFormSchema,
+  hobbiesFormSchema,
+  honorsCertificatesFormSchema,
+  internshipExperienceFormSchema,
+  jobIntentFormSchema,
+  projectExperienceFormSchema,
+  selfEvaluationFormSchema,
+  skillSpecialtyFormSchema,
+  workExperienceFormSchema,
+} from './form'
 
 export const resumeSchema = z.object({
   basics: basicsSchema,
   jobIntent: jobIntentFormSchema,
-  applicationInfo: applicationInfoFormSchema,
+  applicationInfo: applicationInfoForm,
   eduBackground: eduBackgroundFormSchema,
   workExperience: workExperienceFormSchema,
   internshipExperience: internshipExperienceFormSchema,
@@ -28,19 +30,6 @@ export const resumeSchema = z.object({
 })
 
 export type ResumeSchema = z.infer<typeof resumeSchema>
-
-export * from './applicationInfo'
-export * from './basic'
-export * from './campusExperience'
-export * from './eduBackground'
-export * from './hobbies'
-export * from './honorsCertificates'
-export * from './internshipExperience'
-export * from './jobIntent'
-export * from './projectExperience'
-export * from './selfEvaluation'
-export * from './skillSpecialty'
-export * from './workExperience'
 
 export type ORDERType = keyof ResumeSchema
 export const DEFAULT_ORDER: ORDERType[] = [
@@ -57,3 +46,6 @@ export const DEFAULT_ORDER: ORDERType[] = [
   'selfEvaluation',
   'hobbies',
 ]
+
+export * from './form'
+export * from './visibility'

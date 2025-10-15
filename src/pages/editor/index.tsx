@@ -13,7 +13,7 @@ import { RainbowButton } from '@/components/ui/rainbow-button'
 import { Switch } from '@/components/ui/switch'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useIsMobile } from '@/hooks/use-mobile'
-import type { ORDERType } from '@/lib/schema'
+import type { ORDERType, VisibilityItemsType } from '@/lib/schema'
 import useResumeStore from '@/store/resume/form'
 import {
   Award,
@@ -133,7 +133,8 @@ function Editor() {
   const { theme } = useTheme()
   const activeTabId = useResumeStore((state) => state.activeTabId)
   const updateActiveTabId = useResumeStore((state) => state.updateActiveTabId)
-  const revertIsHidden = useResumeStore((state) => state.revertIsHidden)
+  const toggleVisibility = useResumeStore((state) => state.toggleVisibility)
+  const visibilityState = useResumeStore((state) => state.visibility)
   const isMobile = useIsMobile()
 
   const fill = theme === 'dark' ? '#0c0a09' : '#fafaf9'
@@ -167,10 +168,8 @@ function Editor() {
                         <TooltipTrigger asChild>
                           <div>
                             <Switch
-                              checked={
-                                !useResumeStore((state) => state.getIsHidden(item.id as Exclude<ORDERType, 'basics'>))
-                              }
-                              onCheckedChange={() => revertIsHidden(item.id as Exclude<ORDERType, 'basics'>)}
+                              checked={!visibilityState[item.id as VisibilityItemsType]}
+                              onCheckedChange={() => toggleVisibility(item.id as VisibilityItemsType)}
                             />
                           </div>
                         </TooltipTrigger>
@@ -180,7 +179,7 @@ function Editor() {
                     <Tab
                       id={item.id}
                       onClick={() => updateActiveTabId(item.id)}
-                      disabled={useResumeStore((state) => state.getIsHidden(item.id as Exclude<ORDERType, 'basics'>))}
+                      disabled={visibilityState[item.id as VisibilityItemsType]}
                     >
                       {item.icon}
                       {!isMobile && item.label}

@@ -2,7 +2,7 @@ import { Badge } from '@/components/ui/badge'
 import useAge from '@/hooks/useAge'
 import useResumeStore from '@/store/resume/form'
 import parser from 'html-react-parser'
-import type { ProficiencyLevel, ORDERType } from '@/lib/schema'
+import type { ProficiencyLevel, ORDERType, ResumeSchema } from '@/lib/schema'
 import { defaultFont, defaultSpacing, ResumeWrapper, themes, useResumeContext } from './resume-context'
 
 const skillProficiencyMap: { [key in ProficiencyLevel]: number } = {
@@ -119,9 +119,7 @@ function Entry({
   )
 }
 
-// ============ 模块函数 ============
-
-function BasicsModule({ data, age }: { data: any; age?: string | number }) {
+function BasicsModule({ data, age }: { data: ResumeSchema; age?: string | number }) {
   const { theme, font, spacing } = useResumeContext()
   const { basics, jobIntent } = data
 
@@ -146,7 +144,7 @@ function BasicsModule({ data, age }: { data: any; age?: string | number }) {
         {basics.name || '姓名'}
       </h1>
 
-      {jobIntent?.jobIntent && !jobIntent.isHidden && (
+      {jobIntent && (
         <div
           style={{
             fontSize: font.jobIntentSize,
@@ -233,12 +231,9 @@ function BasicsModule({ data, age }: { data: any; age?: string | number }) {
 /**
  * 报考信息模块
  */
-function ApplicationInfoModule({ data }: { data: any }) {
+function ApplicationInfoModule({ data }: { data: ResumeSchema }) {
   const { theme, font, spacing } = useResumeContext()
   const { applicationInfo } = data
-  const hasContent = applicationInfo.applicationSchool || applicationInfo.applicationMajor
-
-  if (!hasContent) return null
 
   return (
     <Section title='报考信息' theme={theme} font={font} spacing={spacing}>
@@ -269,15 +264,13 @@ function ApplicationInfoModule({ data }: { data: any }) {
 /**
  * 教育背景模块
  */
-function EduBackgroundModule({ data }: { data: any }) {
+function EduBackgroundModule({ data }: { data: ResumeSchema }) {
   const { theme, font, spacing } = useResumeContext()
   const { eduBackground } = data
 
-  if (!eduBackground.items?.length) return null
-
   return (
     <Section title='教育背景' theme={theme} font={font} spacing={spacing}>
-      {eduBackground.items.map((item: any, index: number) => {
+      {eduBackground.items.map((item, index) => {
         const subtitle =
           item.degree && item.degree !== '不填' ? `${item.professional}（${item.degree}）` : item.professional
         const duration = formatDuration(item.duration)
@@ -305,8 +298,6 @@ function WorkExperienceModule({ data }: { data: any }) {
   const { theme, font, spacing } = useResumeContext()
   const { workExperience } = data
 
-  if (!workExperience.items?.length) return null
-
   return (
     <Section title='工作经历' theme={theme} font={font} spacing={spacing}>
       {workExperience.items.map((item: any, index: number) => (
@@ -330,8 +321,6 @@ function WorkExperienceModule({ data }: { data: any }) {
 function InternshipExperienceModule({ data }: { data: any }) {
   const { theme, font, spacing } = useResumeContext()
   const { internshipExperience } = data
-
-  if (!internshipExperience.items?.length) return null
 
   return (
     <Section title='实习经验' theme={theme} font={font} spacing={spacing}>
@@ -357,8 +346,6 @@ function ProjectExperienceModule({ data }: { data: any }) {
   const { theme, font, spacing } = useResumeContext()
   const { projectExperience } = data
 
-  if (!projectExperience.items?.length) return null
-
   return (
     <Section title='项目经验' theme={theme} font={font} spacing={spacing}>
       {projectExperience.items.map((item: any, index: number) => (
@@ -383,8 +370,6 @@ function CampusExperienceModule({ data }: { data: any }) {
   const { theme, font, spacing } = useResumeContext()
   const { campusExperience } = data
 
-  if (!campusExperience.items?.length) return null
-
   return (
     <Section title='校园经历' theme={theme} font={font} spacing={spacing}>
       {campusExperience.items.map((item: any, index: number) => (
@@ -408,9 +393,6 @@ function CampusExperienceModule({ data }: { data: any }) {
 function SkillSpecialtyModule({ data }: { data: any }) {
   const { theme, font, spacing } = useResumeContext()
   const { skillSpecialty } = data
-  const hasContent = skillSpecialty.description || skillSpecialty.skills?.length
-
-  if (!hasContent) return null
 
   return (
     <Section title='技能特长' theme={theme} font={font} spacing={spacing}>
@@ -472,9 +454,6 @@ function SkillSpecialtyModule({ data }: { data: any }) {
 function HonorsCertificatesModule({ data }: { data: any }) {
   const { theme, font, spacing } = useResumeContext()
   const { honorsCertificates } = data
-  const hasContent = honorsCertificates.description || honorsCertificates.certificates?.length
-
-  if (!hasContent) return null
 
   return (
     <Section title='荣誉证书' theme={theme} font={font} spacing={spacing}>
@@ -501,8 +480,6 @@ function SelfEvaluationModule({ data }: { data: any }) {
   const { theme, font, spacing } = useResumeContext()
   const { selfEvaluation } = data
 
-  if (!selfEvaluation.content) return null
-
   return (
     <Section title='自我评价' theme={theme} font={font} spacing={spacing}>
       <div className='prose'>{parser(selfEvaluation.content)}</div>
@@ -516,9 +493,6 @@ function SelfEvaluationModule({ data }: { data: any }) {
 function HobbiesModule({ data }: { data: any }) {
   const { theme, font, spacing } = useResumeContext()
   const { hobbies } = data
-  const hasContent = hobbies.description || hobbies.hobbies?.length
-
-  if (!hasContent) return null
 
   return (
     <Section title='兴趣爱好' theme={theme} font={font} spacing={spacing}>
@@ -544,6 +518,7 @@ function HobbiesModule({ data }: { data: any }) {
  */
 function BasicResumePreview() {
   const data = useResumeStore()
+  const getVisibility = useResumeStore((state) => state.getVisibility)
   const age = useAge(data.basics.birthMonth)
 
   // ============ 配置主题/间距/字体 ============
@@ -559,39 +534,40 @@ function BasicResumePreview() {
       case 'basics':
         return <BasicsModule key={moduleType} data={data} age={age} />
 
-      case 'jobIntent':
-        // jobIntent 已集成在 BasicsModule 中
-        return null
-
       case 'applicationInfo':
-        return data.applicationInfo.isHidden ? null : <ApplicationInfoModule key={moduleType} data={data} />
+        return getVisibility('applicationInfo') ? null : <ApplicationInfoModule key={moduleType} data={data} />
 
       case 'eduBackground':
-        return data.eduBackground.isHidden ? null : <EduBackgroundModule key={moduleType} data={data} />
+        return getVisibility('eduBackground') ? null : <EduBackgroundModule key={moduleType} data={data} />
 
       case 'workExperience':
-        return data.workExperience.isHidden ? null : <WorkExperienceModule key={moduleType} data={data} />
+        return getVisibility('workExperience') ? null : <WorkExperienceModule key={moduleType} data={data} />
 
       case 'internshipExperience':
-        return data.internshipExperience.isHidden ? null : <InternshipExperienceModule key={moduleType} data={data} />
+        return getVisibility('internshipExperience') ? null : (
+          <InternshipExperienceModule key={moduleType} data={data} />
+        )
 
       case 'projectExperience':
-        return data.projectExperience.isHidden ? null : <ProjectExperienceModule key={moduleType} data={data} />
+        return getVisibility('projectExperience') ? null : <ProjectExperienceModule key={moduleType} data={data} />
 
       case 'campusExperience':
-        return data.campusExperience.isHidden ? null : <CampusExperienceModule key={moduleType} data={data} />
+        return getVisibility('campusExperience') ? null : <CampusExperienceModule key={moduleType} data={data} />
 
       case 'skillSpecialty':
-        return data.skillSpecialty.isHidden ? null : <SkillSpecialtyModule key={moduleType} data={data} />
+        return getVisibility('skillSpecialty') ? null : <SkillSpecialtyModule key={moduleType} data={data} />
 
       case 'honorsCertificates':
-        return data.honorsCertificates.isHidden ? null : <HonorsCertificatesModule key={moduleType} data={data} />
+        return getVisibility('honorsCertificates') ? null : <HonorsCertificatesModule key={moduleType} data={data} />
 
       case 'selfEvaluation':
-        return data.selfEvaluation.isHidden ? null : <SelfEvaluationModule key={moduleType} data={data} />
+        return getVisibility('selfEvaluation') ? null : <SelfEvaluationModule key={moduleType} data={data} />
 
       case 'hobbies':
-        return data.hobbies.isHidden ? null : <HobbiesModule key={moduleType} data={data} />
+        return getVisibility('hobbies') ? null : <HobbiesModule key={moduleType} data={data} />
+
+      case 'jobIntent':
+        return getVisibility('jobIntent') ? null : null
 
       default:
         return null
@@ -600,9 +576,7 @@ function BasicResumePreview() {
 
   return (
     <ResumeWrapper theme={theme} spacing={spacing} font={font}>
-      <div className='max-w-[210mm] mx-auto p-2 bg-white shadow-lg'>
-        <div style={{ padding: spacing.pagePadding }}>{data.order.map((moduleType) => renderModule(moduleType))}</div>
-      </div>
+      {data.order.map((moduleType) => renderModule(moduleType))}
     </ResumeWrapper>
   )
 }

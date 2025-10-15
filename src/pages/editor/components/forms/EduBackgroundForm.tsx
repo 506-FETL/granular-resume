@@ -7,8 +7,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { useIsMobile } from '@/hooks/use-mobile'
-import type { Degree, EduBackgroundFormExcludeHidden } from '@/lib/schema/resume/eduBackground'
-import { DEFAULT_EDU_BACKGROUND, eduBackgroundFormSchemaExcludeHidden } from '@/lib/schema/resume/eduBackground'
+import type { Degree, EduBackgroundFormType } from '@/lib/schema'
+import { DEFAULT_EDU_BACKGROUND, eduBackgroundFormSchema } from '@/lib/schema'
 import type { ShallowPartial } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 import useResumeStore from '@/store/resume/form'
@@ -40,7 +40,7 @@ function EduBackgroundForm({ className }: { className?: string }) {
   const isMobile = useIsMobile()
 
   const form = useForm({
-    resolver: zodResolver(eduBackgroundFormSchemaExcludeHidden),
+    resolver: zodResolver(eduBackgroundFormSchema),
     defaultValues: {
       items: eduBackground.items || DEFAULT_EDU_BACKGROUND.items,
     },
@@ -55,7 +55,7 @@ function EduBackgroundForm({ className }: { className?: string }) {
 
   useEffect(() => {
     const subscription = form.watch((value) => {
-      updateForm('eduBackground', value as ShallowPartial<EduBackgroundFormExcludeHidden>)
+      updateForm('eduBackground', value as ShallowPartial<EduBackgroundFormType>)
     })
     return () => subscription.unsubscribe()
   }, [form, updateForm])

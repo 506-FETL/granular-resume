@@ -6,11 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Separator } from '@/components/ui/separator'
 import { useIsMobile } from '@/hooks/use-mobile'
-import type { CampusExperienceFormExcludeHidden } from '@/lib/schema/resume/campusExperience'
-import {
-  campusExperienceFormSchemaExcludeHidden,
-  DEFAULT_CAMPUS_EXPERIENCE,
-} from '@/lib/schema/resume/campusExperience'
+import { campusExperienceFormSchema, DEFAULT_CAMPUS_EXPERIENCE, type CampusExperienceFormType } from '@/lib/schema'
 import type { ShallowPartial } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 import useResumeStore from '@/store/resume/form'
@@ -27,7 +23,7 @@ function CampusExperienceForm({ className }: { className?: string }) {
   const isMobile = useIsMobile()
 
   const form = useForm({
-    resolver: zodResolver(campusExperienceFormSchemaExcludeHidden),
+    resolver: zodResolver(campusExperienceFormSchema),
     defaultValues: {
       items: campusExperience.items || DEFAULT_CAMPUS_EXPERIENCE.items,
     },
@@ -42,7 +38,7 @@ function CampusExperienceForm({ className }: { className?: string }) {
 
   useEffect(() => {
     const subscription = form.watch((value) => {
-      updateForm('campusExperience', value as ShallowPartial<CampusExperienceFormExcludeHidden>)
+      updateForm('campusExperience', value as ShallowPartial<CampusExperienceFormType>)
     })
     return () => subscription.unsubscribe()
   }, [form, updateForm])

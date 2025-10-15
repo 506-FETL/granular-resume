@@ -78,7 +78,13 @@ interface ResumeWrapperProps {
 export function ResumeWrapper({ children, theme, spacing, font }: PropsWithChildren<ResumeWrapperProps>) {
   const contextValue = { theme, spacing, font }
 
-  return <ResumeContext value={contextValue}>{children}</ResumeContext>
+  return (
+    <ResumeContext value={contextValue}>
+      <div className='max-w-[210mm] mx-auto p-2 bg-white shadow-lg'>
+        <div style={{ padding: spacing.pagePadding }}>{children}</div>
+      </div>
+    </ResumeContext>
+  )
 }
 
 /**

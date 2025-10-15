@@ -6,12 +6,12 @@ import { Progress } from '@/components/ui/progress'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { useIsMobile } from '@/hooks/use-mobile'
-import type { DisplayType, ProficiencyLevel, SkillSpecialtyFormExcludeHidden } from '@/lib/schema/resume/skillSpecialty'
+import type { DisplayType, ProficiencyLevel, SkillSpecialtyFormType } from '@/lib/schema/resume/form/skillSpecialty'
 import {
   PRESET_SKILLS,
   PROFICIENCY_PERCENTAGE_MAP,
-  skillSpecialtyFormSchemaExcludeHidden,
-} from '@/lib/schema/resume/skillSpecialty'
+  skillSpecialtyFormSchema,
+} from '@/lib/schema/resume/form/skillSpecialty'
 import type { ShallowPartial } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 import useResumeStore from '@/store/resume/form'
@@ -35,7 +35,7 @@ function SkillSpecialtyForm({ className }: { className?: string }) {
   const [customSkillInput, setCustomSkillInput] = useState('')
 
   const form = useForm({
-    resolver: zodResolver(skillSpecialtyFormSchemaExcludeHidden),
+    resolver: zodResolver(skillSpecialtyFormSchema),
     defaultValues: {
       description: skillSpecialty.description || '',
       skills: skillSpecialty.skills || [],
@@ -51,7 +51,7 @@ function SkillSpecialtyForm({ className }: { className?: string }) {
 
   useEffect(() => {
     const subscription = form.watch((value) => {
-      updateForm('skillSpecialty', value as ShallowPartial<SkillSpecialtyFormExcludeHidden>)
+      updateForm('skillSpecialty', value as ShallowPartial<SkillSpecialtyFormType>)
     })
     return () => subscription.unsubscribe()
   }, [form, updateForm])

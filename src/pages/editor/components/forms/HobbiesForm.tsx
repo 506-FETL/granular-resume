@@ -4,8 +4,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { useIsMobile } from '@/hooks/use-mobile'
-import type { HobbiesFormExcludeHidden } from '@/lib/schema/resume/hobbies'
-import { hobbiesFormSchemaExcludeHidden, PRESET_HOBBIES } from '@/lib/schema/resume/hobbies'
+import { hobbiesFormSchema, PRESET_HOBBIES, type HobbiesFormType } from '@/lib/schema'
 import type { ShallowPartial } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 import useResumeStore from '@/store/resume/form'
@@ -23,7 +22,7 @@ function HobbiesForm({ className }: { className?: string }) {
   const [customHobbyInput, setCustomHobbyInput] = useState('')
 
   const form = useForm({
-    resolver: zodResolver(hobbiesFormSchemaExcludeHidden),
+    resolver: zodResolver(hobbiesFormSchema),
     defaultValues: {
       description: hobbies.description || '',
       hobbies: hobbies.hobbies || [],
@@ -39,7 +38,7 @@ function HobbiesForm({ className }: { className?: string }) {
 
   useEffect(() => {
     const subscription = form.watch((value) => {
-      updateForm('hobbies', value as ShallowPartial<HobbiesFormExcludeHidden>)
+      updateForm('hobbies', value as ShallowPartial<HobbiesFormType>)
     })
     return () => subscription.unsubscribe()
   }, [form, updateForm])

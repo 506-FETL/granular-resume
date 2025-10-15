@@ -6,8 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Separator } from '@/components/ui/separator'
 import { useIsMobile } from '@/hooks/use-mobile'
-import type { WorkExperienceFormExcludeHidden } from '@/lib/schema/resume/workExperience'
-import { DEFAULT_WORK_EXPERIENCE, workExperienceFormSchemaExcludeHidden } from '@/lib/schema/resume/workExperience'
+import { DEFAULT_WORK_EXPERIENCE, workExperienceFormSchema, type WorkExperienceFormType } from '@/lib/schema'
 import type { ShallowPartial } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 import useResumeStore from '@/store/resume/form'
@@ -24,7 +23,7 @@ function WorkExperienceForm({ className }: { className?: string }) {
   const isMobile = useIsMobile()
 
   const form = useForm({
-    resolver: zodResolver(workExperienceFormSchemaExcludeHidden),
+    resolver: zodResolver(workExperienceFormSchema),
     defaultValues: {
       items: workExperience.items || DEFAULT_WORK_EXPERIENCE.items,
     },
@@ -39,7 +38,7 @@ function WorkExperienceForm({ className }: { className?: string }) {
 
   useEffect(() => {
     const subscription = form.watch((value) => {
-      updateForm('workExperience', value as ShallowPartial<WorkExperienceFormExcludeHidden>)
+      updateForm('workExperience', value as ShallowPartial<WorkExperienceFormType>)
     })
     return () => subscription.unsubscribe()
   }, [form, updateForm])

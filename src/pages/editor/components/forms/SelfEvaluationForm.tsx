@@ -1,20 +1,19 @@
-import type { SelfEvaluationFormExcludeHidden } from '@/lib/schema/resume/selfEvaluation'
+import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor'
+import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form'
+import { selfEvaluationFormSchema, type SelfEvaluationFormType } from '@/lib/schema'
 import type { ShallowPartial } from '@/lib/utils'
+import { cn } from '@/lib/utils'
+import useResumeStore from '@/store/resume/form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
-import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor'
-import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form'
-import { selfEvaluationFormSchemaExcludeHidden } from '@/lib/schema/resume/selfEvaluation'
-import { cn } from '@/lib/utils'
-import useResumeStore from '@/store/resume/form'
 
 function SelfEvaluationForm({ className }: { className?: string }) {
   const selfEvaluation = useResumeStore((state) => state.selfEvaluation)
   const updateForm = useResumeStore((state) => state.updateForm)
 
   const form = useForm({
-    resolver: zodResolver(selfEvaluationFormSchemaExcludeHidden),
+    resolver: zodResolver(selfEvaluationFormSchema),
     defaultValues: {
       content: selfEvaluation.content || '',
     },
@@ -24,7 +23,7 @@ function SelfEvaluationForm({ className }: { className?: string }) {
 
   useEffect(() => {
     const subscription = form.watch((value) => {
-      updateForm('selfEvaluation', value as ShallowPartial<SelfEvaluationFormExcludeHidden>)
+      updateForm('selfEvaluation', value as ShallowPartial<SelfEvaluationFormType>)
     })
     return () => subscription.unsubscribe()
   }, [form, updateForm])

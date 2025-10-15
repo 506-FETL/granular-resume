@@ -4,8 +4,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { useIsMobile } from '@/hooks/use-mobile'
-import type { HonorsCertificatesFormExcludeHidden } from '@/lib/schema/resume/honorsCertificates'
-import { honorsCertificatesFormSchemaExcludeHidden, PRESET_CERTIFICATES } from '@/lib/schema/resume/honorsCertificates'
+import { honorsCertificatesFormSchema, PRESET_CERTIFICATES, type HonorsCertificatesFormType } from '@/lib/schema'
 import type { ShallowPartial } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 import useResumeStore from '@/store/resume/form'
@@ -23,7 +22,7 @@ function HonorsCertificatesForm({ className }: { className?: string }) {
   const [customCertificateInput, setCustomCertificateInput] = useState('')
 
   const form = useForm({
-    resolver: zodResolver(honorsCertificatesFormSchemaExcludeHidden),
+    resolver: zodResolver(honorsCertificatesFormSchema),
     defaultValues: {
       description: honorsCertificates.description || '',
       certificates: honorsCertificates.certificates || [],
@@ -39,7 +38,7 @@ function HonorsCertificatesForm({ className }: { className?: string }) {
 
   useEffect(() => {
     const subscription = form.watch((value) => {
-      updateForm('honorsCertificates', value as ShallowPartial<HonorsCertificatesFormExcludeHidden>)
+      updateForm('honorsCertificates', value as ShallowPartial<HonorsCertificatesFormType>)
     })
     return () => subscription.unsubscribe()
   }, [form, updateForm])

@@ -6,11 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Separator } from '@/components/ui/separator'
 import { useIsMobile } from '@/hooks/use-mobile'
-import type { ProjectExperienceFormExcludeHidden } from '@/lib/schema/resume/projectExperience'
-import {
-  DEFAULT_PROJECT_EXPERIENCE,
-  projectExperienceFormSchemaExcludeHidden,
-} from '@/lib/schema/resume/projectExperience'
+import { DEFAULT_PROJECT_EXPERIENCE, projectExperienceFormSchema, type ProjectExperienceFormType } from '@/lib/schema'
 import type { ShallowPartial } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 import useResumeStore from '@/store/resume/form'
@@ -27,7 +23,7 @@ function ProjectExperienceForm({ className }: { className?: string }) {
   const isMobile = useIsMobile()
 
   const form = useForm({
-    resolver: zodResolver(projectExperienceFormSchemaExcludeHidden),
+    resolver: zodResolver(projectExperienceFormSchema),
     defaultValues: {
       items: projectExperience.items || DEFAULT_PROJECT_EXPERIENCE.items,
     },
@@ -42,7 +38,7 @@ function ProjectExperienceForm({ className }: { className?: string }) {
 
   useEffect(() => {
     const subscription = form.watch((value) => {
-      updateForm('projectExperience', value as ShallowPartial<ProjectExperienceFormExcludeHidden>)
+      updateForm('projectExperience', value as ShallowPartial<ProjectExperienceFormType>)
     })
     return () => subscription.unsubscribe()
   }, [form, updateForm])
