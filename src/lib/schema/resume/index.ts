@@ -49,3 +49,4 @@ export const DEFAULT_ORDER: ORDERType[] = [
 
 export * from './form'
 export * from './visibility'
+export * from './config'

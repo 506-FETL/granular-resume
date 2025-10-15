@@ -1,9 +1,11 @@
 import { Badge } from '@/components/ui/badge'
 import useAge from '@/hooks/useAge'
 import useResumeStore from '@/store/resume/form'
+import useResumeConfigStore from '@/store/resume/config'
 import parser from 'html-react-parser'
 import type { ProficiencyLevel, ORDERType, ResumeSchema } from '@/lib/schema'
-import { defaultFont, defaultSpacing, ResumeWrapper, themes, useResumeContext } from './resume-context'
+import { getFontFamilyCSS, themeColorMap } from '@/lib/schema'
+import { ResumeWrapper, useResumeContext } from './resume-context'
 
 const skillProficiencyMap: { [key in ProficiencyLevel]: number } = {
   一般: 50,
@@ -521,10 +523,35 @@ function BasicResumePreview() {
   const getVisibility = useResumeStore((state) => state.getVisibility)
   const age = useAge(data.basics.birthMonth)
 
-  // ============ 配置主题/间距/字体 ============
-  const theme = themes.green // 可选: default, blue, green, purple
-  const spacing = { ...defaultSpacing }
-  const font = { ...defaultFont }
+  // ============ 从 store 获取配置 ============
+  const configStore = useResumeConfigStore()
+  const theme = themeColorMap[configStore.theme.theme]
+
+  // 将配置转换为原有格式
+  const spacing = {
+    pagePadding: `${configStore.spacing.pageMargin}px`,
+    sectionMargin: `${configStore.spacing.sectionSpacing}px`,
+    sectionTitleMargin: '0.75rem',
+    itemSpacing: '0.75rem',
+    paragraphSpacing: '0.25rem',
+    lineHeight: configStore.spacing.lineHeight,
+    proseLineHeight: configStore.spacing.lineHeight,
+  }
+
+  const fontFamily = getFontFamilyCSS(configStore.font.fontFamily)
+  const fontSize = configStore.font.fontSize
+
+  const font = {
+    fontFamily,
+    nameSize: `${fontSize * 1.5}px`,
+    jobIntentSize: `${fontSize}px`,
+    sectionTitleSize: `${fontSize}px`,
+    contentSize: `${fontSize * 0.875}px`,
+    smallSize: `${fontSize * 0.75}px`,
+    boldWeight: 700,
+    mediumWeight: 600,
+    normalWeight: 400,
+  }
 
   /**
    * 渲染单个模块

@@ -45,6 +45,7 @@ import SelfEvaluationForm from './components/forms/SelfEvaluationForm'
 import SkillSpecialtyForm from './components/forms/SkillSpecialtyForm'
 import WorkExperienceForm from './components/forms/WorkExperienceForm'
 import ResumePreview from './components/preview/BasicResumePreview'
+import { ResumeConfigToolbar } from './components/ResumeConfigToolbar'
 
 interface Item<T> {
   id: T
@@ -192,9 +193,11 @@ function Editor() {
           </div>
         </DrawerContent>
       </Drawer>
-
-      <div className='max-w-screen-2xl mx-auto'>
-        <ResumePreview />
+      <div className='flex flex-col md:flex-row min-h-screen overflow-auto'>
+        <ResumeConfigToolbar />
+        <div className='flex-1 overflow-auto p-4 md:p-8'>
+          <ResumePreview />
+        </div>
       </div>
     </>
   )
