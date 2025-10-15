@@ -7,7 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { useIsMobile } from '@/hooks/use-mobile'
-import type { BasicForm, Gender, MaritalStatus, PoliticalStatus, WorkYears } from '@/lib/schema'
+import type { BasicFormType, Gender, MaritalStatus, PoliticalStatus, WorkYears } from '@/lib/schema'
 import { resumeSchema } from '@/lib/schema'
 import { cn, type ShallowPartial } from '@/lib/utils'
 import useResumeStore from '@/store/resume/form'
@@ -46,7 +46,7 @@ function BasicResumeForm({ className }: { className?: string }) {
 
   useEffect(() => {
     const subscription = form.watch((value) => {
-      updateForm('basics', value as ShallowPartial<BasicForm>)
+      updateForm('basics', value as ShallowPartial<BasicFormType>)
     })
     return () => subscription.unsubscribe()
   }, [form, updateForm])
