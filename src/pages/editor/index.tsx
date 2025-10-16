@@ -31,7 +31,7 @@ import {
   UserRound,
 } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import ApplicationInfoForm from './components/forms/ApplicationInfoForm'
 import BasicResumeForm from './components/forms/BasicResumeForm'
 import CampusExperienceForm from './components/forms/CampusExperienceForm'
@@ -46,6 +46,9 @@ import SkillSpecialtyForm from './components/forms/SkillSpecialtyForm'
 import WorkExperienceForm from './components/forms/WorkExperienceForm'
 import ResumePreview from './components/preview/BasicResumePreview'
 import { ResumeConfigToolbar } from './components/ResumeConfigToolbar'
+import { DragProvider } from '@/contexts/DragContext'
+import { DraggableItem } from './components/DraggableItem'
+import { DraggableList } from '@/components/DraggableList'
 
 interface Item<T> {
   id: T
@@ -133,72 +136,95 @@ function Editor() {
   const [open, setOpen] = useState(false)
   const { theme } = useTheme()
   const activeTabId = useResumeStore((state) => state.activeTabId)
+  const order = useResumeStore((state) => state.order)
   const updateActiveTabId = useResumeStore((state) => state.updateActiveTabId)
+  const updateOrder = useResumeStore((state) => state.updateOrder)
   const toggleVisibility = useResumeStore((state) => state.toggleVisibility)
   const visibilityState = useResumeStore((state) => state.visibility)
   const isMobile = useIsMobile()
-
   const fill = theme === 'dark' ? '#0c0a09' : '#fafaf9'
   const stroke = theme === 'dark' ? '#3d3b3b' : '#e7e5e4'
-
+  const orderedItems = useMemo(() => {
+    return order
+      .map((id) => ITEMS.find((item) => item.id === id))
+      .filter((item): item is Item<ORDERType> => item !== undefined)
+  }, [order])
+  const handleOrderChange = useCallback(
+    (newItems: Item<ORDERType>[]) => {
+      const newOrder = newItems.map((item) => item.id)
+      updateOrder(newOrder)
+    },
+    [updateOrder],
+  )
   return (
     <>
-      <Drawer open={open} onOpenChange={setOpen} handleOnly>
-        <DrawerTrigger asChild>
-          <RainbowButton
-            variant='outline'
-            className='fixed bottom-6 left-1/2 z-1 -transform -translate-x-1/2'
-            size={isMobile ? 'icon' : 'default'}
-          >
-            <Edit />
-            {!isMobile && '编辑简历'}
-          </RainbowButton>
-        </DrawerTrigger>
-        <DrawerContent className='h-140'>
-          <DrawerHeader className='relative'>
-            <DrawerTitle>简历信息</DrawerTitle>
-            <DrawerDescription>实时同步</DrawerDescription>
-          </DrawerHeader>
-          <div className='p-4 overflow-y-scroll overflow-x-hidden'>
-            <SideTabsWrapper defaultId={activeTabId}>
-              <SideTabs>
-                {ITEMS.map((item) => (
-                  <div key={item.id} className='flex flex-col items-center justify-end gap-2'>
-                    {item.id !== 'basics' && (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div>
-                            <Switch
-                              checked={!visibilityState[item.id as VisibilityItemsType]}
-                              onCheckedChange={() => toggleVisibility(item.id as VisibilityItemsType)}
-                            />
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>点击可隐藏模块</TooltipContent>
-                      </Tooltip>
-                    )}
-                    <Tab
-                      id={item.id}
-                      onClick={() => updateActiveTabId(item.id)}
-                      disabled={visibilityState[item.id as VisibilityItemsType]}
-                    >
-                      {item.icon}
-                      {!isMobile && item.label}
-                    </Tab>
-                  </div>
-                ))}
-              </SideTabs>
-              <ViewPort items={ITEMS} fill={fill} stroke={stroke} />
-            </SideTabsWrapper>
+      <DragProvider>
+        <Drawer open={open} onOpenChange={setOpen} handleOnly>
+          <DrawerTrigger asChild>
+            <RainbowButton
+              variant='outline'
+              className='fixed bottom-6 left-1/2 z-1 -transform -translate-x-1/2'
+              size={isMobile ? 'icon' : 'default'}
+            >
+              <Edit />
+              {!isMobile && '编辑简历'}
+            </RainbowButton>
+          </DrawerTrigger>
+          <DrawerContent className='h-140'>
+            <DrawerHeader className='relative'>
+              <DrawerTitle>简历信息</DrawerTitle>
+              <DrawerDescription>实时同步</DrawerDescription>
+            </DrawerHeader>
+            <div className='p-4 overflow-y-scroll overflow-x-hidden'>
+              <DraggableList
+                items={orderedItems}
+                onOrderChange={(order) => {
+                  handleOrderChange(order)
+                }}
+              >
+                <SideTabsWrapper defaultId={activeTabId}>
+                  <SideTabs>
+                    {orderedItems.map((item, index) => (
+                      <DraggableItem id={item.id} index={index} key={item.id} disabled={item.id === 'basics'}>
+                        <div key={item.id} className='flex flex-col items-center justify-end gap-2'>
+                          {item.id !== 'basics' && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div>
+                                  <Switch
+                                    checked={!visibilityState[item.id as VisibilityItemsType]}
+                                    onCheckedChange={() => toggleVisibility(item.id as VisibilityItemsType)}
+                                  />
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent>点击可隐藏模块</TooltipContent>
+                            </Tooltip>
+                          )}
+                          <Tab
+                            id={item.id}
+                            onClick={() => updateActiveTabId(item.id)}
+                            disabled={visibilityState[item.id as VisibilityItemsType]}
+                          >
+                            {item.icon}
+                            {!isMobile && item.label}
+                          </Tab>
+                        </div>
+                      </DraggableItem>
+                    ))}
+                  </SideTabs>
+                  <ViewPort items={ITEMS} fill={fill} stroke={stroke} />
+                </SideTabsWrapper>
+              </DraggableList>
+            </div>
+          </DrawerContent>
+        </Drawer>
+        <div className='flex flex-col md:flex-row min-h-screen overflow-auto'>
+          <ResumeConfigToolbar />
+          <div className='flex-1 overflow-auto p-4 md:p-8'>
+            <ResumePreview />
           </div>
-        </DrawerContent>
-      </Drawer>
-      <div className='flex flex-col md:flex-row min-h-screen overflow-auto'>
-        <ResumeConfigToolbar />
-        <div className='flex-1 overflow-auto p-4 md:p-8'>
-          <ResumePreview />
         </div>
-      </div>
+      </DragProvider>
     </>
   )
 }
