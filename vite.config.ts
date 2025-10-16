@@ -12,9 +12,6 @@ export default defineConfig({
       exclude: ['**/components/*'],
       // 启用路由懒加载
       importMode: 'async',
-      onRoutesGenerated(routes) {
-        console.log(routes)
-      },
     }),
   ],
   resolve: {
@@ -42,7 +39,6 @@ export default defineConfig({
             '@radix-ui/react-tooltip',
           ],
           // TipTap 编辑器（单独分离，按需加载）
-          // 注意：@tiptap/pm 被移除，因为它没有正确的入口点
           'tiptap-editor': [
             '@tiptap/react',
             '@tiptap/starter-kit',
@@ -69,8 +65,20 @@ export default defineConfig({
     chunkSizeWarningLimit: 600,
     // 启用 CSS 代码分割
     cssCodeSplit: true,
-    // 启用压缩
-    minify: 'esbuild',
+    // 启用压缩 terser
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+        keep_fnames: false,
+        keep_classnames: false,
+      },
+      format: {
+        comments: false,
+      },
+      mangle: true,
+    },
   },
   // 优化依赖预构建
   optimizeDeps: {
