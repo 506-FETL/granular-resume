@@ -31,7 +31,7 @@ export async function changeAvatar(file: File) {
   } = await supabase.auth.getUser()
   if (!user) throw new Error('未登陆')
 
-  const path = user.id
+  const path = `${user.id}/${Date.now()}-${file.name}`
 
   const { error: upErr } = await supabase.storage.from('avatar').upload(path, file, {
     upsert: true,
