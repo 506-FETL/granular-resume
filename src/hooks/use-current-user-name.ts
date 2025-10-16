@@ -10,9 +10,9 @@ export const useCurrentUserName = () => {
       if (error) {
         console.error(error)
       }
+
       setName(data.session?.user.user_metadata.full_name ?? '?')
     }
-
     fetchProfileName()
 
     const {

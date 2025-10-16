@@ -5,7 +5,7 @@ export async function getUserProfile() {
     data: { user },
     error: userErr,
   } = await supabase.auth.getUser()
-  if (userErr || !user) throw userErr ?? new Error('未登陆')
+  if (userErr || !user) return null
 
   const { data, error } = await supabase
     .from('profiles')
@@ -18,11 +18,11 @@ export async function getUserProfile() {
 }
 
 export async function getCurrentUser() {
-  const { data, error } = await supabase.auth.getSession()
+  const { data, error } = await supabase.auth.getUser()
 
   if (error) console.log(error)
 
-  return data
+  return data.user
 }
 
 export async function changeAvatar(file: File) {
@@ -31,23 +31,20 @@ export async function changeAvatar(file: File) {
   } = await supabase.auth.getUser()
   if (!user) throw new Error('未登陆')
 
-  const path = `${user.id}/${Date.now()}-${file.name}`
+  const path = user.id
 
-  const { error: upErr } = await supabase.storage.from('avatars').upload(path, file, {
-    cacheControl: '3600',
+  const { error: upErr } = await supabase.storage.from('avatar').upload(path, file, {
     upsert: true,
   })
   if (upErr) throw upErr
 
-  const { data } = supabase.storage.from('avatars').getPublicUrl(path)
+  const { data } = supabase.storage.from('avatar').getPublicUrl(path)
   const avatarUrl = data.publicUrl
 
-  const { error: profErr } = await supabase
-    .from('profiles')
-    .update({ avatar_url: avatarUrl, updated_at: new Date().toISOString() })
-    .eq('id', user.id)
-
-  if (profErr) throw profErr
+  const { error } = await supabase.auth.updateUser({
+    data: { avatar_url: avatarUrl },
+  })
+  if (error) throw error
 
   return avatarUrl
 }

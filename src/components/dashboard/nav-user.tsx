@@ -7,13 +7,12 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar'
 import supabase from '@/lib/supabase/client'
-import { getCurrentUser, SignOut } from '@/lib/supabase/user'
+import { SignOut } from '@/lib/supabase/user'
 import type { User } from '@supabase/supabase-js'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -27,8 +26,8 @@ export function NavUser() {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const currentUser = await getCurrentUser()
-      setUser(currentUser.session?.user ?? null)
+      const { data } = await supabase.auth.getSession()
+      setUser(data.session?.user ?? null)
     }
 
     fetchUser()
@@ -78,27 +77,17 @@ export function NavUser() {
             align='end'
             sideOffset={4}
           >
-            <DropdownMenuLabel className='p-0 font-normal'>
-              <div className='flex items-center gap-2 px-1 py-1.5 text-left text-sm'>
-                <CurrentUserAvatar />
-                <div className='grid flex-1 text-left text-sm leading-tight'>
-                  <span className='truncate font-medium'>{user ? user.user_metadata.full_name : '未登陆'}</span>
-                  <span className='text-muted-foreground truncate text-xs'>{user ? user.email : 'resume'}</span>
-                </div>
-              </div>
-            </DropdownMenuLabel>
             {user && (
               <>
-                <DropdownMenuSeparator />
                 <DropdownMenuGroup>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/profile')}>
                     <IconUserCircle />
                     账户
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
+                <DropdownMenuSeparator />
               </>
             )}
-            <DropdownMenuSeparator />
             {user ? (
               <DropdownMenuItem onClick={handleSignOut}>
                 <IconLogout />
