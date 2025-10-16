@@ -26,7 +26,7 @@ export function NavOptions({
     <SidebarGroup>
       <SidebarGroupLabel>{description}</SidebarGroupLabel>
       <SidebarMenu>
-        {options.map(item => (
+        {options.map((item) => (
           <SidebarMenuItem key={item.title}>
             <SidebarMenuButton asChild>
               <Link to={item.url}>

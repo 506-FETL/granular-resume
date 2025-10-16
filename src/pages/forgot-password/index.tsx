@@ -1,0 +1,11 @@
+import { ForgotPasswordForm } from '@/components/forgot-password-form'
+
+const ForgotPassword = () => {
+  return (
+    <div className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full px-4'>
+      <ForgotPasswordForm className='max-w-lg  mx-auto' />
+    </div>
+  )
+}
+
+export default ForgotPassword

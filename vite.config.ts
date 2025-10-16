@@ -5,9 +5,16 @@ import { defineConfig } from 'vite'
 import Pages from 'vite-plugin-pages'
 
 export default defineConfig({
-  plugins: [react(), tailwindcss(), Pages({
-    exclude: ['**/components/*'],
-  })],
+  plugins: [
+    react(),
+    tailwindcss(),
+    Pages({
+      exclude: ['**/components/*'],
+      onRoutesGenerated(routes) {
+        console.log(routes)
+      },
+    }),
+  ],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

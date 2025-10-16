@@ -80,7 +80,7 @@ export function ResumeWrapper({ children, theme, spacing, font }: PropsWithChild
 
   return (
     <ResumeContext value={contextValue}>
-      <div className='mx-auto p-2 bg-white border rounded-2xl shadow-md' style={{ width: '210mm', minHeight: '297mm' }}>
+      <div className='mx-auto p-2 bg-white border rounded-md shadow-md' style={{ width: '210mm', minHeight: '297mm' }}>
         <div style={{ padding: spacing.pagePadding }}>{children}</div>
       </div>
     </ResumeContext>
