@@ -10,6 +10,8 @@ export default defineConfig({
     tailwindcss(),
     Pages({
       exclude: ['**/components/*'],
+      // 启用路由懒加载
+      importMode: 'async',
       onRoutesGenerated(routes) {
         console.log(routes)
       },
@@ -19,5 +21,59 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // React 核心库
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          // UI 组件库
+          'radix-ui': [
+            '@radix-ui/react-avatar',
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-dropdown-menu',
+            '@radix-ui/react-label',
+            '@radix-ui/react-popover',
+            '@radix-ui/react-select',
+            '@radix-ui/react-separator',
+            '@radix-ui/react-slider',
+            '@radix-ui/react-switch',
+            '@radix-ui/react-tooltip',
+          ],
+          // TipTap 编辑器（单独分离，按需加载）
+          // 注意：@tiptap/pm 被移除，因为它没有正确的入口点
+          'tiptap-editor': [
+            '@tiptap/react',
+            '@tiptap/starter-kit',
+            '@tiptap/extensions',
+            '@tiptap/extension-highlight',
+            '@tiptap/extension-image',
+            '@tiptap/extension-text-align',
+            '@tiptap/extension-typography',
+            '@tiptap/extension-horizontal-rule',
+            '@tiptap/extension-list',
+            '@tiptap/extension-subscript',
+            '@tiptap/extension-superscript',
+          ],
+          // 图标库
+          icons: ['@tabler/icons-react', 'lucide-react'],
+          // Supabase
+          supabase: ['@supabase/supabase-js'],
+          // 其他工具库
+          utils: ['clsx', 'tailwind-merge', 'date-fns', 'zod', 'zustand'],
+        },
+      },
+    },
+    // 提高 chunk 大小警告阈值(临时)
+    chunkSizeWarningLimit: 600,
+    // 启用 CSS 代码分割
+    cssCodeSplit: true,
+    // 启用压缩
+    minify: 'esbuild',
+  },
+  // 优化依赖预构建
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom', '@supabase/supabase-js'],
   },
 })

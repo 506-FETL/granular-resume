@@ -4,11 +4,25 @@ import { ThemeProvider } from '@/components/theme-provider'
 import { SidebarHeader, SidebarInset } from '@/components/ui/sidebar'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Toaster } from '@/components/ui/sonner'
-import { Suspense } from 'react'
-import { useRoutes } from 'react-router-dom'
+import { Suspense, useEffect } from 'react'
+import { useLocation, useRoutes } from 'react-router-dom'
 import routes from '~react-pages'
 
 function App() {
+  const location = useLocation()
+
+  // 预加载策略：当用户到达首页时，预加载编辑器页面
+  useEffect(() => {
+    if (location.pathname === '/' || location.pathname === '/login') {
+      // 延迟预加载编辑器相关资源
+      const timer = setTimeout(() => {
+        // 预加载编辑器路由
+        import('./pages/editor/index')
+      }, 2000)
+      return () => clearTimeout(timer)
+    }
+  }, [location.pathname])
+
   return (
     <ThemeProvider defaultTheme='system' storageKey='vite-ui-theme'>
       <AppSidebar variant='inset' />
