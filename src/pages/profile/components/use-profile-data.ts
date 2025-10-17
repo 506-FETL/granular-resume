@@ -1,4 +1,3 @@
-import { useCurrentUserImage } from '@/hooks/use-current-user-image'
 import { useCurrentUserName } from '@/hooks/use-current-user-name'
 import { useDebounce } from '@/hooks/use-debounce'
 import supabase from '@/lib/supabase/client'
@@ -9,7 +8,6 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
 export function useProfileData() {
-  const image = useCurrentUserImage()
   const currentName = useCurrentUserName()
   const [user, setUser] = useState<User | null>(null)
   const [uploading, setUploading] = useState(false)
@@ -221,7 +219,6 @@ export function useProfileData() {
   return {
     user,
     loading,
-    image,
     currentName,
     uploading,
     fullName,

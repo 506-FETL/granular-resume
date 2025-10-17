@@ -1,10 +1,10 @@
 'use client'
 
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useCurrentUserImage } from '@/hooks/use-current-user-image'
 import { useCurrentUserName } from '@/hooks/use-current-user-name'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
-export const CurrentUserAvatar = () => {
+export const CurrentUserAvatar = ({ className }: { className?: string }) => {
   const profileImage = useCurrentUserImage()
   const name = useCurrentUserName()
   const initials = name
@@ -14,7 +14,7 @@ export const CurrentUserAvatar = () => {
     ?.toUpperCase()
 
   return (
-    <Avatar>
+    <Avatar className={className}>
       {profileImage && <AvatarImage src={profileImage} alt={initials} />}
       <AvatarFallback>{initials}</AvatarFallback>
     </Avatar>

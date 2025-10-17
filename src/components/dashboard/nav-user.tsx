@@ -49,6 +49,7 @@ export function NavUser() {
       await SignOut()
       toast.success('已登出')
       setUser(null)
+      navigate('/login')
     } catch (error) {
       toast.error('登出失败，请稍后重试')
     }

@@ -1,5 +1,5 @@
 import { Separator } from '@/components/ui/separator'
-import { Spinner } from '@/components/ui/spinner'
+import { Skeleton } from '@/components/ui/skeleton'
 import { AccountSettingsCard } from './components/account-settings-card'
 import { PreferencesCard } from './components/preferences-card'
 import { ProfileInfoCard } from './components/profile-info-card'
@@ -9,7 +9,6 @@ export default function ProfilePage() {
   const {
     user,
     loading,
-    image,
     currentName,
     uploading,
     fullName,
@@ -33,11 +32,7 @@ export default function ProfilePage() {
   } = useProfileData()
 
   if (!user || loading) {
-    return (
-      <div className='flex h-[calc(100vh-200px)] items-center justify-center'>
-        <Spinner className='h-8 w-8' />
-      </div>
-    )
+    return <ProfilePageSkeleton />
   }
 
   return (
@@ -53,7 +48,6 @@ export default function ProfilePage() {
       {/* 个人资料卡片 */}
       <ProfileInfoCard
         user={user}
-        image={image}
         currentName={currentName}
         uploading={uploading}
         fullName={fullName}
@@ -79,6 +73,102 @@ export default function ProfilePage() {
 
       {/* 偏好设置卡片 */}
       <PreferencesCard />
+    </div>
+  )
+}
+
+function ProfilePageSkeleton() {
+  return (
+    <div className='mx-auto max-w-4xl space-y-6 animate-in fade-in-50 duration-500'>
+      {/* 页面标题骨架 */}
+      <div className='space-y-3'>
+        <Skeleton className='h-9 w-48 rounded-lg' />
+        <Skeleton className='h-5 w-80' />
+      </div>
+
+      <Separator />
+
+      {/* 个人资料卡片骨架 */}
+      <div className='rounded-xl border bg-card shadow-sm p-6 space-y-6'>
+        <div className='flex items-start gap-6'>
+          {/* 头像骨架 */}
+          <div className='flex flex-col items-center gap-3'>
+            <Skeleton className='h-32 w-32 rounded-full' />
+            <Skeleton className='h-9 w-28 rounded-md' />
+          </div>
+
+          {/* 用户信息骨架 */}
+          <div className='flex-1 space-y-5'>
+            <div className='space-y-2'>
+              <Skeleton className='h-4 w-16' />
+              <Skeleton className='h-10 w-full max-w-md rounded-md' />
+            </div>
+            <div className='space-y-2'>
+              <Skeleton className='h-4 w-16' />
+              <Skeleton className='h-10 w-full max-w-md rounded-md' />
+            </div>
+            <div className='space-y-2'>
+              <Skeleton className='h-4 w-20' />
+              <Skeleton className='h-5 w-48' />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 账户设置卡片骨架 */}
+      <div className='rounded-xl border bg-card shadow-sm p-6 space-y-6'>
+        <div className='space-y-2'>
+          <Skeleton className='h-6 w-32 rounded-lg' />
+          <Skeleton className='h-4 w-64' />
+        </div>
+        <Separator />
+        <div className='space-y-4'>
+          <div className='flex items-center justify-between py-3'>
+            <div className='space-y-2'>
+              <Skeleton className='h-4 w-24' />
+              <Skeleton className='h-3 w-48' />
+            </div>
+            <Skeleton className='h-9 w-24 rounded-md' />
+          </div>
+          <Separator />
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+            <div className='space-y-2'>
+              <Skeleton className='h-4 w-20' />
+              <Skeleton className='h-5 w-full' />
+            </div>
+            <div className='space-y-2'>
+              <Skeleton className='h-4 w-24' />
+              <Skeleton className='h-5 w-full' />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 偏好设置卡片骨架 */}
+      <div className='rounded-xl border bg-card shadow-sm p-6 space-y-6'>
+        <div className='space-y-2'>
+          <Skeleton className='h-6 w-28 rounded-lg' />
+          <Skeleton className='h-4 w-56' />
+        </div>
+        <Separator />
+        <div className='space-y-4'>
+          <div className='flex items-center justify-between py-3'>
+            <div className='space-y-2'>
+              <Skeleton className='h-4 w-16' />
+              <Skeleton className='h-3 w-40' />
+            </div>
+            <Skeleton className='h-10 w-32 rounded-md' />
+          </div>
+          <Separator />
+          <div className='flex items-center justify-between py-3'>
+            <div className='space-y-2'>
+              <Skeleton className='h-4 w-20' />
+              <Skeleton className='h-3 w-52' />
+            </div>
+            <Skeleton className='h-6 w-11 rounded-full' />
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

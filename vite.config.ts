@@ -10,7 +10,6 @@ export default defineConfig({
     tailwindcss(),
     Pages({
       exclude: ['**/components/*'],
-      // 启用路由懒加载
       importMode: 'async',
     }),
   ],

@@ -1,4 +1,4 @@
-import { ModeToggle } from '@/components/mode-toggle'
+import { AnimatedThemeToggler } from '@/components/ui/animated-theme-toggler'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 
@@ -15,7 +15,7 @@ export function PreferencesCard() {
             <Label>主题设置</Label>
             <p className='text-muted-foreground text-sm'>切换明暗主题</p>
           </div>
-          <ModeToggle />
+          <AnimatedThemeToggler />
         </div>
       </CardContent>
     </Card>

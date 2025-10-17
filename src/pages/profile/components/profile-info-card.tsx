@@ -8,7 +8,6 @@ import { ReadonlyField } from './readonly-field'
 
 interface ProfileInfoCardProps {
   user: User
-  image: string | null
   currentName: string
   uploading: boolean
   fullName: string
@@ -31,7 +30,6 @@ interface ProfileInfoCardProps {
 
 export function ProfileInfoCard({
   user,
-  image,
   currentName,
   uploading,
   fullName,
@@ -51,6 +49,8 @@ export function ProfileInfoCard({
   onCancelEmail,
   formatRegistrationDate,
 }: ProfileInfoCardProps) {
+  console.log(1)
+
   return (
     <Card>
       <CardHeader>
@@ -59,7 +59,6 @@ export function ProfileInfoCard({
       </CardHeader>
       <CardContent className='space-y-6'>
         <ProfileHeader
-          image={image}
           name={currentName}
           email={user.email || ''}
           emailConfirmed={!!user.email_confirmed_at}

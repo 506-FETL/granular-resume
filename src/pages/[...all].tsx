@@ -3,10 +3,12 @@ import { ArrowUpRightIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
-import { Globe } from '@/components/ui/globe'
 import { Highlighter } from '@/components/ui/highlighter'
 import { LightRays } from '@/components/ui/light-rays'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { lazy } from 'react'
+
+const Globe = lazy(() => import('@/components/ui/globe').then((module) => ({ default: module.Globe })))
 
 export default function NotFound() {
   const isMobile = useIsMobile()
