@@ -2,17 +2,67 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { UpdatePasswordDialog } from '@/components/update-password-dialog'
+import { getCurrentUser } from '@/lib/supabase/user'
+import type { User } from '@supabase/supabase-js'
+import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 import { SessionInfo } from './session-info'
+import { Skeleton } from '@/components/ui/skeleton'
 
 interface AccountSettingsCardProps {
-  sessionInfo: {
-    lastSignInAt?: string
-    provider?: string
-  } | null
-  formatDate: (dateString?: string) => string
+  user: User
 }
 
-export function AccountSettingsCard({ sessionInfo, formatDate }: AccountSettingsCardProps) {
+export function AccountSettingsCard({ user }: AccountSettingsCardProps) {
+  const [sessionInfo, setSessionInfo] = useState<{
+    lastSignInAt?: string
+    provider?: string
+  } | null>(null)
+
+  useEffect(() => {
+    const fetchSessionInfo = async () => {
+      try {
+        const user = await getCurrentUser()
+        setSessionInfo({
+          lastSignInAt: user.last_sign_in_at || undefined,
+          provider: user.app_metadata.provider || 'email',
+        })
+      } catch (error) {
+        toast.error('加载会话信息失败' + error)
+      }
+    }
+
+    fetchSessionInfo()
+  }, [user])
+
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return '未知'
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffInMs = now.getTime() - date.getTime()
+    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60))
+    const diffInDays = Math.floor(diffInHours / 24)
+
+    // 如果是最近的时间，显示相对时间
+    if (diffInHours < 1) {
+      const diffInMinutes = Math.floor(diffInMs / (1000 * 60))
+      return diffInMinutes < 1 ? '刚刚' : `${diffInMinutes} 分钟前`
+    } else if (diffInHours < 24) {
+      return `${diffInHours} 小时前`
+    } else if (diffInDays < 7) {
+      return `${diffInDays} 天前`
+    }
+
+    // 否则显示完整日期
+    return date.toLocaleDateString('zh-CN', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -30,8 +80,38 @@ export function AccountSettingsCard({ sessionInfo, formatDate }: AccountSettings
 
         <Separator />
 
-        {sessionInfo && <SessionInfo {...sessionInfo} formatDate={formatDate} />}
+        {sessionInfo ? <SessionInfo {...sessionInfo} formatDate={formatDate} /> : <LoadingSkeleton />}
       </CardContent>
     </Card>
   )
 }
+
+const LoadingSkeleton = () => (
+  <div className='rounded-xl border bg-card shadow-sm p-6 space-y-6'>
+    <div className='space-y-2'>
+      <Skeleton className='h-6 w-32 rounded-lg' />
+      <Skeleton className='h-4 w-64' />
+    </div>
+    <Separator />
+    <div className='space-y-4'>
+      <div className='flex items-center justify-between py-3'>
+        <div className='space-y-2'>
+          <Skeleton className='h-4 w-24' />
+          <Skeleton className='h-3 w-48' />
+        </div>
+        <Skeleton className='h-9 w-24 rounded-md' />
+      </div>
+      <Separator />
+      <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+        <div className='space-y-2'>
+          <Skeleton className='h-4 w-20' />
+          <Skeleton className='h-5 w-full' />
+        </div>
+        <div className='space-y-2'>
+          <Skeleton className='h-4 w-24' />
+          <Skeleton className='h-5 w-full' />
+        </div>
+      </div>
+    </div>
+  </div>
+)

@@ -1,35 +1,35 @@
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
+import { getCurrentUser } from '@/lib/supabase/user'
+import type { User } from '@supabase/supabase-js'
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 import { AccountSettingsCard } from './components/account-settings-card'
 import { PreferencesCard } from './components/preferences-card'
 import { ProfileInfoCard } from './components/profile-info-card'
-import { useProfileData } from './components/use-profile-data'
 
 export default function ProfilePage() {
-  const {
-    user,
-    loading,
-    currentName,
-    uploading,
-    fullName,
-    email,
-    editingName,
-    editingEmail,
-    savingName,
-    savingEmail,
-    sessionInfo,
-    setFullName,
-    setEmail,
-    handleFileChange,
-    handleEditName,
-    debouncedUpdateName,
-    handleCancelName,
-    handleEditEmail,
-    debouncedUpdateEmail,
-    handleCancelEmail,
-    formatDate,
-    formatRegistrationDate,
-  } = useProfileData()
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        setLoading(true)
+        const currentUser = await getCurrentUser()
+        setUser(currentUser)
+      } catch (error: any) {
+        toast.error(`用户信息加载失败：${error.message}`)
+        navigate('/login')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchUser()
+  }, [navigate])
 
   if (!user || loading) {
     return <ProfilePageSkeleton />
@@ -46,30 +46,10 @@ export default function ProfilePage() {
       <Separator />
 
       {/* 个人资料卡片 */}
-      <ProfileInfoCard
-        user={user}
-        currentName={currentName}
-        uploading={uploading}
-        fullName={fullName}
-        email={email}
-        editingName={editingName}
-        editingEmail={editingEmail}
-        savingName={savingName}
-        savingEmail={savingEmail}
-        onFileChange={handleFileChange}
-        onFullNameChange={setFullName}
-        onEmailChange={setEmail}
-        onEditName={handleEditName}
-        onSaveName={debouncedUpdateName}
-        onCancelName={handleCancelName}
-        onEditEmail={handleEditEmail}
-        onSaveEmail={debouncedUpdateEmail}
-        onCancelEmail={handleCancelEmail}
-        formatRegistrationDate={formatRegistrationDate}
-      />
+      <ProfileInfoCard user={user} />
 
       {/* 账户设置卡片 */}
-      <AccountSettingsCard sessionInfo={sessionInfo} formatDate={formatDate} />
+      <AccountSettingsCard user={user} />
 
       {/* 偏好设置卡片 */}
       <PreferencesCard />

@@ -1,3 +1,4 @@
+/*global __dirname*/
 import path from 'node:path'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
@@ -9,7 +10,17 @@ export default defineConfig({
     react(),
     tailwindcss(),
     Pages({
-      exclude: ['**/components/*'],
+      exclude: [
+        '**/components/*',
+        '**/utils/*',
+        '**/*.test.*',
+        '**/*.spec.*',
+        '**/hooks/*',
+        '**/models/*',
+        '**/data/*',
+        '**/info/*',
+        '*.ts',
+      ],
       importMode: 'async',
     }),
   ],

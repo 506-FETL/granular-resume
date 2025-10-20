@@ -5,6 +5,11 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
+// 在 ESLint 配置中使用 Node.js 环境变量
+const env = process.env.VITE_ENV || 'development'
+const isProduction = env === 'production'
+const isDevelopment = env === 'development'
+
 export default defineConfig([
   globalIgnores(['dist']),
   {
@@ -20,9 +25,11 @@ export default defineConfig([
       globals: globals.browser,
     },
     rules: {
-      'no-unused-vars': 'warn',
-      'no-console': 'error',
+      'no-console': isProduction ? 'error' : 'warn', // 生产环境禁用 console,开发环境警告
       'no-undef': 'error',
+      '@typescript-eslint/no-unused-vars': [1],
+      '@typescript-eslint/no-explicit-any': 'off',
+      'react-hooks/rules-of-hooks': 'off',
     },
   },
 ])
