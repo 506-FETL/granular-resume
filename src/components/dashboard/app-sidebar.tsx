@@ -1,7 +1,3 @@
-import type React from 'react'
-import { IconHelp, IconInnerShadowTop, IconSearch, IconSettings } from '@tabler/icons-react'
-import { FileUser, LayoutTemplate, SquarePen } from 'lucide-react'
-import { Link } from 'react-router-dom'
 import {
   Sidebar,
   SidebarContent,
@@ -11,6 +7,10 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
+import { IconHelp, IconInnerShadowTop, IconSearch, IconSettings } from '@tabler/icons-react'
+import { FileUser, LayoutTemplate } from 'lucide-react'
+import type React from 'react'
+import { Link } from 'react-router-dom'
 import { NavOptions } from './nav-options'
 import { NavSecondary } from './nav-secondary'
 import { NavUser } from './nav-user'
@@ -21,11 +21,6 @@ const data = {
       title: '我的简历',
       url: '/resume',
       icon: FileUser,
-    },
-    {
-      title: '编辑简历',
-      url: '/editor',
-      icon: SquarePen,
     },
     {
       title: '简历模板',

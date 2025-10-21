@@ -44,7 +44,7 @@ export function CreateResumeCard() {
       selectedType,
     )
       .then((data) => {
-        setCurrentResume(data.id, data.type)
+        setCurrentResume(data.resume_id, data.type)
         return data
       })
       .finally(() => {
@@ -54,7 +54,7 @@ export function CreateResumeCard() {
 
     toast.promise(createPromise, {
       loading: '正在创建简历...',
-      success: (data) => `简历创建成功：id:${data.id} type:${data.type}`,
+      success: (data) => `简历创建成功：resume_id:${data.resume_id} type:${data.type}`,
       error: (error) => `创建简历失败: ${error.message}，请重试`,
     })
   }

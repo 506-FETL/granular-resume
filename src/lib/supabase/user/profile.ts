@@ -4,6 +4,8 @@ import supabase from '../client'
 export async function getUserProfile() {
   const user = await getCurrentUser()
 
+  if (!user) throw new Error('未登陆用户')
+
   const { data, error } = await supabase
     .from('profiles')
     .select('full_name, avatar_url, updated_at')
@@ -17,13 +19,15 @@ export async function getUserProfile() {
 export async function getCurrentUser() {
   const { data, error } = await supabase.auth.getUser()
 
-  if (error) throw error
+  if (error) return null
 
   return data.user
 }
 
 export async function changeAvatar(file: File) {
   const user = await getCurrentUser()
+
+  if (!user) throw new Error('未登陆用户')
 
   const path = `${user.id}/${Date.now()}-${file.name}`
 

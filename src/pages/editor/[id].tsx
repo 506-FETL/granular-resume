@@ -61,7 +61,7 @@ function Editor() {
         // 加载简历数据
         await loadResumeData(resumeId!)
       } catch (error: any) {
-        toast.error(`加载简历失败, ${error.details || '未知错误'}`)
+        toast.error(`加载简历失败, ${error.message || '未知错误'}`)
         navigate('/resume')
       } finally {
         setLoading(false)

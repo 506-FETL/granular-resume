@@ -11,7 +11,7 @@ interface CurrentResumeState {
 }
 
 /**
- * 当前编辑简历的 Store (暂时仅本地存储,不同步到云端)
+ * 当前编辑简历的 Store
  */
 const useCurrentResumeStore = create<CurrentResumeState>()(
   persist(
