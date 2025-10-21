@@ -11,7 +11,7 @@ import { CreateResumeCard } from './components/CreateResumeCard'
 import { ResumeCard } from './components/ResumeCard'
 
 interface Resume {
-  id: string
+  resume_id: string
   created_at: string
   type: ResumeType
   display_name?: string
@@ -47,7 +47,7 @@ export default function ResumePage() {
       switch (payload.eventType) {
         case 'INSERT': {
           const resume = {
-            id: payload.new.id,
+            resume_id: payload.new.resume_id,
             created_at: payload.new.created_at,
             type: payload.new.type,
             display_name: payload.new.display_name,
@@ -59,7 +59,7 @@ export default function ResumePage() {
         case 'UPDATE': {
           setResumes((prev) =>
             prev.map((resume) =>
-              resume.id === payload.new.id
+              resume.resume_id === payload.new.resume_id
                 ? {
                     ...resume,
                     display_name: payload.new.display_name,
@@ -76,7 +76,7 @@ export default function ResumePage() {
         unSubscribe = unsub
       })
       .catch((error) => {
-        toast.error('订阅简历配置更新失败, 请刷新页面重试' + error.details)
+        console.error(error.message)
       })
 
     return () => {
@@ -85,13 +85,13 @@ export default function ResumePage() {
   }, [])
 
   function handleEditResume(resume: Resume) {
-    setCurrentResume(resume.id, resume.type)
-    navigate(`/editor/${resume.id}`)
+    setCurrentResume(resume.resume_id, resume.type)
+    navigate(`/editor/${resume.resume_id}`)
   }
 
   async function handleDeleteResume(id: string) {
     const deletePromise = deleteResume(id).then(() => {
-      setResumes((prev) => prev.filter((resume) => resume.id !== id))
+      setResumes((prev) => prev.filter((resume) => resume.resume_id !== id))
     })
 
     toast.promise(deletePromise, {
@@ -124,7 +124,7 @@ export default function ResumePage() {
         <AnimatePresence mode='popLayout'>
           {resumes.map((resume, index) => (
             <motion.div
-              key={resume.id}
+              key={resume.resume_id}
               layout
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}

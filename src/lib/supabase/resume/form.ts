@@ -4,9 +4,11 @@ import { getCurrentUser } from '../user'
 export async function getAllResumesFromUser() {
   const user = await getCurrentUser()
 
+  if (!user) throw new Error('用户未登陆')
+
   const { data, error } = await supabase
     .from('resume_config')
-    .select('id,created_at,type,display_name,description')
+    .select('resume_id,created_at,type,display_name,description')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
     .range(0, 10)
@@ -21,7 +23,14 @@ export async function getAllResumesFromUser() {
 export async function getResumeById(id: string) {
   const user = await getCurrentUser()
 
-  const { data, error } = await supabase.from('resume_config').select('*').eq('user_id', user.id).eq('id', id).single()
+  if (!user) throw new Error('用户未登陆')
+
+  const { data, error } = await supabase
+    .from('resume_config')
+    .select('*')
+    .eq('user_id', user.id)
+    .eq('resume_id', id)
+    .single()
 
   if (error) {
     throw error
@@ -38,6 +47,8 @@ export async function createNewResume(
   type: string = 'default',
 ) {
   const user = await getCurrentUser()
+
+  if (!user) throw new Error('用户未登陆')
 
   const { data, error } = await supabase
     .from('resume_config')
@@ -59,7 +70,9 @@ export async function createNewResume(
 export async function deleteResume(id: string) {
   const user = await getCurrentUser()
 
-  const { error } = await supabase.from('resume_config').delete().eq('id', id).eq('user_id', user.id)
+  if (!user) throw new Error('用户未登陆')
+
+  const { error } = await supabase.from('resume_config').delete().eq('resume_id', id).eq('user_id', user.id)
 
   if (error) {
     throw error

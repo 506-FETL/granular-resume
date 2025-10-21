@@ -153,6 +153,8 @@ const useResumeStore = create<ResumeState>()(
         try {
           const user = await getCurrentUser()
 
+          if (!user) return
+
           // 准备要保存的数据
           const resumeData = {
             user_id: user.id,

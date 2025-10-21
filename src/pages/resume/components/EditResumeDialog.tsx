@@ -15,7 +15,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { toast } from 'sonner'
 
 interface Resume {
-  id: string
+  resume_id: string
   display_name?: string
   description?: string
 }
@@ -43,7 +43,7 @@ export function EditResumeDialog({ resume, open, onOpenChange }: EditResumeDialo
     setLoading(true)
 
     try {
-      await updateResumeConfig(resume.id, {
+      await updateResumeConfig(resume.resume_id, {
         display_name: displayName.trim() || null,
         description: description.trim() || null,
       })
@@ -51,7 +51,7 @@ export function EditResumeDialog({ resume, open, onOpenChange }: EditResumeDialo
       toast.success('简历信息更新成功')
       onOpenChange(false)
     } catch {
-      toast.error('更新失败，请重试')
+      toast.error('更新失败,请重试')
     } finally {
       setLoading(false)
     }

@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils'
 import { useIsMobile } from '@/hooks/use-mobile'
 
 interface Resume {
-  id: string
+  resume_id: string
   created_at: string
   type: ResumeType
   display_name?: string
@@ -43,7 +43,7 @@ export function ResumeCard({ resume, onEdit, onDelete }: ResumeCardProps) {
   }
 
   const handleDeleteConfirm = async () => {
-    await onDelete(resume.id)
+    await onDelete(resume.resume_id)
     setShowDeleteDialog(false)
   }
 
