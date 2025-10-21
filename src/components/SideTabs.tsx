@@ -68,7 +68,6 @@ export function SideTabsWrapper({
   offsetX = 12,
   padding = 0,
   minHeight = 0,
-  strokeWidth = 1,
   orientation = 'vertical',
   radius = 12,
   controlDown = 12,

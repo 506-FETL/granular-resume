@@ -1,11 +1,8 @@
+import type { UserAttributes } from '@supabase/supabase-js'
 import supabase from '../client'
 
 export async function getUserProfile() {
-  const {
-    data: { user },
-    error: userErr,
-  } = await supabase.auth.getUser()
-  if (userErr || !user) return null
+  const user = await getCurrentUser()
 
   const { data, error } = await supabase
     .from('profiles')
@@ -20,16 +17,13 @@ export async function getUserProfile() {
 export async function getCurrentUser() {
   const { data, error } = await supabase.auth.getUser()
 
-  if (error) console.log(error)
+  if (error) throw error
 
   return data.user
 }
 
 export async function changeAvatar(file: File) {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) throw new Error('未登陆')
+  const user = await getCurrentUser()
 
   const path = `${user.id}/${Date.now()}-${file.name}`
 
@@ -47,4 +41,10 @@ export async function changeAvatar(file: File) {
   if (error) throw error
 
   return avatarUrl
+}
+
+export async function updateProfile(attributes: UserAttributes) {
+  const { error } = await supabase.auth.updateUser(attributes)
+
+  if (error) throw error
 }

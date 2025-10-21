@@ -1,1 +1,0 @@
-# granular-resume
