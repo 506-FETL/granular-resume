@@ -29,13 +29,13 @@ interface DragContextValue {
 const DragContext = createContext<DragContextValue | null>(null)
 
 export function DragProvider({ children }: { children: ReactNode }) {
-  const [draggedItem, setDraggedItem] = useState<DragItem | null>(null)
-  const [overIndex, setOverIndex] = useState<number | null>(null)
-  const [previewPos, setPreviewPos] = useState({ x: 0, y: 0 })
-  const [initialRect, setInitialRect] = useState<DOMRect | null>(null)
-  const itemsRef = useRef<Map<string, { index: number; element: HTMLElement }>>(new Map())
-  const positionsRef = useRef<ItemPosition[]>([])
-  const startPosRef = useRef({ x: 0, y: 0 })
+  const [draggedItem, setDraggedItem] = useState<DragItem | null>(null) // 被拖拽的元素
+  const [overIndex, setOverIndex] = useState<number | null>(null) // 当前悬停的索引
+  const [previewPos, setPreviewPos] = useState({ x: 0, y: 0 }) // 预览位置
+  const [initialRect, setInitialRect] = useState<DOMRect | null>(null) // 初始位置
+  const itemsRef = useRef<Map<string, { index: number; element: HTMLElement }>>(new Map()) // 注册的可拖拽元素
+  const positionsRef = useRef<ItemPosition[]>([]) // 元素位置数据
+  const startPosRef = useRef({ x: 0, y: 0 }) // 拖拽起始位置
 
   const registerItem = useCallback((index: number, id: string, element: HTMLElement) => {
     itemsRef.current.set(id, { index, element })
@@ -101,12 +101,12 @@ export function DragProvider({ children }: { children: ReactNode }) {
 
         if (distance < minDistance) {
           minDistance = distance
-          newOverIndex = clientX < pos.centerX ? pos.index : pos.index
+          newOverIndex = clientX < pos.centerX ? pos.index : pos.index + 1
         }
       })
 
       const firstPos = positionsRef.current[0]
-      const lastPos = positionsRef.current[positionsRef.current.length - 1]
+      const lastPos = positionsRef.current[positionsRef.current.length]
 
       if (firstPos && clientX < firstPos.left) {
         newOverIndex = 0
@@ -146,11 +146,11 @@ export function DragProvider({ children }: { children: ReactNode }) {
           pointerEvents: 'none',
           zIndex: 9999,
           opacity: 0.9,
-          transform: ' scale(1.05)',
+          transform: '',
           transition: 'transform 0.1s ease',
         }}
       >
-        <div className='h-full w-full shadow-2xl rounded-lg border-2 border-primary/50 bg-background/95 backdrop-blur-sm'>
+        <div className='h-full w-full shadow-2xl rounded-lg border-primary/50 bg-background/95 backdrop-blur-sm'>
           {/* 克隆原始内容 */}
           <div
             dangerouslySetInnerHTML={{

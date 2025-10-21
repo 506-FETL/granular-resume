@@ -38,6 +38,7 @@ function Editor() {
   // Resume Store
   const activeTabId = useResumeStore((state) => state.activeTabId)
   const order = useResumeStore((state) => state.order)
+  const orderDraggable = order.filter((id) => id !== 'basics')
   const updateActiveTabId = useResumeStore((state) => state.updateActiveTabId)
   const updateOrder = useResumeStore((state) => state.updateOrder)
   const toggleVisibility = useResumeStore((state) => state.toggleVisibility)
@@ -69,15 +70,6 @@ function Editor() {
 
     loadData()
   }, [resumeId, loadResumeData, setCurrentResume, navigate])
-
-  const orderedItems = order
-    .map((id) => ITEMS.find((item) => item.id === id))
-    .filter((item): item is Item<ORDERType> => item !== undefined)
-
-  const handleOrderChange = (newItems: Item<ORDERType>[]) => {
-    const newOrder = newItems.map((item) => item.id)
-    updateOrder(newOrder)
-  }
 
   if (loading) {
     return (
@@ -139,41 +131,49 @@ function Editor() {
               </DrawerDescription>
             </DrawerHeader>
             <div className='p-4 overflow-y-scroll overflow-x-hidden'>
-              <DraggableList
-                items={orderedItems}
-                onOrderChange={(order) => {
-                  handleOrderChange(order)
-                }}
-              >
+              <DraggableList items={orderDraggable} onOrderChange={(order) => updateOrder(['basics', ...order])}>
                 <SideTabsWrapper defaultId={activeTabId}>
                   <SideTabs>
-                    {orderedItems.map((item, index) => (
-                      <DraggableItem id={item.id} index={index} key={item.id} disabled={item.id === 'basics'}>
-                        <div key={item.id} className='flex flex-col items-center justify-end gap-2'>
-                          {item.id !== 'basics' && (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <div>
-                                  <Switch
-                                    checked={!visibilityState[item.id as VisibilityItemsType]}
-                                    onCheckedChange={() => toggleVisibility(item.id as VisibilityItemsType)}
-                                  />
-                                </div>
-                              </TooltipTrigger>
-                              <TooltipContent>点击可隐藏模块</TooltipContent>
-                            </Tooltip>
-                          )}
-                          <Tab
-                            id={item.id}
-                            onClick={() => updateActiveTabId(item.id)}
-                            disabled={visibilityState[item.id as VisibilityItemsType]}
-                          >
-                            {item.icon}
-                            {!isMobile && item.label}
-                          </Tab>
-                        </div>
-                      </DraggableItem>
-                    ))}
+                    <div className='flex flex-col items-center justify-end gap-2'>
+                      <Tab
+                        id={'basics'}
+                        onClick={() => updateActiveTabId('basics')}
+                        disabled={visibilityState['basics' as VisibilityItemsType]}
+                      >
+                        {ITEMS.find((item) => item.id === 'basics')?.icon}
+                        {!isMobile && ITEMS.find((item) => item.id === 'basics')?.label}
+                      </Tab>
+                    </div>
+                    {orderDraggable.map((itm, index) => {
+                      const item = ITEMS.find((it) => it.id === itm)!
+                      return (
+                        <DraggableItem id={item.id} index={index} key={item.id} disabled={item.id === 'basics'}>
+                          <div key={item.id} className='flex flex-col items-center justify-end gap-2'>
+                            {item.id !== 'basics' && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div>
+                                    <Switch
+                                      checked={!visibilityState[item.id as VisibilityItemsType]}
+                                      onCheckedChange={() => toggleVisibility(item.id as VisibilityItemsType)}
+                                    />
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent>点击可隐藏模块</TooltipContent>
+                              </Tooltip>
+                            )}
+                            <Tab
+                              id={item.id}
+                              onClick={() => updateActiveTabId(item.id)}
+                              disabled={visibilityState[item.id as VisibilityItemsType]}
+                            >
+                              {item.icon}
+                              {!isMobile && item.label}
+                            </Tab>
+                          </div>
+                        </DraggableItem>
+                      )
+                    })}
                   </SideTabs>
                   <ViewPort items={ITEMS} fill={fill} stroke={stroke} />
                 </SideTabsWrapper>

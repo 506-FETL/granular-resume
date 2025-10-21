@@ -45,29 +45,38 @@ export function DraggableItem({
 
   // 计算 x 轴偏移量
   const calculateXOffset = () => {
-    // 如果没有拖拽，返回 0（拖拽结束后立即归零）
-    if (!draggedItem || overIndex === null || !elementWidth) return 0
+    if (disabled) return 0
+    // 如果没有拖拽或没有元素宽度，返回 0
+    if (!draggedItem || !elementWidth) return 0
 
     const draggedIndex = draggedItem.index
     const currentIndex = index
+    // 如果 overIndex 为 null，使用 draggedIndex 作为默认值（刚开始拖拽时）
+    const targetIndex = overIndex === null ? draggedIndex : overIndex
 
-    // 如果是被拖拽的元素本身
+    // 如果是被拖拽的元素本身，不移动（原位置隐藏，DragContext 显示预览）
     if (isDragging) {
-      // 被拖拽元素移动到目标位置
-      return (overIndex - currentIndex) * elementWidth
+      return 0
     }
 
-    // 如果拖拽元素从左往右移动
-    if (draggedIndex < overIndex) {
-      // 在拖拽元素原位置和目标位置之间的元素需要向左移动
-      if (currentIndex > draggedIndex && currentIndex <= overIndex) {
+    // 如果拖拽元素在原位（没有移动），所有元素都不需要偏移
+    if (draggedIndex === targetIndex) {
+      return 0
+    }
+
+    // 如果拖拽元素从左往右移动（draggedIndex < targetIndex）
+    if (draggedIndex < targetIndex) {
+      // 在拖拽元素和目标位置之间的元素需要向左移动，填补被拖走的空位
+      // 例如：[0,1,2,3,4]，拖 1 到 3 的位置，则 2 和 3 向左移
+      if (currentIndex > draggedIndex && currentIndex <= targetIndex) {
         return -elementWidth
       }
     }
-    // 如果拖拽元素从右往左移动
-    else if (draggedIndex > overIndex) {
-      // 在目标位置和拖拽元素原位置之间的元素需要向右移动
-      if (currentIndex < draggedIndex && currentIndex >= overIndex) {
+    // 如果拖拽元素从右往左移动（draggedIndex > targetIndex）
+    else {
+      // 在目标位置和拖拽元素之间的元素需要向右移动，为拖入的元素让出空位
+      // 例如：[0,1,2,3,4]，拖 3 到 1 的位置，则 1 和 2 向右移
+      if (currentIndex >= targetIndex && currentIndex < draggedIndex) {
         return elementWidth
       }
     }
@@ -77,6 +86,9 @@ export function DraggableItem({
 
   const xOffset = calculateXOffset()
 
+  // 判断是否拖回原位
+  const isDraggingBackToOriginal = isDragging && draggedItem && overIndex !== null && draggedItem.index === overIndex
+
   return (
     <motion.div
       key={id}
@@ -84,7 +96,7 @@ export function DraggableItem({
       initial={false}
       animate={{
         x: xOffset,
-        opacity: isDragging ? 0 : 1,
+        opacity: isDragging ? (isDraggingBackToOriginal ? 0.3 : 0) : 1,
         scale: isDragging ? 0.98 : 1,
       }}
       transition={{
@@ -100,8 +112,8 @@ export function DraggableItem({
         scale: { duration: 0.2 },
       }}
       style={{
-        // 被拖拽元素的原位置依然占据空间，但完全透明
-        visibility: isDragging ? 'hidden' : 'visible',
+        // 只有在拖拽到其他位置时才隐藏原位置
+        visibility: isDragging && !isDraggingBackToOriginal ? 'hidden' : 'visible',
       }}
       className={cn(
         'relative',
