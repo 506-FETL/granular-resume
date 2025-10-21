@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -26,7 +26,7 @@ import { Plus } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { toast } from 'sonner'
 
-export function CreateResumeCard({ onUpdate }: { onUpdate: () => void }) {
+export function CreateResumeCard() {
   const { setCurrentResume } = useCurrentResumeStore()
 
   const [isCreating, setIsCreating] = useState(false)
@@ -45,7 +45,6 @@ export function CreateResumeCard({ onUpdate }: { onUpdate: () => void }) {
     )
       .then((data) => {
         setCurrentResume(data.id, data.type)
-        onUpdate()
         return data
       })
       .finally(() => {
@@ -70,21 +69,20 @@ export function CreateResumeCard({ onUpdate }: { onUpdate: () => void }) {
   return (
     <section>
       <Card
-        className='hover:shadow-lg transition-all duration-300 cursor-pointer border-dashed border-2 flex items-center justify-center min-h-[250px] hover:border-primary/50 hover:bg-primary/5 group relative overflow-hidden'
+        className='hover:shadow-lg transition-all duration-300 cursor-pointer border-dashed border-2 hover:border-primary/50 h-full flex flex-col'
         onClick={() => setIsCreating(true)}
       >
-        {/* 背景装饰 */}
-        <div className='absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300' />
-
-        <CardContent className='flex flex-col items-center justify-center gap-4 p-8 relative z-10'>
-          <div className='h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-300'>
-            <Plus className='h-8 w-8 text-primary group-hover:rotate-90 transition-transform duration-300' />
+        <CardHeader className='flex justify-center'>
+          <div className='h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center'>
+            <Plus className='h-8 w-8' />
           </div>
-          <div className='text-center'>
-            <p className='font-semibold text-lg group-hover:text-primary transition-colors'>创建新简历</p>
-            <p className='text-sm text-muted-foreground mt-1'>开始制作你的专属简历</p>
-          </div>
+        </CardHeader>
+        <CardContent className='flex justify-center'>
+          <p className='font-semibold text-lg'>创建新简历</p>
         </CardContent>
+        <CardFooter className='flex justify-center'>
+          <p className='text-sm text-muted-foreground'>开始制作你的专属简历</p>
+        </CardFooter>
       </Card>
       {isCreating && (
         <Dialog open={isCreating} onOpenChange={setIsCreating}>
@@ -145,24 +143,9 @@ export function CreateResumeCard({ onUpdate }: { onUpdate: () => void }) {
                     <SelectContent>
                       <SelectGroup>
                         <SelectLabel>可用模板</SelectLabel>
-                        <SelectItem value='default'>
-                          <div className='flex flex-col items-start'>
-                            <span className='font-medium'>默认模板</span>
-                            <span className='text-xs text-muted-foreground'>经典简洁的简历样式</span>
-                          </div>
-                        </SelectItem>
-                        <SelectItem value='modern'>
-                          <div className='flex flex-col items-start'>
-                            <span className='font-medium'>现代模板</span>
-                            <span className='text-xs text-muted-foreground'>时尚现代的设计风格</span>
-                          </div>
-                        </SelectItem>
-                        <SelectItem value='simple'>
-                          <div className='flex flex-col items-start'>
-                            <span className='font-medium'>简约模板</span>
-                            <span className='text-xs text-muted-foreground'>极简风格突出内容</span>
-                          </div>
-                        </SelectItem>
+                        <SelectItem value='default'>默认</SelectItem>
+                        <SelectItem value='modern'>现代</SelectItem>
+                        <SelectItem value='simple'>简约</SelectItem>
                       </SelectGroup>
                     </SelectContent>
                   </Select>

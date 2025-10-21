@@ -10,10 +10,9 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import supabase from '@/lib/supabase/client'
-import { useState, useEffect, type FormEvent } from 'react'
-import { toast } from 'sonner'
 import { updateResumeConfig } from '@/lib/supabase/resume'
+import { useEffect, useState, type FormEvent } from 'react'
+import { toast } from 'sonner'
 
 interface Resume {
   id: string
@@ -25,10 +24,9 @@ interface EditResumeDialogProps {
   resume: Resume
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSuccess: () => void
 }
 
-export function EditResumeDialog({ resume, open, onOpenChange, onSuccess }: EditResumeDialogProps) {
+export function EditResumeDialog({ resume, open, onOpenChange }: EditResumeDialogProps) {
   const [displayName, setDisplayName] = useState(resume.display_name || '')
   const [description, setDescription] = useState(resume.description || '')
   const [loading, setLoading] = useState(false)
@@ -51,7 +49,6 @@ export function EditResumeDialog({ resume, open, onOpenChange, onSuccess }: Edit
       })
 
       toast.success('简历信息更新成功')
-      onSuccess()
       onOpenChange(false)
     } catch {
       toast.error('更新失败，请重试')

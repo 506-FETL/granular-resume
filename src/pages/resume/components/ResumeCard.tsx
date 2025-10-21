@@ -5,6 +5,8 @@ import { useState, type MouseEvent } from 'react'
 import { EditResumeDialog } from './EditResumeDialog'
 import { DeleteResumeDialog } from './DeleteResumeDialog'
 import type { ResumeType } from '@/store/resume/current'
+import { cn } from '@/lib/utils'
+import { useIsMobile } from '@/hooks/use-mobile'
 
 interface Resume {
   id: string
@@ -17,14 +19,14 @@ interface Resume {
 interface ResumeCardProps {
   resume: Resume
   onEdit: (resume: Resume) => void
-  onDelete: (id: string) => void
-  onUpdate: () => void
+  onDelete: (id: string) => Promise<void>
 }
 
-export function ResumeCard({ resume, onEdit, onDelete, onUpdate }: ResumeCardProps) {
+export function ResumeCard({ resume, onEdit, onDelete }: ResumeCardProps) {
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
+  const isMobile = useIsMobile()
 
   const handleCardClick = () => {
     onEdit(resume)
@@ -48,7 +50,7 @@ export function ResumeCard({ resume, onEdit, onDelete, onUpdate }: ResumeCardPro
   return (
     <>
       <Card
-        className='hover:shadow-lg transition-all duration-300 cursor-pointer group relative overflow-visible'
+        className='hover:shadow-lg transition-all duration-300 cursor-pointer relative h-full flex flex-col'
         onClick={handleCardClick}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
@@ -57,9 +59,14 @@ export function ResumeCard({ resume, onEdit, onDelete, onUpdate }: ResumeCardPro
         <Button
           onClick={handleDeleteClick}
           size='icon'
-          className={`absolute -top-2 -right-2 z-10 h-6 w-6 rounded-full bg-gradient-to-br from-red-500 to-red-600  hover:from-red-600 hover:to-red-700 flex items-center justify-center shadow-lg hover:cursor-pointer  ${
-            isHovered ? 'opacity-100 scale-100 rotate-0' : 'opacity-0 scale-0 rotate-90'
-          }`}
+          className={cn(
+            'absolute -top-2 -right-2 z-10 h-6 w-6 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center shadow-lg hover:cursor-pointer',
+            isMobile
+              ? 'opacity-100 scale-100 rotate-0'
+              : isHovered
+                ? 'opacity-100 scale-100 rotate-0'
+                : 'opacity-0 scale-0 rotate-90',
+          )}
           aria-label='删除简历'
         >
           <X className='h-4 w-4' />
@@ -71,20 +78,20 @@ export function ResumeCard({ resume, onEdit, onDelete, onUpdate }: ResumeCardPro
             <span className='text-xs text-muted-foreground'>{new Date(resume.created_at).toLocaleDateString()}</span>
           </div>
         </CardHeader>
-        <CardContent>
-          <CardTitle className='mt-4 line-clamp-1'>{resume.display_name || `未命名简历`}</CardTitle>
-          <CardDescription className='line-clamp-2'>{resume.description || '点击编辑简历内容'}</CardDescription>
+        <CardContent className='flex-1'>
+          <CardTitle>{resume.display_name || `未命名简历`}</CardTitle>
+          <CardDescription>{resume.description || '点击编辑简历内容'}</CardDescription>
         </CardContent>
-        <CardFooter className='space-y-2'>
-          <Button variant='outline' className='w-full' onClick={handleEditClick}>
-            <Edit2 className='h-4 w-4 mr-2' />
+        <CardFooter>
+          <Button variant='outline' onClick={handleEditClick} className='w-full'>
+            <Edit2 />
             编辑简历信息
           </Button>
         </CardFooter>
       </Card>
 
       {/* 编辑对话框 */}
-      <EditResumeDialog resume={resume} open={showEditDialog} onOpenChange={setShowEditDialog} onSuccess={onUpdate} />
+      <EditResumeDialog resume={resume} open={showEditDialog} onOpenChange={setShowEditDialog} />
 
       {/* 删除确认对话框 */}
       <DeleteResumeDialog
