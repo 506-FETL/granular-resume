@@ -200,14 +200,17 @@ function Editor() {
                               <TooltipContent>点击可隐藏模块</TooltipContent>
                             </Tooltip>
                           )}
-                          <Tab
-                            id={item.id}
-                            onClick={() => updateActiveTabId(item.id)}
-                            disabled={visibilityState[item.id as VisibilityItemsType]}
-                          >
-                            {item.icon}
-                            {!isMobile && item.label}
-                          </Tab>
+
+                          <div onMouseDown={(e) => e.stopPropagation()}>
+                            <Tab
+                              id={item.id}
+                              onClick={() => updateActiveTabId(item.id)}
+                              disabled={visibilityState[item.id as VisibilityItemsType]}
+                            >
+                              {item.icon}
+                              {!isMobile && item.label}
+                            </Tab>
+                          </div>
                         </div>
                       </DraggableItem>
                     ))}

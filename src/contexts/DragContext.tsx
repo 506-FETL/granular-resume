@@ -63,7 +63,6 @@ export function DragProvider({ children }: { children: ReactNode }) {
 
   const startDrag = useCallback(
     (index: number, id: string, startX: number, startY: number) => {
-      console.log('Start dragging item:', id, startX, startY)
       const item = itemsRef.current.get(id)
       if (item) {
         const rect = item.element.getBoundingClientRect()
@@ -147,7 +146,7 @@ export function DragProvider({ children }: { children: ReactNode }) {
           pointerEvents: 'none',
           zIndex: 9999,
           opacity: 0.9,
-          transform: 'rotate(-2deg) scale(1.05)',
+          transform: ' scale(1.05)',
           transition: 'transform 0.1s ease',
         }}
       >
@@ -182,6 +181,7 @@ export function DragProvider({ children }: { children: ReactNode }) {
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useDrag() {
   const context = useContext(DragContext)
   if (!context) {

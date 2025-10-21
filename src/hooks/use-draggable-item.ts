@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useDrag } from '@/contexts/DragContext'
-
+import type React from 'react'
 export function useDraggableItem(id: string, index: number, disabled = false) {
   const elementRef = useRef<HTMLDivElement>(null)
   const [isHovered, setIsHovered] = useState(false)

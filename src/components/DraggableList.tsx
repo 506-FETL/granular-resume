@@ -3,7 +3,7 @@ import { useDrag } from '@/contexts/DragContext'
 
 interface DraggableListProps<T> {
   items: T[]
-  onOrderChange?: (newOrder: T[]) => void // 改：传递完整的 items 数组
+  onOrderChange?: (newOrder: T[]) => void
   children: ReactNode
 }
 
@@ -13,18 +13,18 @@ export function DraggableList<T>({ items, onOrderChange, children }: DraggableLi
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!draggedItem) return
+      // 实时更新 overIndex，触发子元素重新计算偏移量
       updateOverIndex(e.clientX, e.clientY)
     }
 
     const handleMouseUp = () => {
+      // 只在松开鼠标时才更新数据
       if (draggedItem !== null && overIndex !== null) {
         if (draggedItem.index !== overIndex) {
-          // 重新排序
           const newItems = [...items]
           const [removed] = newItems.splice(draggedItem.index, 1)
           newItems.splice(overIndex, 0, removed)
 
-          // 通知外部新的顺序（传递完整的 items 数组）
           if (onOrderChange) {
             onOrderChange(newItems)
           }
@@ -44,5 +44,5 @@ export function DraggableList<T>({ items, onOrderChange, children }: DraggableLi
     }
   }, [draggedItem, overIndex, items, endDrag, updateOverIndex, onOrderChange])
 
-  return <div className='relative'>{children}</div>
+  return <div className='relative '>{children}</div>
 }
