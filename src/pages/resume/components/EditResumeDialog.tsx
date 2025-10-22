@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { updateResumeConfig } from '@/lib/supabase/resume'
+import { updateOfflineResumeMeta, isOfflineResumeId } from '@/lib/offline-resume-manager'
 import { useEffect, useState, type FormEvent } from 'react'
 import { toast } from 'sonner'
 
@@ -18,15 +19,17 @@ interface Resume {
   resume_id: string
   display_name?: string
   description?: string
+  isOffline?: boolean
 }
 
 interface EditResumeDialogProps {
   resume: Resume
   open: boolean
   onOpenChange: (open: boolean) => void
+  onSuccess?: (updatedResume: { display_name: string; description: string }) => void
 }
 
-export function EditResumeDialog({ resume, open, onOpenChange }: EditResumeDialogProps) {
+export function EditResumeDialog({ resume, open, onOpenChange, onSuccess }: EditResumeDialogProps) {
   const [displayName, setDisplayName] = useState(resume.display_name || '')
   const [description, setDescription] = useState(resume.description || '')
   const [loading, setLoading] = useState(false)
@@ -43,15 +46,33 @@ export function EditResumeDialog({ resume, open, onOpenChange }: EditResumeDialo
     setLoading(true)
 
     try {
-      await updateResumeConfig(resume.resume_id, {
-        display_name: displayName.trim() || null,
-        description: description.trim() || null,
-      })
+      // 判断是离线还是在线简历
+      if (isOfflineResumeId(resume.resume_id)) {
+        // 更新离线简历
+        await updateOfflineResumeMeta(resume.resume_id, {
+          display_name: displayName.trim() || '未命名简历',
+          description: description.trim() || '',
+        })
+      } else {
+        // 更新在线简历
+        await updateResumeConfig(resume.resume_id, {
+          display_name: displayName.trim() || null,
+          description: description.trim() || null,
+        })
+      }
 
       toast.success('简历信息更新成功')
       onOpenChange(false)
-    } catch {
-      toast.error('更新失败,请重试')
+
+      // 通知父组件更新成功
+      if (onSuccess) {
+        onSuccess({
+          display_name: displayName.trim() || '未命名简历',
+          description: description.trim() || '',
+        })
+      }
+    } catch (error: any) {
+      toast.error(`更新失败: ${error.message || '请重试'}`)
     } finally {
       setLoading(false)
     }

@@ -30,6 +30,7 @@ import {
 } from '@/lib/schema'
 import { getResumeById, updateResumeConfig } from '@/lib/supabase/resume'
 import { getCurrentUser } from '@/lib/supabase/user'
+import { getOfflineResumeById, updateOfflineResume, isOfflineResumeId } from '@/lib/offline-resume-manager'
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 import useCurrentResumeStore from './current'
@@ -151,39 +152,71 @@ const useResumeStore = create<ResumeState>()(
         set({ isSyncing: true, syncError: null })
 
         try {
-          const user = await getCurrentUser()
+          // 判断是离线还是在线简历
+          if (isOfflineResumeId(resumeId)) {
+            // 保存到 IndexedDB
+            await updateOfflineResume(resumeId, {
+              basics: state.basics,
+              jobIntent: state.jobIntent,
+              applicationInfo: state.applicationInfo,
+              eduBackground: state.eduBackground,
+              workExperience: state.workExperience,
+              internshipExperience: state.internshipExperience,
+              campusExperience: state.campusExperience,
+              projectExperience: state.projectExperience,
+              skillSpecialty: state.skillSpecialty,
+              honorsCertificates: state.honorsCertificates,
+              selfEvaluation: state.selfEvaluation,
+              hobbies: state.hobbies,
+              order: state.order,
+              visibility: state.visibility,
+            })
 
-          if (!user) return
+            set({
+              isSyncing: false,
+              lastSyncTime: Date.now(),
+              syncError: null,
+              pendingChanges: false,
+            })
+          } else {
+            // 在线简历：保存到 Supabase
+            const user = await getCurrentUser()
 
-          // 准备要保存的数据
-          const resumeData = {
-            user_id: user.id,
-            basics: state.basics,
-            job_intent: state.jobIntent,
-            application_info: state.applicationInfo,
-            edu_background: state.eduBackground,
-            work_experience: state.workExperience,
-            internship_experience: state.internshipExperience,
-            campus_experience: state.campusExperience,
-            project_experience: state.projectExperience,
-            skill_specialty: state.skillSpecialty,
-            honors_certificates: state.honorsCertificates,
-            self_evaluation: state.selfEvaluation,
-            hobbies: state.hobbies,
-            order: state.order,
-            visibility: state.visibility,
-            updated_at: new Date().toISOString(),
+            if (!user) {
+              set({ isSyncing: false, syncError: '用户未登录' })
+              return
+            }
+
+            // 准备要保存的数据
+            const resumeData = {
+              user_id: user.id,
+              basics: state.basics,
+              job_intent: state.jobIntent,
+              application_info: state.applicationInfo,
+              edu_background: state.eduBackground,
+              work_experience: state.workExperience,
+              internship_experience: state.internshipExperience,
+              campus_experience: state.campusExperience,
+              project_experience: state.projectExperience,
+              skill_specialty: state.skillSpecialty,
+              honors_certificates: state.honorsCertificates,
+              self_evaluation: state.selfEvaluation,
+              hobbies: state.hobbies,
+              order: state.order,
+              visibility: state.visibility,
+              updated_at: new Date().toISOString(),
+            }
+
+            // 更新现有简历
+            await updateResumeConfig(resumeId, resumeData)
+
+            set({
+              isSyncing: false,
+              lastSyncTime: Date.now(),
+              syncError: null,
+              pendingChanges: false,
+            })
           }
-
-          // 更新现有简历
-          await updateResumeConfig(resumeId, resumeData)
-
-          set({
-            isSyncing: false,
-            lastSyncTime: Date.now(),
-            syncError: null,
-            pendingChanges: false,
-          })
         } catch (error) {
           set({
             isSyncing: false,
@@ -201,25 +234,56 @@ const useResumeStore = create<ResumeState>()(
       },
 
       loadResumeData: async (resumeId: string) => {
-        const data = await getResumeById(resumeId)
+        // 判断是离线还是在线简历
+        if (isOfflineResumeId(resumeId)) {
+          // 从 IndexedDB 加载离线简历
+          const offlineResume = await getOfflineResumeById(resumeId)
 
-        set({
-          basics: data.basics || DEFAULT_BASICS,
-          jobIntent: data.job_intent || DEFAULT_JOB_INTENT,
-          applicationInfo: data.application_info || DEFAULT_APPLICATION_INFO,
-          eduBackground: data.edu_background || DEFAULT_EDU_BACKGROUND,
-          workExperience: data.work_experience || DEFAULT_WORK_EXPERIENCE,
-          internshipExperience: data.internship_experience || DEFAULT_INTERNSHIP_EXPERIENCE,
-          campusExperience: data.campus_experience || DEFAULT_CAMPUS_EXPERIENCE,
-          projectExperience: data.project_experience || DEFAULT_PROJECT_EXPERIENCE,
-          skillSpecialty: data.skill_specialty || DEFAULT_SKILL_SPECIALTY,
-          honorsCertificates: data.honors_certificates || DEFAULT_HONORS_CERTIFICATES,
-          selfEvaluation: data.self_evaluation || DEFAULT_SELF_EVALUATION,
-          hobbies: data.hobbies || DEFAULT_HOBBIES,
-          order: data.order || DEFAULT_ORDER,
-          visibility: data.visibility || DEFAULT_VISIBILITY,
-          pendingChanges: false,
-        })
+          if (!offlineResume) {
+            throw new Error('离线简历不存在')
+          }
+
+          const data = (offlineResume.data as any) || {}
+
+          set({
+            basics: data.basics || DEFAULT_BASICS,
+            jobIntent: data.jobIntent || DEFAULT_JOB_INTENT,
+            applicationInfo: data.applicationInfo || DEFAULT_APPLICATION_INFO,
+            eduBackground: data.eduBackground || DEFAULT_EDU_BACKGROUND,
+            workExperience: data.workExperience || DEFAULT_WORK_EXPERIENCE,
+            internshipExperience: data.internshipExperience || DEFAULT_INTERNSHIP_EXPERIENCE,
+            campusExperience: data.campusExperience || DEFAULT_CAMPUS_EXPERIENCE,
+            projectExperience: data.projectExperience || DEFAULT_PROJECT_EXPERIENCE,
+            skillSpecialty: data.skillSpecialty || DEFAULT_SKILL_SPECIALTY,
+            honorsCertificates: data.honorsCertificates || DEFAULT_HONORS_CERTIFICATES,
+            selfEvaluation: data.selfEvaluation || DEFAULT_SELF_EVALUATION,
+            hobbies: data.hobbies || DEFAULT_HOBBIES,
+            order: data.order || DEFAULT_ORDER,
+            visibility: data.visibility || DEFAULT_VISIBILITY,
+            pendingChanges: false,
+          })
+        } else {
+          // 从 Supabase 加载在线简历
+          const data = await getResumeById(resumeId)
+
+          set({
+            basics: data.basics || DEFAULT_BASICS,
+            jobIntent: data.job_intent || DEFAULT_JOB_INTENT,
+            applicationInfo: data.application_info || DEFAULT_APPLICATION_INFO,
+            eduBackground: data.edu_background || DEFAULT_EDU_BACKGROUND,
+            workExperience: data.work_experience || DEFAULT_WORK_EXPERIENCE,
+            internshipExperience: data.internship_experience || DEFAULT_INTERNSHIP_EXPERIENCE,
+            campusExperience: data.campus_experience || DEFAULT_CAMPUS_EXPERIENCE,
+            projectExperience: data.project_experience || DEFAULT_PROJECT_EXPERIENCE,
+            skillSpecialty: data.skill_specialty || DEFAULT_SKILL_SPECIALTY,
+            honorsCertificates: data.honors_certificates || DEFAULT_HONORS_CERTIFICATES,
+            selfEvaluation: data.self_evaluation || DEFAULT_SELF_EVALUATION,
+            hobbies: data.hobbies || DEFAULT_HOBBIES,
+            order: data.order || DEFAULT_ORDER,
+            visibility: data.visibility || DEFAULT_VISIBILITY,
+            pendingChanges: false,
+          })
+        }
       },
 
       resetToDefaults: () => {

@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button'
 import { Card, CardDescription, CardHeader, CardTitle, CardFooter, CardContent } from '@/components/ui/card'
-import { FileText, X, Edit2 } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { FileText, X, Edit2, Cloud, HardDrive } from 'lucide-react'
 import { useState, type MouseEvent } from 'react'
 import { EditResumeDialog } from './EditResumeDialog'
 import { DeleteResumeDialog } from './DeleteResumeDialog'
@@ -14,19 +15,37 @@ interface Resume {
   type: ResumeType
   display_name?: string
   description?: string
+  isOffline?: boolean
 }
 
 interface ResumeCardProps {
   resume: Resume
   onEdit: (resume: Resume) => void
   onDelete: (id: string) => Promise<void>
+  onUpdate?: (resumeId: string, updates: { display_name: string; description: string }) => void
+  isOnline: boolean
 }
 
-export function ResumeCard({ resume, onEdit, onDelete }: ResumeCardProps) {
+export function ResumeCard({ resume, onEdit, onDelete, onUpdate }: ResumeCardProps) {
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
+  const [localResume, setLocalResume] = useState(resume)
   const isMobile = useIsMobile()
+
+  const handleUpdateSuccess = (updates: { display_name: string; description: string }) => {
+    // 更新本地状态
+    setLocalResume((prev) => ({
+      ...prev,
+      display_name: updates.display_name,
+      description: updates.description,
+    }))
+
+    // 通知父组件
+    if (onUpdate) {
+      onUpdate(resume.resume_id, updates)
+    }
+  }
 
   const handleCardClick = () => {
     onEdit(resume)
@@ -75,12 +94,28 @@ export function ResumeCard({ resume, onEdit, onDelete }: ResumeCardProps) {
         <CardHeader>
           <div className='flex items-center justify-between'>
             <FileText className='h-8 w-8 text-primary' />
-            <span className='text-xs text-muted-foreground'>{new Date(resume.created_at).toLocaleDateString()}</span>
+            <div className='flex items-center gap-2'>
+              {resume.isOffline ? (
+                <Badge
+                  variant='secondary'
+                  className='text-xs bg-slate-200 text-slate-700 hover:bg-slate-300 border-slate-300'
+                >
+                  <HardDrive className='h-3 w-3 mr-1' />
+                  本地
+                </Badge>
+              ) : (
+                <Badge variant='default' className='text-xs bg-sky-500 hover:bg-sky-600 text-white border-sky-500'>
+                  <Cloud className='h-3 w-3 mr-1' />
+                  云端
+                </Badge>
+              )}
+              <span className='text-xs text-muted-foreground'>{new Date(resume.created_at).toLocaleDateString()}</span>
+            </div>
           </div>
         </CardHeader>
         <CardContent className='flex-1'>
-          <CardTitle>{resume.display_name || `未命名简历`}</CardTitle>
-          <CardDescription>{resume.description || '点击编辑简历内容'}</CardDescription>
+          <CardTitle>{localResume.display_name || `未命名简历`}</CardTitle>
+          <CardDescription>{localResume.description || '点击编辑简历内容'}</CardDescription>
         </CardContent>
         <CardFooter>
           <Button variant='outline' onClick={handleEditClick} className='w-full'>
@@ -91,11 +126,16 @@ export function ResumeCard({ resume, onEdit, onDelete }: ResumeCardProps) {
       </Card>
 
       {/* 编辑对话框 */}
-      <EditResumeDialog resume={resume} open={showEditDialog} onOpenChange={setShowEditDialog} />
+      <EditResumeDialog
+        resume={localResume}
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        onSuccess={handleUpdateSuccess}
+      />
 
       {/* 删除确认对话框 */}
       <DeleteResumeDialog
-        resumeName={resume.display_name || '未命名简历'}
+        resumeName={localResume.display_name || '未命名简历'}
         open={showDeleteDialog}
         onOpenChange={setShowDeleteDialog}
         onConfirm={handleDeleteConfirm}

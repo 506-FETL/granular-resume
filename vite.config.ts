@@ -4,9 +4,13 @@ import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import Pages from 'vite-plugin-pages'
+import wasm from 'vite-plugin-wasm'
+import topLevelAwait from 'vite-plugin-top-level-await'
 
 export default defineConfig({
   plugins: [
+    wasm(),
+    topLevelAwait(),
     react(),
     tailwindcss(),
     Pages({

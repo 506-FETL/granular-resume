@@ -21,12 +21,25 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { createNewResume } from '@/lib/supabase/resume/form'
+import { createOfflineResume } from '@/lib/offline-resume-manager'
 import useCurrentResumeStore, { type ResumeType } from '@/store/resume/current'
 import { Plus } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { toast } from 'sonner'
 
-export function CreateResumeCard() {
+interface CreateResumeCardProps {
+  isOnline: boolean
+  onResumeCreated?: (resume: {
+    resume_id: string
+    created_at: string
+    type: ResumeType
+    display_name?: string
+    description?: string
+    isOffline?: boolean
+  }) => void
+}
+
+export function CreateResumeCard({ isOnline, onResumeCreated }: CreateResumeCardProps) {
   const { setCurrentResume } = useCurrentResumeStore()
 
   const [isCreating, setIsCreating] = useState(false)
@@ -39,24 +52,61 @@ export function CreateResumeCard() {
     e.preventDefault()
     setLoading(true)
 
-    const createPromise = createNewResume(
-      { display_name: displayName.trim(), description: description.trim() },
-      selectedType,
-    )
-      .then((data) => {
-        setCurrentResume(data.resume_id, data.type)
-        return data
-      })
-      .finally(() => {
+    try {
+      if (isOnline) {
+        // 在线模式：创建云端简历
+        const createPromise = createNewResume(
+          { display_name: displayName.trim(), description: description.trim() },
+          selectedType,
+        )
+          .then((data) => {
+            setCurrentResume(data.resume_id, data.type)
+            onResumeCreated?.({
+              resume_id: data.resume_id,
+              created_at: data.created_at,
+              type: data.type,
+              display_name: data.display_name,
+              description: data.description,
+              isOffline: false,
+            })
+            return data
+          })
+          .finally(() => {
+            setLoading(false)
+            handleCancel()
+          })
+
+        toast.promise(createPromise, {
+          loading: '正在创建简历...',
+          success: '简历创建成功',
+          error: (error) => `创建简历失败: ${error.message}，请重试`,
+        })
+      } else {
+        // 离线模式：创建本地简历
+        const resumeId = await createOfflineResume({
+          display_name: displayName.trim(),
+          description: description.trim(),
+          type: selectedType,
+        })
+
+        setCurrentResume(resumeId, selectedType)
+        onResumeCreated?.({
+          resume_id: resumeId,
+          created_at: new Date().toISOString(),
+          type: selectedType,
+          display_name: displayName.trim(),
+          description: description.trim(),
+          isOffline: true,
+        })
+
+        toast.success('本地简历创建成功')
         setLoading(false)
         handleCancel()
-      })
-
-    toast.promise(createPromise, {
-      loading: '正在创建简历...',
-      success: (data) => `简历创建成功：resume_id:${data.resume_id} type:${data.type}`,
-      error: (error) => `创建简历失败: ${error.message}，请重试`,
-    })
+      }
+    } catch (error: any) {
+      setLoading(false)
+      toast.error(`创建失败: ${error.message}`)
+    }
   }
 
   const handleCancel = () => {
@@ -90,7 +140,9 @@ export function CreateResumeCard() {
             <DialogHeader>
               <DialogTitle className='text-2xl font-bold'>创建新简历</DialogTitle>
               <DialogDescription className='text-base'>
-                填写简历信息，选择合适的模板开始制作你的专属简历
+                {isOnline
+                  ? '填写简历信息，选择合适的模板。简历将保存到云端。'
+                  : '填写简历信息，选择合适的模板。简历将保存在本地。'}
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleCreateResume}>

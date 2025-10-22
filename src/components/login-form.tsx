@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { SignInWithEmailAndPassword } from '@/lib/supabase/user'
 import { cn } from '@/lib/utils'
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Spinner } from './ui/spinner'
 
@@ -23,7 +23,8 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
     try {
       await SignInWithEmailAndPassword(email, password)
 
-      navigate('/editor')
+      // 导航到简历页面，同步对话框会在那里自动显示
+      navigate('/resume')
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : '发生错误, 请稍后再试')
     } finally {

@@ -20,28 +20,32 @@ export function ResumeConfigToolbar() {
   const { spacing, font, theme, updateSpacing, updateFont, updateTheme } = useResumeConfigStore()
 
   return (
-    <div className='flex flex-row md:flex-col gap-2 p-4'>
+    <div className='flex flex-row md:flex-col gap-2 p-2 md:p-4'>
       {/* 间距设置 */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
             variant='outline'
             size={isMobile ? 'icon' : 'default'}
-            className={cn('shadow-md', isMobile && 'h-10 w-10')}
+            className={cn('shadow-md', isMobile && 'h-9 w-9')}
           >
-            <Space className='h-4 w-4' />
+            <Space className={cn(isMobile ? 'h-4 w-4' : 'h-4 w-4')} />
             {!isMobile && <span className='ml-2'>间距</span>}
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className='w-80' side='right' align='start'>
-          <DropdownMenuLabel>间距设置</DropdownMenuLabel>
+        <DropdownMenuContent
+          className={cn('w-80 max-w-[calc(100vw-2rem)]', isMobile && 'w-[calc(100vw-10rem)]')}
+          side={isMobile ? 'bottom' : 'right'}
+          align={isMobile ? 'end' : 'start'}
+        >
+          <DropdownMenuLabel className='text-base md:text-sm'>间距设置</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <div className='p-4 space-y-6'>
+          <div className='p-3 md:p-4 space-y-4 md:space-y-6'>
             {/* 模块上下间距 */}
             <div className='space-y-2'>
               <div className='flex items-center justify-between'>
-                <Label className='text-sm'>模块上下间距</Label>
-                <span className='text-sm text-muted-foreground'>{spacing.sectionSpacing}px</span>
+                <Label className='text-sm font-medium'>模块上下间距</Label>
+                <span className='text-sm font-semibold text-muted-foreground'>{spacing.sectionSpacing}px</span>
               </div>
               <Slider
                 value={[spacing.sectionSpacing]}
@@ -56,8 +60,8 @@ export function ResumeConfigToolbar() {
             {/* 行间距 */}
             <div className='space-y-2'>
               <div className='flex items-center justify-between'>
-                <Label className='text-sm'>行间距</Label>
-                <span className='text-sm text-muted-foreground'>{spacing.lineHeight.toFixed(1)}</span>
+                <Label className='text-sm font-medium'>行间距</Label>
+                <span className='text-sm font-semibold text-muted-foreground'>{spacing.lineHeight.toFixed(1)}</span>
               </div>
               <Slider
                 value={[spacing.lineHeight * 10]}
@@ -72,8 +76,8 @@ export function ResumeConfigToolbar() {
             {/* 页面边距 */}
             <div className='space-y-2'>
               <div className='flex items-center justify-between'>
-                <Label className='text-sm'>页面边距</Label>
-                <span className='text-sm text-muted-foreground'>{spacing.pageMargin}px</span>
+                <Label className='text-sm font-medium'>页面边距</Label>
+                <span className='text-sm font-semibold text-muted-foreground'>{spacing.pageMargin}px</span>
               </div>
               <Slider
                 value={[spacing.pageMargin]}
@@ -94,19 +98,23 @@ export function ResumeConfigToolbar() {
           <Button
             variant='outline'
             size={isMobile ? 'icon' : 'default'}
-            className={cn('shadow-md', isMobile && 'h-10 w-10')}
+            className={cn('shadow-md', isMobile && 'h-9 w-9')}
           >
-            <Type className='h-4 w-4' />
+            <Type className={cn(isMobile ? 'h-4 w-4' : 'h-4 w-4')} />
             {!isMobile && <span className='ml-2'>字体</span>}
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className='w-80' side='right' align='start'>
-          <DropdownMenuLabel>字体设置</DropdownMenuLabel>
+        <DropdownMenuContent
+          className={cn('w-80 max-w-[calc(100vw-2rem)]', isMobile && 'w-[calc(100vw-10rem)]')}
+          side={isMobile ? 'bottom' : 'right'}
+          align={isMobile ? 'end' : 'start'}
+        >
+          <DropdownMenuLabel className='text-base md:text-sm'>字体设置</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <div className='p-4 space-y-4'>
+          <div className='p-3 md:p-4 space-y-4'>
             {/* 字体样式 */}
             <div className='space-y-2'>
-              <Label className='text-sm'>字体样式</Label>
+              <Label className='text-sm font-medium'>字体样式</Label>
               <Select
                 value={font.fontFamily}
                 onValueChange={(value) =>
@@ -115,7 +123,7 @@ export function ResumeConfigToolbar() {
                   })
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className='h-10'>
                   <SelectValue placeholder='选择字体' />
                 </SelectTrigger>
                 <SelectContent>
@@ -130,7 +138,7 @@ export function ResumeConfigToolbar() {
 
             {/* 文字大小 */}
             <div className='space-y-2'>
-              <Label className='text-sm'>文字大小</Label>
+              <Label className='text-sm font-medium'>文字大小</Label>
               <Select
                 value={font.fontSize.toString()}
                 onValueChange={(value) =>
@@ -139,7 +147,7 @@ export function ResumeConfigToolbar() {
                   })
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className='h-10'>
                   <SelectValue placeholder='选择大小' />
                 </SelectTrigger>
                 <SelectContent>
@@ -161,17 +169,21 @@ export function ResumeConfigToolbar() {
           <Button
             variant='outline'
             size={isMobile ? 'icon' : 'default'}
-            className={cn('shadow-md', isMobile && 'h-10 w-10')}
+            className={cn('shadow-md', isMobile && 'h-9 w-9')}
           >
-            <Palette className='h-4 w-4' />
+            <Palette className={cn(isMobile ? 'h-4 w-4' : 'h-4 w-4')} />
             {!isMobile && <span className='ml-2'>皮肤</span>}
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className='w-80' side='right' align='start'>
-          <DropdownMenuLabel>皮肤设置</DropdownMenuLabel>
+        <DropdownMenuContent
+          className={cn('w-80 max-w-[calc(100vw-2rem)]', isMobile && 'w-[calc(100vw-10rem)]')}
+          side={isMobile ? 'bottom' : 'right'}
+          align={isMobile ? 'end' : 'start'}
+        >
+          <DropdownMenuLabel className='text-base md:text-sm'>皮肤设置</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <div className='p-4 space-y-2'>
-            <Label className='text-sm'>选择主题</Label>
+          <div className='p-3 md:p-4 space-y-2'>
+            <Label className='text-sm font-medium'>选择主题</Label>
             <Select
               value={theme.theme}
               onValueChange={(value) =>
@@ -180,7 +192,7 @@ export function ResumeConfigToolbar() {
                 })
               }
             >
-              <SelectTrigger>
+              <SelectTrigger className='h-10'>
                 <SelectValue placeholder='选择主题' />
               </SelectTrigger>
               <SelectContent>
