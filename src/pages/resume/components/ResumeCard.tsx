@@ -30,18 +30,10 @@ export function ResumeCard({ resume, onEdit, onDelete, onUpdate }: ResumeCardPro
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
-  const [localResume, setLocalResume] = useState(resume)
   const isMobile = useIsMobile()
 
   const handleUpdateSuccess = (updates: { display_name: string; description: string }) => {
-    // 更新本地状态
-    setLocalResume((prev) => ({
-      ...prev,
-      display_name: updates.display_name,
-      description: updates.description,
-    }))
-
-    // 通知父组件
+    // 通知父组件更新
     if (onUpdate) {
       onUpdate(resume.resume_id, updates)
     }
@@ -114,8 +106,8 @@ export function ResumeCard({ resume, onEdit, onDelete, onUpdate }: ResumeCardPro
           </div>
         </CardHeader>
         <CardContent className='flex-1'>
-          <CardTitle>{localResume.display_name || `未命名简历`}</CardTitle>
-          <CardDescription>{localResume.description || '点击编辑简历内容'}</CardDescription>
+          <CardTitle>{resume.display_name || `未命名简历`}</CardTitle>
+          <CardDescription>{resume.description || '点击编辑简历内容'}</CardDescription>
         </CardContent>
         <CardFooter>
           <Button variant='outline' onClick={handleEditClick} className='w-full'>
@@ -127,7 +119,7 @@ export function ResumeCard({ resume, onEdit, onDelete, onUpdate }: ResumeCardPro
 
       {/* 编辑对话框 */}
       <EditResumeDialog
-        resume={localResume}
+        resume={resume}
         open={showEditDialog}
         onOpenChange={setShowEditDialog}
         onSuccess={handleUpdateSuccess}
@@ -135,7 +127,7 @@ export function ResumeCard({ resume, onEdit, onDelete, onUpdate }: ResumeCardPro
 
       {/* 删除确认对话框 */}
       <DeleteResumeDialog
-        resumeName={localResume.display_name || '未命名简历'}
+        resumeName={resume.display_name || '未命名简历'}
         open={showDeleteDialog}
         onOpenChange={setShowDeleteDialog}
         onConfirm={handleDeleteConfirm}

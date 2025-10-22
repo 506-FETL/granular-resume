@@ -1,22 +1,22 @@
 /* eslint-disable no-console */
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { Skeleton } from '@/components/ui/skeleton'
+import { SyncResumesDialog } from '@/components/SyncResumesDialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
+import { deleteOfflineResume, getAllOfflineResumes, isOfflineResumeId } from '@/lib/offline-resume-manager'
+import { syncOfflineResumesToCloud } from '@/lib/resume-sync-service'
 import { subscribeToResumeConfigUpdates } from '@/lib/supabase/resume'
 import { deleteResume, getAllResumesFromUser } from '@/lib/supabase/resume/form'
-import { getAllOfflineResumes, deleteOfflineResume, isOfflineResumeId } from '@/lib/offline-resume-manager'
 import { getCurrentUser } from '@/lib/supabase/user'
-import { syncOfflineResumesToCloud } from '@/lib/resume-sync-service'
 import useCurrentResumeStore, { type ResumeType } from '@/store/resume/current'
+import { CloudUpload, Wifi, WifiOff } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
-import { Wifi, WifiOff, CloudUpload } from 'lucide-react'
 import { CreateResumeCard } from './components/CreateResumeCard'
 import { ResumeCard } from './components/ResumeCard'
-import { SyncResumesDialog } from '@/components/SyncResumesDialog'
 
 interface Resume {
   resume_id: string
@@ -35,6 +35,7 @@ export default function ResumePage() {
   const [offlineResumes, setOfflineResumes] = useState<Resume[]>([])
   const [isSyncing, setIsSyncing] = useState(false)
   const [syncingIds, setSyncingIds] = useState<Set<string>>(new Set())
+  const [localDeletingIds, setLocalDeletingIds] = useState<Set<string>>(new Set()) // 本地正在删除的简历ID
   const navigate = useNavigate()
   const { setCurrentResume } = useCurrentResumeStore()
 
@@ -117,7 +118,7 @@ export default function ResumePage() {
             isOffline: false,
           }
           setResumes((prev) => {
-            // 防止重复添加（问题1修复）
+            // 防止重复添加
             if (prev.some((r) => r.resume_id === resume.resume_id)) {
               return prev
             }
@@ -139,6 +140,41 @@ export default function ResumePage() {
           )
           break
         }
+        case 'DELETE': {
+          const deletedResumeId = payload.old.resume_id
+
+          // 检查是否是本地操作触发的删除
+          if (localDeletingIds.has(deletedResumeId)) {
+            // 是本地删除，清除标记，不显示远程删除提示
+            setLocalDeletingIds((prev) => {
+              const newSet = new Set(prev)
+              newSet.delete(deletedResumeId)
+              return newSet
+            })
+            console.log('本地删除操作，跳过远程同步提示:', deletedResumeId)
+            break
+          }
+
+          // 是远程删除，需要同步
+          const syncPromise = (async () => {
+            // 重新加载在线简历
+            const onlineResumes = await getAllResumesFromUser()
+            const formattedOnlineResumes = onlineResumes.map((r) => ({ ...r, isOffline: false }))
+
+            // 保留离线简历，只更新在线简历
+            setResumes((prev) => {
+              const offlineOnly = prev.filter((r) => r.isOffline)
+              return [...formattedOnlineResumes, ...offlineOnly]
+            })
+          })()
+
+          toast.promise(syncPromise, {
+            loading: `检测到远端删除了简历，正在同步...`,
+            success: '简历已同步删除',
+            error: '同步失败，请重试',
+          })
+          break
+        }
       }
     })
       .then((unsub) => {
@@ -151,7 +187,7 @@ export default function ResumePage() {
     return () => {
       unSubscribe?.()
     }
-  }, [isOnline])
+  }, [isOnline, localDeletingIds])
 
   function handleEditResume(resume: Resume) {
     setCurrentResume(resume.resume_id, resume.type)
@@ -161,6 +197,11 @@ export default function ResumePage() {
   async function handleDeleteResume(id: string) {
     // 判断是离线还是在线简历
     const isOfflineResume = isOfflineResumeId(id)
+
+    // 如果是在线简历，标记为本地删除
+    if (!isOfflineResume) {
+      setLocalDeletingIds((prev) => new Set(prev).add(id))
+    }
 
     const deletePromise = isOfflineResume
       ? deleteOfflineResume(id).then(() => {
@@ -173,11 +214,21 @@ export default function ResumePage() {
     toast.promise(deletePromise, {
       loading: '正在删除简历...',
       success: '简历已删除',
-      error: '删除失败，请重试',
+      error: () => {
+        // 删除失败，清除本地删除标记
+        if (!isOfflineResume) {
+          setLocalDeletingIds((prev) => {
+            const newSet = new Set(prev)
+            newSet.delete(id)
+            return newSet
+          })
+        }
+        return '删除失败，请重试'
+      },
     })
   }
 
-  // 处理简历更新（问题2修复）
+  // 处理简历更新
   function handleResumeUpdate(resumeId: string, updates: { display_name: string; description: string }) {
     setResumes((prev) =>
       prev.map((resume) =>
@@ -192,7 +243,7 @@ export default function ResumePage() {
     )
   }
 
-  // 处理同步简历（问题3和4修复）
+  // 处理同步简历
   async function handleSyncResumes(selectedIds: string[]) {
     if (selectedIds.length === 0) return
 

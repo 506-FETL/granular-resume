@@ -16,7 +16,10 @@ import { Switch } from '@/components/ui/switch'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { DragProvider } from '@/contexts/DragContext'
 import { useIsMobile } from '@/hooks/use-mobile'
-import type { ORDERType, VisibilityItemsType } from '@/lib/schema'
+import { isOfflineResumeId } from '@/lib/offline-resume-manager'
+import type { VisibilityItemsType } from '@/lib/schema'
+import { subscribeToResumeConfigUpdates } from '@/lib/supabase/resume'
+import { getCurrentUser } from '@/lib/supabase/user'
 import useCurrentResumeStore from '@/store/resume/current'
 import useResumeStore from '@/store/resume/form'
 import { Clock, Edit, Save } from 'lucide-react'
@@ -26,7 +29,7 @@ import { toast } from 'sonner'
 import { DraggableItem } from './components/DraggableItem'
 import ResumePreview from './components/preview/BasicResumePreview'
 import { ResumeConfigToolbar } from './components/ResumeConfigToolbar'
-import { ITEMS, type Item } from './data'
+import { ITEMS } from './data'
 
 function Editor() {
   const [open, setOpen] = useState(false)
@@ -70,6 +73,50 @@ function Editor() {
 
     loadData()
   }, [resumeId, loadResumeData, setCurrentResume, navigate])
+
+  // 订阅简历删除事件（仅在线简历）
+  useEffect(() => {
+    // 离线简历不需要订阅
+    if (!resumeId || isOfflineResumeId(resumeId)) return
+
+    let unSubscribe: (() => void) | undefined
+
+    async function setupSubscription() {
+      try {
+        const user = await getCurrentUser()
+        if (!user) return // 未登录用户不订阅
+
+        unSubscribe = await subscribeToResumeConfigUpdates((payload) => {
+          // 只处理删除事件
+          if (payload.eventType === 'DELETE') {
+            const deletedResumeId = payload.old.resume_id
+
+            // 如果被删除的简历是当前正在编辑的简历
+            if (deletedResumeId === resumeId) {
+              const resumeName = payload.old.display_name || '简历'
+
+              toast.error(`简历 "${resumeName}" 已在其他窗口被删除`, {
+                duration: 5000,
+              })
+
+              // 延迟跳转，让用户看到提示
+              setTimeout(() => {
+                navigate('/resume')
+              }, 1500)
+            }
+          }
+        })
+      } catch {
+        // 静默失败，不影响正常使用
+      }
+    }
+
+    setupSubscription()
+
+    return () => {
+      unSubscribe?.()
+    }
+  }, [resumeId, navigate])
 
   if (loading) {
     return (
