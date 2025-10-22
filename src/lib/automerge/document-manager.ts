@@ -1,10 +1,9 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { DocHandle, Repo } from '@automerge/automerge-repo'
-import { next as Automerge } from '@automerge/automerge'
-import type { AutomergeResumeDocument, ChangeFn } from './schema'
 import type { ResumeSchema } from '@/lib/schema'
-import { getAutomergeRepo } from './repo'
 import supabase from '@/lib/supabase/client'
+import { next as Automerge } from '@automerge/automerge'
+import { DocHandle, Repo } from '@automerge/automerge-repo'
+import { getAutomergeRepo } from './repo'
+import type { AutomergeResumeDocument, ChangeFn } from './schema'
 
 /**
  * 文档管理器

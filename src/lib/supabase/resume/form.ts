@@ -8,7 +8,7 @@ export async function getAllResumesFromUser() {
 
   const { data, error } = await supabase
     .from('resume_config')
-    .select('resume_id,created_at,type,display_name,description')
+    .select('id,resume_id,created_at,type,display_name,description')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
     .range(0, 10)
@@ -73,6 +73,20 @@ export async function deleteResume(id: string) {
   if (!user) throw new Error('用户未登陆')
 
   const { error } = await supabase.from('resume_config').delete().eq('resume_id', id).eq('user_id', user.id)
+
+  if (error) {
+    throw error
+  }
+
+  return true
+}
+
+export async function deleteResumeFromId(id: string) {
+  const user = await getCurrentUser()
+
+  if (!user) throw new Error('用户未登陆')
+
+  const { error } = await supabase.from('resume_config').delete().eq('id', id).eq('user_id', user.id)
 
   if (error) {
     throw error
