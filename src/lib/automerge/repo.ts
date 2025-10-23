@@ -1,4 +1,4 @@
-import { Repo } from '@automerge/automerge-repo'
+import { Repo, type RepoConfig } from '@automerge/automerge-repo'
 import { IndexedDBStorageAdapter } from '@automerge/automerge-repo-storage-indexeddb'
 import { SupabaseNetworkAdapter } from './supabase-network-adapter'
 
@@ -25,7 +25,7 @@ export function getAutomergeRepo(userId: string, resumeId?: string): Repo {
  * 创建 Automerge Repo
  */
 function createResumeRepo(userId: string, resumeId?: string): Repo {
-  const config: any = {
+  const config: RepoConfig = {
     // 本地存储适配器
     storage: new IndexedDBStorageAdapter('resume-automerge-v1'),
 

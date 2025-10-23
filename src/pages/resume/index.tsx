@@ -17,6 +17,7 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { CreateResumeCard } from './components/CreateResumeCard'
 import { ResumeCard } from './components/ResumeCard'
+import HeadBars from './components/HeadBars'
 
 interface Resume {
   resume_id: string
@@ -156,7 +157,7 @@ export default function ResumePage() {
           }
 
           // 是远程删除，需要同步
-          const syncPromise = (async () => {
+          const syncPromise = async () => {
             // 重新加载在线简历
             const onlineResumes = await getAllResumesFromUser()
             const formattedOnlineResumes = onlineResumes.map((r) => ({ ...r, isOffline: false }))
@@ -166,7 +167,7 @@ export default function ResumePage() {
               const offlineOnly = prev.filter((r) => r.isOffline)
               return [...formattedOnlineResumes, ...offlineOnly]
             })
-          })()
+          }
 
           toast.promise(syncPromise, {
             loading: `检测到远端删除了简历，正在同步...`,
@@ -294,43 +295,12 @@ export default function ResumePage() {
 
   return (
     <div className='container mx-auto p-8'>
-      <motion.div
-        className='mb-8'
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <div className='flex items-start justify-between'>
-          <div>
-            <h1 className='text-3xl font-bold tracking-tight'>我的简历</h1>
-            <p className='text-muted-foreground mt-2'>管理和编辑你的简历</p>
-          </div>
-          <div className='flex items-center gap-3'>
-            {hasOfflineResumesToSync && (
-              <Button onClick={() => setShowSyncDialog(true)} variant='outline' size='sm'>
-                <CloudUpload className='h-4 w-4 mr-2' />
-                同步本地简历 ({offlineResumes.length})
-              </Button>
-            )}
-            <Badge
-              variant={isOnline ? 'default' : 'secondary'}
-              className={`text-sm ${isOnline ? 'bg-emerald-500 hover:bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600 hover:bg-slate-300'}`}
-            >
-              {isOnline ? (
-                <>
-                  <Wifi className='h-3 w-3 mr-1' />
-                  在线模式
-                </>
-              ) : (
-                <>
-                  <WifiOff className='h-3 w-3 mr-1' />
-                  离线模式
-                </>
-              )}
-            </Badge>
-          </div>
-        </div>
-      </motion.div>
+      <HeadBars
+        setShowSyncDialog={setShowSyncDialog}
+        hasOfflineResumesToSync={hasOfflineResumesToSync}
+        isOnline={isOnline}
+        offlineResumes={offlineResumes}
+      />
 
       <motion.div
         className='grid grid-cols-1 items-center md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'

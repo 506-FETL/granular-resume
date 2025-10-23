@@ -88,15 +88,12 @@ export function ResumeCard({ resume, onEdit, onDelete, onUpdate }: ResumeCardPro
             <FileText className='h-8 w-8 text-primary' />
             <div className='flex items-center gap-2'>
               {resume.isOffline ? (
-                <Badge
-                  variant='secondary'
-                  className='text-xs bg-slate-200 text-slate-700 hover:bg-slate-300 border-slate-300'
-                >
+                <Badge variant='secondary' className='text-xs rounded-full'>
                   <HardDrive className='h-3 w-3 mr-1' />
                   本地
                 </Badge>
               ) : (
-                <Badge variant='default' className='text-xs bg-sky-500 hover:bg-sky-600 text-white border-sky-500'>
+                <Badge variant='default' className='text-xs bg-blue-400 rounded-full'>
                   <Cloud className='h-3 w-3 mr-1' />
                   云端
                 </Badge>
