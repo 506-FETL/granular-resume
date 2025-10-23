@@ -55,7 +55,7 @@ async function getDB(): Promise<IDBPDatabase<ResumeDB>> {
  * 生成唯一的简历 ID
  */
 function generateResumeId(): string {
-  return `local-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+  return `local-${crypto.randomUUID()}`
 }
 
 /**

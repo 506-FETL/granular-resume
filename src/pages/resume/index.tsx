@@ -191,7 +191,7 @@ export default function ResumePage() {
 
   function handleEditResume(resume: Resume) {
     setCurrentResume(resume.resume_id, resume.type)
-    navigate(`/editor/${resume.resume_id}`)
+    navigate('/editor')
   }
 
   async function handleDeleteResume(id: string) {
