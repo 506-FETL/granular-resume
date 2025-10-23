@@ -29,9 +29,17 @@ import { toast } from 'sonner'
 
 interface CreateResumeCardProps {
   isOnline: boolean
+  onResumeCreated?: (resume: {
+    resume_id: string
+    created_at: string
+    type: ResumeType
+    display_name?: string
+    description?: string
+    isOffline?: boolean
+  }) => void
 }
 
-export function CreateResumeCard({ isOnline }: CreateResumeCardProps) {
+export function CreateResumeCard({ isOnline, onResumeCreated }: CreateResumeCardProps) {
   const { setCurrentResume } = useCurrentResumeStore()
 
   const [isCreating, setIsCreating] = useState(false)
@@ -53,6 +61,14 @@ export function CreateResumeCard({ isOnline }: CreateResumeCardProps) {
         )
           .then((data) => {
             setCurrentResume(data.resume_id, data.type)
+            onResumeCreated?.({
+              resume_id: data.resume_id,
+              created_at: data.created_at,
+              type: data.type,
+              display_name: data.display_name,
+              description: data.description,
+              isOffline: false,
+            })
             return data
           })
           .finally(() => {
@@ -74,6 +90,14 @@ export function CreateResumeCard({ isOnline }: CreateResumeCardProps) {
         })
 
         setCurrentResume(resumeId, selectedType)
+        onResumeCreated?.({
+          resume_id: resumeId,
+          created_at: new Date().toISOString(),
+          type: selectedType,
+          display_name: displayName.trim(),
+          description: description.trim(),
+          isOffline: true,
+        })
 
         toast.success('本地简历创建成功')
         setLoading(false)

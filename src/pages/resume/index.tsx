@@ -385,7 +385,14 @@ export default function ResumePage() {
               layout: { duration: 0.3 },
             }}
           >
-            <CreateResumeCard isOnline={isOnline} />
+            <CreateResumeCard
+              isOnline={isOnline}
+              onResumeCreated={(resume) => {
+                if (resume.isOffline) {
+                  setResumes((prev) => [resume, ...prev])
+                }
+              }}
+            />
           </motion.div>
         </AnimatePresence>
       </motion.div>
