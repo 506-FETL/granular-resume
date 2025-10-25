@@ -1,7 +1,16 @@
 import { DraggableList } from '@/components/DraggableList'
+import { RealtimeCursors } from '@/components/realtime-cursors'
 import { SideTabs, SideTabsWrapper, Tab, ViewPort } from '@/components/SideTabs'
 import { useTheme } from '@/components/theme-provider'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogTitle,
+  DialogHeader as ModalHeader,
+} from '@/components/ui/dialog'
 import {
   Drawer,
   DrawerContent,
@@ -10,6 +19,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from '@/components/ui/drawer'
+import { Input } from '@/components/ui/input'
 import { RainbowButton } from '@/components/ui/rainbow-button'
 import { Spinner } from '@/components/ui/spinner'
 import { Switch } from '@/components/ui/switch'
@@ -20,23 +30,34 @@ import { isOfflineResumeId } from '@/lib/offline-resume-manager'
 import type { VisibilityItemsType } from '@/lib/schema'
 import { subscribeToResumeConfigUpdates } from '@/lib/supabase/resume'
 import { getCurrentUser } from '@/lib/supabase/user'
+import { cn } from '@/lib/utils'
+import useCollaborationStore from '@/store/collaboration'
 import useCurrentResumeStore from '@/store/resume/current'
 import useResumeStore from '@/store/resume/form'
-import { Clock, Edit, Save } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Clock, Copy, Edit, Loader2, Radio, Save, Share2 } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { DraggableItem } from './components/DraggableItem'
 import ResumePreview from './components/preview/BasicResumePreview'
 import { ResumeConfigToolbar } from './components/ResumeConfigToolbar'
 import { ITEMS } from './data'
 
+type SupabaseUser = Awaited<ReturnType<typeof getCurrentUser>>
+
 function Editor() {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [collabDialogOpen, setCollabDialogOpen] = useState(false)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [currentUser, setCurrentUserState] = useState<SupabaseUser>(null)
+  const [joinedSessionId, setJoinedSessionId] = useState<string | null>(null)
   const { theme } = useTheme()
   const resumeId = useCurrentResumeStore((state) => state.resumeId)
   const navigate = useNavigate()
+  const queryResumeId = searchParams.get('resumeId')
+  const collabSessionParam = searchParams.get('collabSession')
+  const activeResumeId = resumeId ?? queryResumeId ?? undefined
 
   // Resume Store
   const activeTabId = useResumeStore((state) => state.activeTabId)
@@ -52,71 +73,192 @@ function Editor() {
   const lastSyncTime = useResumeStore((state) => state.lastSyncTime)
   const pendingChanges = useResumeStore((state) => state.pendingChanges)
   const { setCurrentResume } = useCurrentResumeStore()
+  const mode = useResumeStore((state) => state.mode)
+  const isDocumentInitialized = useResumeStore((state) => state.isInitialized)
+  const participants = useCollaborationStore((state) => state.participants)
+  const isSharing = useCollaborationStore((state) => state.isSharing)
+  const isCollabConnecting = useCollaborationStore((state) => state.isConnecting)
+  const shareUrl = useCollaborationStore((state) => state.shareUrl)
+  const roomName = useCollaborationStore((state) => state.roomName)
+  const collaborationRole = useCollaborationStore((state) => state.role)
+  const startSharing = useCollaborationStore((state) => state.startSharing)
+  const stopSharing = useCollaborationStore((state) => state.stopSharing)
+  const joinSession = useCollaborationStore((state) => state.joinSession)
+  const collaborationError = useCollaborationStore((state) => state.error)
 
   const isMobile = useIsMobile()
   const fill = theme === 'dark' ? '#0c0a09' : '#fafaf9'
   const stroke = theme === 'dark' ? '#3d3b3b' : '#e7e5e4'
+  const participantCount = useMemo(() => Object.keys(participants).length, [participants])
+  const collabDisabledReason = useMemo(() => {
+    if (mode !== 'online') return '离线简历暂不支持实时协作'
+    if (!currentUser) return '请先登录以启用实时协作'
+    if (!isDocumentInitialized) return '数据加载中，请稍候'
+    return null
+  }, [mode, currentUser, isDocumentInitialized])
+  const userDisplayName = useMemo(() => (currentUser ? getUserDisplayName(currentUser) : ''), [currentUser])
+  const canCopyLink = typeof navigator !== 'undefined' && !!navigator.clipboard
+  const shareButtonTooltip = collabDisabledReason ?? (isSharing ? '查看协作信息' : '开启实时协作')
+
+  const handleStartSharing = useCallback(async () => {
+    if (!activeResumeId || !currentUser) return
+    try {
+      await startSharing({
+        resumeId: activeResumeId,
+        userId: currentUser.id,
+        userName: userDisplayName || `用户-${currentUser.id.slice(0, 6)}`,
+      })
+      const newSessionId = useCollaborationStore.getState().sessionId
+      if (newSessionId) {
+        const params = new URLSearchParams(window.location.search)
+        params.set('resumeId', activeResumeId)
+        params.set('collabSession', newSessionId)
+        setSearchParams(params, { replace: true })
+        setJoinedSessionId(newSessionId)
+      }
+    } catch {
+      // store 已处理提示
+    }
+  }, [activeResumeId, currentUser, startSharing, userDisplayName, setSearchParams])
+
+  const handleStopSharing = useCallback(() => {
+    stopSharing()
+    const params = new URLSearchParams(window.location.search)
+    params.delete('collabSession')
+    params.delete('resumeId')
+    setSearchParams(params, { replace: true })
+    setJoinedSessionId(null)
+    setCollabDialogOpen(false)
+    location.reload()
+  }, [setSearchParams, stopSharing])
+
+  const handleCopyShareLink = useCallback(async () => {
+    if (!shareUrl) return
+    if (!canCopyLink) {
+      toast.info('请手动复制链接')
+      return
+    }
+    try {
+      await navigator.clipboard.writeText(shareUrl)
+      toast.success('已复制分享链接')
+    } catch {
+      toast.error('复制失败，请手动复制')
+    }
+  }, [shareUrl, canCopyLink])
+
+  useEffect(() => {
+    let mounted = true
+    getCurrentUser().then((user) => {
+      if (mounted) {
+        setCurrentUserState(user)
+      }
+    })
+
+    return () => {
+      mounted = false
+    }
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      useResumeStore.getState().cleanup()
+      useCollaborationStore.getState().stopSharing({ silent: true })
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!resumeId && queryResumeId) {
+      setCurrentResume(queryResumeId, 'default')
+    }
+  }, [resumeId, queryResumeId, setCurrentResume])
 
   // 加载简历数据
   useEffect(() => {
-    async function loadData() {
-      try {
-        // 加载简历数据
-        await loadResumeData(resumeId!)
-      } catch (error: any) {
-        toast.error(`加载简历失败, ${error.message || '未知错误'}`)
-        navigate('/resume')
-      } finally {
-        setLoading(false)
-      }
+    if (!activeResumeId) {
+      setLoading(false)
+      return
     }
 
-    loadData()
-  }, [resumeId, loadResumeData, setCurrentResume, navigate])
+    let cancelled = false
+    setLoading(true)
+
+    loadResumeData(activeResumeId)
+      .catch((error: any) => {
+        if (cancelled) return
+        toast.error(`加载简历失败, ${error.message || '未知错误'}`)
+        navigate('/resume')
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false)
+        }
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [activeResumeId, loadResumeData, navigate])
 
   // 订阅简历删除事件（仅在线简历）
   useEffect(() => {
-    // 离线简历不需要订阅
-    if (!resumeId || isOfflineResumeId(resumeId)) return
+    if (!activeResumeId || isOfflineResumeId(activeResumeId) || !currentUser) return
 
     let unSubscribe: (() => void) | undefined
+    let cancelled = false
 
-    async function setupSubscription() {
+    ;(async () => {
       try {
-        const user = await getCurrentUser()
-        if (!user) return // 未登录用户不订阅
-
         unSubscribe = await subscribeToResumeConfigUpdates((payload) => {
-          // 只处理删除事件
-          if (payload.eventType === 'DELETE') {
-            const deletedResumeId = payload.old.resume_id
+          if (cancelled) return
+          if (payload.eventType !== 'DELETE') return
 
-            // 如果被删除的简历是当前正在编辑的简历
-            if (deletedResumeId === resumeId) {
-              const resumeName = payload.old.display_name || '简历'
+          const deletedResumeId = payload.old.resume_id
+          if (deletedResumeId !== activeResumeId) return
 
-              toast.error(`简历 "${resumeName}" 已在其他窗口被删除`, {
-                duration: 5000,
-              })
+          const resumeName = payload.old.display_name || '简历'
+          toast.error(`简历 "${resumeName}" 已在其他窗口被删除`, {
+            duration: 5000,
+          })
 
-              // 延迟跳转，让用户看到提示
-              setTimeout(() => {
-                navigate('/resume')
-              }, 1500)
-            }
-          }
+          setTimeout(() => {
+            navigate('/resume')
+          }, 1500)
         })
       } catch {
-        // 静默失败，不影响正常使用
+        // ignore
       }
-    }
-
-    setupSubscription()
+    })()
 
     return () => {
+      cancelled = true
       unSubscribe?.()
     }
-  }, [resumeId, navigate])
+  }, [activeResumeId, currentUser, navigate])
+
+  useEffect(() => {
+    if (!collabSessionParam || !activeResumeId) return
+    if (isSharing || joinedSessionId === collabSessionParam) return
+    if (!isDocumentInitialized || mode !== 'online' || !currentUser) return
+
+    joinSession({
+      sessionId: collabSessionParam,
+      resumeId: activeResumeId,
+      userId: currentUser.id,
+      userName: userDisplayName || `用户-${currentUser.id.slice(0, 6)}`,
+    })
+      .then(() => setJoinedSessionId(collabSessionParam))
+      .catch(() => setJoinedSessionId(collabSessionParam))
+  }, [
+    collabSessionParam,
+    activeResumeId,
+    isSharing,
+    joinedSessionId,
+    isDocumentInitialized,
+    mode,
+    currentUser,
+    joinSession,
+    userDisplayName,
+  ])
 
   if (loading) {
     return (
@@ -131,6 +273,9 @@ function Editor() {
 
   return (
     <>
+      {roomName && currentUser && (
+        <RealtimeCursors roomName={roomName} username={userDisplayName || `用户-${currentUser.id.slice(0, 6)}`} />
+      )}
       <DragProvider>
         <Drawer open={open} onOpenChange={setOpen} handleOnly>
           <DrawerTrigger asChild>
@@ -164,17 +309,52 @@ function Editor() {
                   </span>
                 ) : null}
               </DrawerTitle>
-              <DrawerDescription className='flex items-center justify-start gap-4'>
-                <span>实时同步到云端</span>
-                <Button
-                  size={isMobile ? 'icon' : 'sm'}
-                  variant='outline'
-                  onClick={manualSync}
-                  disabled={isSyncing || !pendingChanges}
-                >
-                  <Save className='h-4 w-4' />
-                  {!isMobile && '手动保存'}
-                </Button>
+              <DrawerDescription asChild>
+                <div className='text-sm text-muted-foreground flex flex-wrap items-center gap-3'>
+                  <span>实时同步到云端</span>
+                  <div className='flex items-center gap-2'>
+                    <Button
+                      size={isMobile ? 'icon' : 'sm'}
+                      variant='outline'
+                      onClick={manualSync}
+                      disabled={isSyncing || !pendingChanges}
+                    >
+                      <Save className='h-4 w-4' />
+                      {!isMobile && '手动保存'}
+                    </Button>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span>
+                          <Button
+                            size={isMobile ? 'icon' : 'sm'}
+                            variant={isSharing ? 'default' : 'outline'}
+                            onClick={() => setCollabDialogOpen(true)}
+                            disabled={Boolean(collabDisabledReason) || isCollabConnecting}
+                            className={cn(
+                              'transition-colors',
+                              isSharing &&
+                                !isCollabConnecting &&
+                                'bg-emerald-500 text-white hover:bg-emerald-600 shadow-sm',
+                            )}
+                          >
+                            {isCollabConnecting ? (
+                              <Loader2 className='h-4 w-4 animate-spin' />
+                            ) : isSharing ? (
+                              <Radio className='h-4 w-4' />
+                            ) : (
+                              <Share2 className='h-4 w-4' />
+                            )}
+                            {!isMobile && (isSharing ? '协作中' : '开启协作')}
+                          </Button>
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side='bottom'>{shareButtonTooltip}</TooltipContent>
+                    </Tooltip>
+                    {isSharing && (
+                      <span className='text-xs font-medium text-emerald-600'>协作人数 {participantCount}</span>
+                    )}
+                  </div>
+                </div>
               </DrawerDescription>
             </DrawerHeader>
             <div className='p-4 overflow-y-scroll overflow-x-hidden'>
@@ -235,8 +415,94 @@ function Editor() {
           </div>
         </div>
       </DragProvider>
+      <Dialog open={collabDialogOpen} onOpenChange={setCollabDialogOpen}>
+        <DialogContent className='max-w-lg'>
+          {isSharing ? (
+            <>
+              <ModalHeader>
+                <DialogTitle>实时协作已开启</DialogTitle>
+                <DialogDescription>
+                  将链接分享给队友即可实时同步编辑内容，当前协作人数 {participantCount}
+                </DialogDescription>
+              </ModalHeader>
+              <div className='space-y-6'>
+                <div className='space-y-2'>
+                  <p className='text-sm text-muted-foreground'>分享链接</p>
+                  <div className='flex items-center gap-2'>
+                    <Input readOnly value={shareUrl ?? ''} className='flex-1 text-xs md:text-sm' />
+                    <Button
+                      type='button'
+                      size='sm'
+                      variant='outline'
+                      onClick={handleCopyShareLink}
+                      disabled={!shareUrl}
+                    >
+                      <Copy className='h-4 w-4' />
+                      <span className='hidden md:inline'>复制</span>
+                    </Button>
+                  </div>
+                </div>
+                <div className='rounded-md border bg-muted/40 px-4 py-3 text-sm text-muted-foreground'>
+                  <p>
+                    <span className='font-medium text-foreground'>
+                      {collaborationRole === 'host' ? '发起者' : '协作者'}
+                    </span>
+                    {collaborationRole === 'host'
+                      ? ' 可以随时关闭共享，关闭后他人将无法继续加入此链接。'
+                      : ' 可以随时退出协作，重新访问链接即可再次加入。'}
+                  </p>
+                </div>
+              </div>
+              <DialogFooter className='flex justify-between sm:justify-end gap-2'>
+                <Button type='button' variant='outline' onClick={() => setCollabDialogOpen(false)}>
+                  关闭
+                </Button>
+                <Button type='button' variant='destructive' onClick={handleStopSharing}>
+                  {collaborationRole === 'host' ? '停止共享' : '离开协作'}
+                </Button>
+              </DialogFooter>
+            </>
+          ) : (
+            <>
+              <ModalHeader>
+                <DialogTitle>开启实时协作</DialogTitle>
+                <DialogDescription>
+                  启用后将创建协作会话，你可以复制链接分享给队友，大家的更改会实时同步。
+                </DialogDescription>
+              </ModalHeader>
+              <div className='space-y-3 text-sm text-muted-foreground'>
+                <p>• 支持多人同时编辑，自动保存修改记录</p>
+                <p>• 分享结束后链接立即失效，可随时重新开启</p>
+              </div>
+              {collaborationError && <p className='text-sm text-destructive'>{collaborationError}</p>}
+              <DialogFooter className='flex justify-between sm:justify-end gap-2'>
+                <Button type='button' variant='outline' onClick={() => setCollabDialogOpen(false)}>
+                  取消
+                </Button>
+                <Button
+                  type='button'
+                  onClick={handleStartSharing}
+                  disabled={Boolean(collabDisabledReason) || isCollabConnecting || !activeResumeId || !currentUser}
+                >
+                  {isCollabConnecting && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
+                  确认开启
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   )
 }
 
 export default Editor
+
+function getUserDisplayName(user: SupabaseUser) {
+  if (!user) return ''
+  const fullName =
+    (user.user_metadata?.full_name as string | undefined) || (user.user_metadata?.name as string | undefined)
+  if (fullName) return fullName
+  if (user.email) return user.email
+  return `用户-${user.id.slice(0, 6)}`
+}

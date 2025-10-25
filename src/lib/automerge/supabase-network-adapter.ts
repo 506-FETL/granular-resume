@@ -1,21 +1,37 @@
-import { NetworkAdapter, type PeerId, type PeerMetadata, type Message } from '@automerge/automerge-repo'
-import type { RealtimeChannel } from '@supabase/supabase-js'
 import supabase from '@/lib/supabase/client'
+import { NetworkAdapter, type Message, type PeerId, type PeerMetadata } from '@automerge/automerge-repo'
+import type { RealtimeChannel } from '@supabase/supabase-js'
+
+export interface CollaborationCallbacks {
+  onPeerJoin?: (payload: { peerId: string; metadata?: Record<string, any> }) => void
+  onPeerLeave?: (payload: { peerId: string }) => void
+  onChannelReady?: (channelName: string) => void
+  onControlMessage?: (payload: { type: string; data?: Record<string, any> }) => void
+  presenceMetadata?: Record<string, any>
+}
 
 /**
  * Supabase Realtime Network Adapter for Automerge
- * 使用 Supabase Realtime 作为 Automerge 的网络传输层
+ * 使用 Supabase Realtime 作为 Automerge 的网络传输层，并允许按会话隔离协作。
  */
 export class SupabaseNetworkAdapter extends NetworkAdapter {
   private channel: RealtimeChannel | null = null
   peerId?: PeerId = undefined
   peerMetadata?: PeerMetadata = undefined
-  private resumeId: string
+  private readonly resumeId: string
+  private readonly sessionId: string
+  private readonly callbacks: CollaborationCallbacks
+  private readonly channelName: string
+  private readonly presenceMetadata: Record<string, any>
   private ready = false
 
-  constructor(resumeId: string) {
+  constructor(resumeId: string, sessionId: string, callbacks: CollaborationCallbacks = {}) {
     super()
     this.resumeId = resumeId
+    this.sessionId = sessionId
+    this.callbacks = callbacks
+    this.channelName = `automerge:${this.resumeId}:${this.sessionId}`
+    this.presenceMetadata = callbacks.presenceMetadata || {}
   }
 
   /**
@@ -34,9 +50,18 @@ export class SupabaseNetworkAdapter extends NetworkAdapter {
     }
 
     return new Promise((resolve) => {
-      this.once('peer-candidate', () => {
+      const off = () => {
+        this.off('peer-candidate', handlePeerCandidate)
+        this.off('close', off)
         resolve()
-      })
+      }
+
+      const handlePeerCandidate = () => {
+        off()
+      }
+
+      this.once('peer-candidate', handlePeerCandidate)
+      this.once('close', off)
     })
   }
 
@@ -47,9 +72,8 @@ export class SupabaseNetworkAdapter extends NetworkAdapter {
     this.peerId = peerId
     this.peerMetadata = peerMetadata
 
-    // 创建频道，使用 resume_id 作为房间名
-    const channelName = `automerge:${this.resumeId}`
-    this.channel = supabase.channel(channelName)
+    // 创建频道，使用 resumeId + sessionId 作为房间名，确保每次分享都是独立会话
+    this.channel = supabase.channel(this.channelName)
 
     // 监听其他 peer 的消息
     this.channel.on('broadcast', { event: 'automerge-sync' }, (payload: any) => {
@@ -66,25 +90,22 @@ export class SupabaseNetworkAdapter extends NetworkAdapter {
         hasListeners: this.listenerCount('message'),
       })
 
-      // 只处理发给自己的消息或广播消息（注意：不要过滤掉 targetId 为空的广播消息）
+      // 只处理发给自己的消息或广播消息
       if (targetId && targetId !== this.peerId) {
         // eslint-disable-next-line no-console
         console.log('⏭️ 跳过消息（不是发给我的）', { targetId, myPeerId: this.peerId })
         return
       }
 
-      // 解码消息
       const uint8Array = this.base64ToUint8Array(message)
 
-      // 重建完整的 Automerge Message 对象，保持原始类型和 documentId
       const messageObj: Message = {
-        type: messageType || 'message', // 使用原始消息类型
+        type: messageType || 'message',
         senderId,
-        targetId: targetId || this.peerId!, // 如果没有 targetId，使用自己的 peerId
+        targetId: targetId || this.peerId!,
         data: uint8Array,
       }
 
-      // 如果有 documentId，也要传递
       if (documentId) {
         ;(messageObj as any).documentId = documentId
       }
@@ -115,7 +136,6 @@ export class SupabaseNetworkAdapter extends NetworkAdapter {
       })
 
       newPresences.forEach((presence: any) => {
-        // Supabase presence 的结构是 { peerId: 'xxx', metadata: {...}, online_at: '...' }
         const remotePeerId = presence.peerId
 
         if (remotePeerId && remotePeerId !== this.peerId) {
@@ -130,8 +150,25 @@ export class SupabaseNetworkAdapter extends NetworkAdapter {
             peerId: remotePeerId,
             peerMetadata: presence.metadata || {},
           })
+
+          this.callbacks.onPeerJoin?.({
+            peerId: remotePeerId,
+            metadata: presence.metadata || {},
+          })
         }
       })
+    })
+
+    // 监听控制消息
+    this.channel.on('broadcast', { event: 'automerge-control' }, (payload: any) => {
+      const { type, data } = payload.payload || {}
+
+      // eslint-disable-next-line no-console
+      console.log('🎛️ 收到协作控制消息', { type, data })
+
+      if (type) {
+        this.callbacks.onControlMessage?.({ type, data })
+      }
     })
 
     // 监听 peer 离开
@@ -144,6 +181,7 @@ export class SupabaseNetworkAdapter extends NetworkAdapter {
           console.log('👋 Peer 离开', { remotePeerId })
 
           this.emit('peer-disconnected', { peerId: remotePeerId })
+          this.callbacks.onPeerLeave?.({ peerId: remotePeerId })
         }
       })
     })
@@ -151,25 +189,27 @@ export class SupabaseNetworkAdapter extends NetworkAdapter {
     // 订阅频道
     this.channel.subscribe(async (status) => {
       // eslint-disable-next-line no-console
-      console.log('📡 频道订阅状态变化', { status, channelName })
+      console.log('📡 频道订阅状态变化', { status, channelName: this.channelName })
 
       if (status === 'SUBSCRIBED') {
-        // 加入 presence
         await this.channel!.track({
           peerId: this.peerId,
-          metadata: peerMetadata || {},
+          metadata: { ...(peerMetadata || {}), ...this.presenceMetadata },
           online_at: new Date().toISOString(),
+          sessionId: this.sessionId,
         })
 
         this.ready = true
 
         // eslint-disable-next-line no-console
         console.log('🔗 Automerge 网络适配器已连接', {
-          channelName,
+          channelName: this.channelName,
           peerId: this.peerId,
           messageListeners: this.listenerCount('message'),
           peerCandidateListeners: this.listenerCount('peer-candidate'),
         })
+
+        this.callbacks.onChannelReady?.(this.channelName)
       }
     })
   }
@@ -202,7 +242,6 @@ export class SupabaseNetworkAdapter extends NetworkAdapter {
       return
     }
 
-    // 将 Uint8Array 转换为 Base64 以便传输
     const base64Message = this.uint8ArrayToBase64(message.data)
 
     // eslint-disable-next-line no-console
@@ -220,9 +259,29 @@ export class SupabaseNetworkAdapter extends NetworkAdapter {
       payload: {
         senderId: this.peerId,
         targetId: message.targetId,
-        messageType: message.type, // 保持原始消息类型（sync/request/等）
-        documentId: (message as any).documentId, // 传递 documentId
+        messageType: message.type,
+        documentId: (message as any).documentId,
         message: base64Message,
+        sessionId: this.sessionId,
+      },
+    })
+  }
+
+  getChannelName() {
+    return this.channelName
+  }
+
+  broadcastControlMessage(type: string, data: Record<string, any> = {}) {
+    if (!this.channel) return
+
+    this.channel.send({
+      type: 'broadcast',
+      event: 'automerge-control',
+      payload: {
+        type,
+        data,
+        senderId: this.peerId,
+        sessionId: this.sessionId,
       },
     })
   }

@@ -1,3 +1,6 @@
+import { DocumentManager } from '@/lib/automerge/document-manager'
+import type { AutomergeResumeDocument } from '@/lib/automerge/schema'
+import type { DocHandle } from '@automerge/automerge-repo'
 import {
   DEFAULT_APPLICATION_INFO,
   DEFAULT_BASICS,
@@ -28,14 +31,16 @@ import {
   type VisibilityItemsType,
   type WorkExperienceFormType,
 } from '@/lib/schema'
-import { getResumeById, updateResumeConfig } from '@/lib/supabase/resume'
 import { getCurrentUser } from '@/lib/supabase/user'
-import { getOfflineResumeById, updateOfflineResume, isOfflineResumeId } from '@/lib/offline-resume-manager'
+import {
+  getOfflineResumeById,
+  updateOfflineResume,
+  isOfflineResumeId,
+} from '@/lib/offline-resume-manager'
 import { create } from 'zustand'
-import { createJSONStorage, persist } from 'zustand/middleware'
 import useCurrentResumeStore from './current'
 
-// 表单数据映射（纯数据，不包含 isHidden）
+// 表单数据映射
 interface FormDataMap {
   basics: BasicFormType
   jobIntent: JobIntentFormType
@@ -51,16 +56,24 @@ interface FormDataMap {
   hobbies: HobbiesFormType
 }
 
+type EditorMode = 'online' | 'offline' | null
+
 interface ResumeState extends FormDataMap {
   activeTabId: ORDERType
   order: ORDERType[]
   visibility: { [key in VisibilityItemsType]: boolean }
 
-  // 同步状态
   isSyncing: boolean
   lastSyncTime: number | null
   syncError: string | null
   pendingChanges: boolean
+
+  mode: EditorMode
+  currentResumeId: string | null
+  docManager: DocumentManager | null
+  docHandle: DocHandle<AutomergeResumeDocument> | null
+  cleanupFns: Array<() => void>
+  isInitialized: boolean
 
   toggleVisibility: (id: VisibilityItemsType) => void
   getVisibility: (id: VisibilityItemsType) => boolean
@@ -69,33 +82,314 @@ interface ResumeState extends FormDataMap {
   updateForm: <K extends keyof FormDataMap>(key: K, data: Partial<FormDataMap[K]>) => void
   updateOrder: (newOrder: ORDERType[]) => void
 
-  // 同步方法
   syncToSupabase: () => Promise<void>
   manualSync: () => Promise<void>
   loadResumeData: (resumeId: string) => Promise<void>
   resetToDefaults: () => void
+  cleanup: () => void
 }
 
-// 防抖同步函数
-let syncTimer: number | null = null
-const SYNC_DELAY = 3000 // 3秒防抖
+let syncTimer: ReturnType<typeof setTimeout> | null = null
+const SYNC_DELAY = 3000
 
-const debouncedSync = (syncFn: () => Promise<void>) => {
+const scheduleOfflinePersist = (flushFn: () => Promise<void>) => {
   if (syncTimer) {
     clearTimeout(syncTimer)
   }
   syncTimer = setTimeout(() => {
-    syncFn()
+    void flushFn()
   }, SYNC_DELAY)
 }
 
-const useResumeStore = create<ResumeState>()(
-  persist(
-    (set, get) => ({
+const useResumeStore = create<ResumeState>()((set, get) => ({
+  basics: DEFAULT_BASICS,
+  jobIntent: DEFAULT_JOB_INTENT,
+  order: DEFAULT_ORDER,
+  activeTabId: 'basics',
+  applicationInfo: DEFAULT_APPLICATION_INFO,
+  eduBackground: DEFAULT_EDU_BACKGROUND,
+  workExperience: DEFAULT_WORK_EXPERIENCE,
+  internshipExperience: DEFAULT_INTERNSHIP_EXPERIENCE,
+  campusExperience: DEFAULT_CAMPUS_EXPERIENCE,
+  projectExperience: DEFAULT_PROJECT_EXPERIENCE,
+  skillSpecialty: DEFAULT_SKILL_SPECIALTY,
+  honorsCertificates: DEFAULT_HONORS_CERTIFICATES,
+  selfEvaluation: DEFAULT_SELF_EVALUATION,
+  hobbies: DEFAULT_HOBBIES,
+  visibility: DEFAULT_VISIBILITY,
+
+  isSyncing: false,
+  lastSyncTime: null,
+  syncError: null,
+  pendingChanges: false,
+
+  mode: null,
+  currentResumeId: null,
+  docManager: null,
+  docHandle: null,
+  cleanupFns: [],
+  isInitialized: false,
+
+  updateActiveTabId: (newActiveTab) => set({ activeTabId: newActiveTab }),
+
+  updateForm: (key, data) => {
+    const state = get()
+    const sanitized = sanitizeDeep(data)
+    const resumeId = state.currentResumeId ?? useCurrentResumeStore.getState().resumeId
+
+    if (!resumeId || state.mode === 'offline' || isOfflineResumeId(resumeId)) {
+      set((prev) => ({
+        [key]: { ...prev[key], ...sanitized },
+        pendingChanges: true,
+      }))
+      scheduleOfflinePersist(() => get().syncToSupabase())
+      return
+    }
+
+    set((prev) => ({
+      [key]: { ...prev[key], ...sanitized },
+      pendingChanges: true,
+      isSyncing: true,
+    }))
+
+    state.docManager?.change((doc) => {
+      if (!doc[key]) {
+        doc[key] = {} as any
+      }
+      applyPatch(doc[key], sanitized)
+    })
+  },
+
+  updateOrder: (newOrder) => {
+    const state = get()
+    const resumeId = state.currentResumeId ?? useCurrentResumeStore.getState().resumeId
+
+    if (!resumeId || state.mode === 'offline' || isOfflineResumeId(resumeId)) {
+      set({ order: newOrder, pendingChanges: true })
+      scheduleOfflinePersist(() => get().syncToSupabase())
+      return
+    }
+
+    set({ order: newOrder, pendingChanges: true, isSyncing: true })
+    state.docManager?.change((doc) => {
+      doc.order = [...newOrder]
+    })
+  },
+
+  toggleVisibility: (id) => {
+    const state = get()
+    const resumeId = state.currentResumeId ?? useCurrentResumeStore.getState().resumeId
+    const nextValue = !state.visibility[id]
+
+    if (!resumeId || state.mode === 'offline' || isOfflineResumeId(resumeId)) {
+      set((prev) => ({
+        visibility: { ...prev.visibility, [id]: nextValue },
+        pendingChanges: true,
+      }))
+      scheduleOfflinePersist(() => get().syncToSupabase())
+      return
+    }
+
+    set((prev) => ({
+      visibility: { ...prev.visibility, [id]: nextValue },
+      pendingChanges: true,
+      isSyncing: true,
+    }))
+
+    state.docManager?.change((doc) => {
+      if (!doc.visibility) {
+        doc.visibility = {} as any
+      }
+      doc.visibility[id] = nextValue
+    })
+  },
+
+  getVisibility: (id) => get().visibility[id],
+
+  setVisibility: (id, isHidden) => {
+    const state = get()
+    const resumeId = state.currentResumeId ?? useCurrentResumeStore.getState().resumeId
+
+    if (!resumeId || state.mode === 'offline' || isOfflineResumeId(resumeId)) {
+      set((prev) => ({
+        visibility: { ...prev.visibility, [id]: isHidden },
+        pendingChanges: true,
+      }))
+      scheduleOfflinePersist(() => get().syncToSupabase())
+      return
+    }
+
+    set((prev) => ({
+      visibility: { ...prev.visibility, [id]: isHidden },
+      pendingChanges: true,
+      isSyncing: true,
+    }))
+
+    state.docManager?.change((doc) => {
+      if (!doc.visibility) {
+        doc.visibility = {} as any
+      }
+      doc.visibility[id] = isHidden
+    })
+  },
+
+  syncToSupabase: async () => {
+    const state = get()
+    const resumeId = state.currentResumeId ?? useCurrentResumeStore.getState().resumeId
+
+    if (!resumeId) {
+      return
+    }
+
+    set({ isSyncing: true })
+
+    if (state.mode === 'offline' || isOfflineResumeId(resumeId)) {
+      try {
+        await updateOfflineResume(resumeId, buildOfflinePayload(state))
+        set({
+          pendingChanges: false,
+          isSyncing: false,
+          syncError: null,
+          lastSyncTime: Date.now(),
+        })
+      } catch (error) {
+        set({
+          isSyncing: false,
+          syncError: error instanceof Error ? error.message : '同步失败',
+        })
+      }
+      return
+    }
+
+    if (!state.docManager || !state.docHandle) {
+      return
+    }
+
+    set({ isSyncing: true })
+    try {
+      await state.docManager.saveToSupabase(state.docHandle)
+    } catch (error) {
+      set({
+        isSyncing: false,
+        syncError: error instanceof Error ? error.message : '同步失败',
+      })
+    }
+  },
+
+  manualSync: async () => {
+    if (syncTimer) {
+      clearTimeout(syncTimer)
+      syncTimer = null
+    }
+    await get().syncToSupabase()
+  },
+
+  loadResumeData: async (resumeId: string) => {
+    const { docManager, cleanupFns } = get()
+
+    if (cleanupFns.length > 0) {
+      cleanupFns.forEach((fn) => fn())
+    }
+    if (docManager) {
+      docManager.destroy()
+    }
+
+    set({
+      isSyncing: true,
+      syncError: null,
+      pendingChanges: false,
+      docManager: null,
+      docHandle: null,
+      cleanupFns: [],
+      currentResumeId: resumeId,
+      mode: isOfflineResumeId(resumeId) ? 'offline' : 'online',
+      isInitialized: false,
+    })
+
+    if (isOfflineResumeId(resumeId)) {
+      const offlineResume = await getOfflineResumeById(resumeId)
+      if (!offlineResume) {
+        throw new Error('离线简历不存在')
+      }
+
+      const data = offlineResume.data || {}
+
+      set({
+        ...mapDocToState(data as Partial<AutomergeResumeDocument>),
+        isSyncing: false,
+        pendingChanges: false,
+        syncError: null,
+        mode: 'offline',
+        isInitialized: true,
+        lastSyncTime: offlineResume.updated_at ? new Date(offlineResume.updated_at).getTime() : null,
+      })
+      return
+    }
+
+    const user = await getCurrentUser()
+    if (!user) {
+      throw new Error('用户未登录')
+    }
+
+    try {
+      const manager = new DocumentManager(resumeId, user.id)
+      const handle = await manager.initialize()
+      const doc = handle.doc()
+
+      const changeHandler = ({ doc }: { doc: AutomergeResumeDocument | null }) => {
+        if (!doc) return
+
+        set((prev) => ({
+          ...prev,
+          ...mapDocToState(doc),
+          isInitialized: true,
+        }))
+      }
+
+      handle.on('change', changeHandler)
+      const offChange = () => handle.off('change', changeHandler)
+
+      const offSave = manager.onSaveResult(({ success, error }) => {
+        if (success) {
+          set({
+            isSyncing: false,
+            pendingChanges: false,
+            syncError: null,
+            lastSyncTime: Date.now(),
+          })
+        } else {
+          set({
+            isSyncing: false,
+            syncError: error instanceof Error ? error.message : '同步失败',
+          })
+        }
+      })
+
+      set({
+        ...mapDocToState(doc),
+        docManager: manager,
+        docHandle: handle,
+        cleanupFns: [offChange, offSave],
+        isSyncing: false,
+        pendingChanges: false,
+        syncError: null,
+        mode: 'online',
+        isInitialized: true,
+      })
+    } catch (error) {
+      set({
+        isSyncing: false,
+        syncError: error instanceof Error ? error.message : '初始化失败',
+        mode: 'online',
+      })
+      throw error
+    }
+  },
+
+  resetToDefaults: () => {
+    set({
       basics: DEFAULT_BASICS,
       jobIntent: DEFAULT_JOB_INTENT,
-      order: DEFAULT_ORDER,
-      activeTabId: 'basics',
       applicationInfo: DEFAULT_APPLICATION_INFO,
       eduBackground: DEFAULT_EDU_BACKGROUND,
       workExperience: DEFAULT_WORK_EXPERIENCE,
@@ -106,212 +400,133 @@ const useResumeStore = create<ResumeState>()(
       honorsCertificates: DEFAULT_HONORS_CERTIFICATES,
       selfEvaluation: DEFAULT_SELF_EVALUATION,
       hobbies: DEFAULT_HOBBIES,
+      order: DEFAULT_ORDER,
       visibility: DEFAULT_VISIBILITY,
-      isSyncing: false,
-      lastSyncTime: null,
-      syncError: null,
-      pendingChanges: false,
+      pendingChanges: true,
+    })
 
-      updateOrder: (newOrder) => {
-        set({ order: newOrder, pendingChanges: true })
-        debouncedSync(get().syncToSupabase)
-      },
+    const state = get()
+    if (state.mode === 'offline' || (state.currentResumeId && isOfflineResumeId(state.currentResumeId))) {
+      scheduleOfflinePersist(() => get().syncToSupabase())
+    } else {
+      state.docManager?.change((doc) => {
+        Object.assign(doc, mapDocToState(null))
+      })
+    }
+  },
 
-      updateActiveTabId: (newActiveTab) => set({ activeTabId: newActiveTab }),
+  cleanup: () => {
+    const { cleanupFns, docManager } = get()
+    cleanupFns.forEach((fn) => fn())
+    docManager?.destroy()
+    if (syncTimer) {
+      clearTimeout(syncTimer)
+      syncTimer = null
+    }
+    set({
+      cleanupFns: [],
+      docManager: null,
+      docHandle: null,
+      mode: null,
+      currentResumeId: null,
+      isInitialized: false,
+    })
+  },
+}))
 
-      updateForm: (key, data) => {
-        set((state) => ({ [key]: { ...state[key], ...data }, pendingChanges: true }))
-        debouncedSync(get().syncToSupabase)
-      },
+function sanitizeDeep<T>(value: T): T {
+  if (Array.isArray(value)) {
+    return value.map((item) => sanitizeDeep(item)) as unknown as T
+  }
+  if (value && typeof value === 'object') {
+    const result: Record<string, unknown> = {}
+    Object.entries(value as Record<string, unknown>).forEach(([key, val]) => {
+      if (val === undefined) return
+      result[key] = sanitizeDeep(val)
+    })
+    return result as T
+  }
+  return value
+}
 
-      toggleVisibility: (id) => {
-        set((state) => ({
-          visibility: { ...state.visibility, [id]: !state.visibility[id] },
-          pendingChanges: true,
-        }))
-        debouncedSync(get().syncToSupabase)
-      },
+function applyPatch(target: Record<string, any>, patch: Partial<Record<string, any>>) {
+  Object.entries(patch).forEach(([field, value]) => {
+    if (value === undefined) return
+    target[field] = value
+  })
+}
 
-      getVisibility: (id) => get().visibility[id],
+function mapDocToState(doc: Partial<AutomergeResumeDocument> | null | undefined) {
+  const source = doc as Record<string, any> | undefined
+  return {
+    basics: sanitizeDeep((source?.basics as BasicFormType | undefined) || DEFAULT_BASICS),
+    jobIntent: sanitizeDeep(
+      (source?.jobIntent as JobIntentFormType | undefined) || source?.job_intent || DEFAULT_JOB_INTENT,
+    ),
+    applicationInfo: sanitizeDeep(
+      (source?.applicationInfo as ApplicationInfoFormType | undefined) || source?.application_info || DEFAULT_APPLICATION_INFO,
+    ),
+    eduBackground: sanitizeDeep(
+      (source?.eduBackground as EduBackgroundFormType | undefined) || source?.edu_background || DEFAULT_EDU_BACKGROUND,
+    ),
+    workExperience: sanitizeDeep(
+      (source?.workExperience as WorkExperienceFormType | undefined) || source?.work_experience || DEFAULT_WORK_EXPERIENCE,
+    ),
+    internshipExperience: sanitizeDeep(
+      (source?.internshipExperience as InternshipExperienceFormType | undefined) ||
+        source?.internship_experience ||
+        DEFAULT_INTERNSHIP_EXPERIENCE,
+    ),
+    campusExperience: sanitizeDeep(
+      (source?.campusExperience as CampusExperienceFormType | undefined) ||
+        source?.campus_experience ||
+        DEFAULT_CAMPUS_EXPERIENCE,
+    ),
+    projectExperience: sanitizeDeep(
+      (source?.projectExperience as ProjectExperienceFormType | undefined) ||
+        source?.project_experience ||
+        DEFAULT_PROJECT_EXPERIENCE,
+    ),
+    skillSpecialty: sanitizeDeep(
+      (source?.skillSpecialty as SkillSpecialtyFormType | undefined) ||
+        source?.skill_specialty ||
+        DEFAULT_SKILL_SPECIALTY,
+    ),
+    honorsCertificates: sanitizeDeep(
+      (source?.honorsCertificates as HonorsCertificatesFormType | undefined) ||
+        source?.honors_certificates ||
+        DEFAULT_HONORS_CERTIFICATES,
+    ),
+    selfEvaluation: sanitizeDeep(
+      (source?.selfEvaluation as SelfEvaluationFormType | undefined) ||
+        source?.self_evaluation ||
+        DEFAULT_SELF_EVALUATION,
+    ),
+    hobbies: sanitizeDeep((source?.hobbies as HobbiesFormType | undefined) || DEFAULT_HOBBIES),
+    order: sanitizeDeep((source?.order as ORDERType[] | undefined) || source?.order || DEFAULT_ORDER),
+    visibility: sanitizeDeep(
+      (source?.visibility as Record<VisibilityItemsType, boolean> | undefined) || DEFAULT_VISIBILITY,
+    ),
+  }
+}
 
-      setVisibility: (id, isHidden) => {
-        set((state) => ({
-          visibility: { ...state.visibility, [id]: isHidden },
-          pendingChanges: true,
-        }))
-        debouncedSync(get().syncToSupabase)
-      },
-
-      syncToSupabase: async () => {
-        const state = get()
-        const resumeId = useCurrentResumeStore.getState().resumeId
-
-        // 没有当前简历ID或正在同步中,跳过
-        if (!resumeId || state.isSyncing || !state.pendingChanges) return
-
-        set({ isSyncing: true, syncError: null })
-
-        try {
-          // 判断是离线还是在线简历
-          if (isOfflineResumeId(resumeId)) {
-            // 保存到 IndexedDB
-            await updateOfflineResume(resumeId, {
-              basics: state.basics,
-              jobIntent: state.jobIntent,
-              applicationInfo: state.applicationInfo,
-              eduBackground: state.eduBackground,
-              workExperience: state.workExperience,
-              internshipExperience: state.internshipExperience,
-              campusExperience: state.campusExperience,
-              projectExperience: state.projectExperience,
-              skillSpecialty: state.skillSpecialty,
-              honorsCertificates: state.honorsCertificates,
-              selfEvaluation: state.selfEvaluation,
-              hobbies: state.hobbies,
-              order: state.order,
-              visibility: state.visibility,
-            })
-
-            set({
-              isSyncing: false,
-              lastSyncTime: Date.now(),
-              syncError: null,
-              pendingChanges: false,
-            })
-          } else {
-            // 在线简历：保存到 Supabase
-            const user = await getCurrentUser()
-
-            if (!user) {
-              set({ isSyncing: false, syncError: '用户未登录' })
-              return
-            }
-
-            // 准备要保存的数据
-            const resumeData = {
-              user_id: user.id,
-              basics: state.basics,
-              job_intent: state.jobIntent,
-              application_info: state.applicationInfo,
-              edu_background: state.eduBackground,
-              work_experience: state.workExperience,
-              internship_experience: state.internshipExperience,
-              campus_experience: state.campusExperience,
-              project_experience: state.projectExperience,
-              skill_specialty: state.skillSpecialty,
-              honors_certificates: state.honorsCertificates,
-              self_evaluation: state.selfEvaluation,
-              hobbies: state.hobbies,
-              order: state.order,
-              visibility: state.visibility,
-              updated_at: new Date().toISOString(),
-            }
-
-            // 更新现有简历
-            await updateResumeConfig(resumeId, resumeData)
-
-            set({
-              isSyncing: false,
-              lastSyncTime: Date.now(),
-              syncError: null,
-              pendingChanges: false,
-            })
-          }
-        } catch (error) {
-          set({
-            isSyncing: false,
-            syncError: error instanceof Error ? error.message : '同步失败',
-          })
-        }
-      },
-
-      manualSync: async () => {
-        if (syncTimer) {
-          clearTimeout(syncTimer)
-          syncTimer = null
-        }
-        await get().syncToSupabase()
-      },
-
-      loadResumeData: async (resumeId: string) => {
-        // 判断是离线还是在线简历
-        if (isOfflineResumeId(resumeId)) {
-          // 从 IndexedDB 加载离线简历
-          const offlineResume = await getOfflineResumeById(resumeId)
-
-          if (!offlineResume) {
-            throw new Error('离线简历不存在')
-          }
-
-          const data = (offlineResume.data as any) || {}
-
-          set({
-            basics: data.basics || DEFAULT_BASICS,
-            jobIntent: data.jobIntent || DEFAULT_JOB_INTENT,
-            applicationInfo: data.applicationInfo || DEFAULT_APPLICATION_INFO,
-            eduBackground: data.eduBackground || DEFAULT_EDU_BACKGROUND,
-            workExperience: data.workExperience || DEFAULT_WORK_EXPERIENCE,
-            internshipExperience: data.internshipExperience || DEFAULT_INTERNSHIP_EXPERIENCE,
-            campusExperience: data.campusExperience || DEFAULT_CAMPUS_EXPERIENCE,
-            projectExperience: data.projectExperience || DEFAULT_PROJECT_EXPERIENCE,
-            skillSpecialty: data.skillSpecialty || DEFAULT_SKILL_SPECIALTY,
-            honorsCertificates: data.honorsCertificates || DEFAULT_HONORS_CERTIFICATES,
-            selfEvaluation: data.selfEvaluation || DEFAULT_SELF_EVALUATION,
-            hobbies: data.hobbies || DEFAULT_HOBBIES,
-            order: data.order || DEFAULT_ORDER,
-            visibility: data.visibility || DEFAULT_VISIBILITY,
-            pendingChanges: false,
-          })
-        } else {
-          // 从 Supabase 加载在线简历
-          const data = await getResumeById(resumeId)
-
-          set({
-            basics: data.basics || DEFAULT_BASICS,
-            jobIntent: data.job_intent || DEFAULT_JOB_INTENT,
-            applicationInfo: data.application_info || DEFAULT_APPLICATION_INFO,
-            eduBackground: data.edu_background || DEFAULT_EDU_BACKGROUND,
-            workExperience: data.work_experience || DEFAULT_WORK_EXPERIENCE,
-            internshipExperience: data.internship_experience || DEFAULT_INTERNSHIP_EXPERIENCE,
-            campusExperience: data.campus_experience || DEFAULT_CAMPUS_EXPERIENCE,
-            projectExperience: data.project_experience || DEFAULT_PROJECT_EXPERIENCE,
-            skillSpecialty: data.skill_specialty || DEFAULT_SKILL_SPECIALTY,
-            honorsCertificates: data.honors_certificates || DEFAULT_HONORS_CERTIFICATES,
-            selfEvaluation: data.self_evaluation || DEFAULT_SELF_EVALUATION,
-            hobbies: data.hobbies || DEFAULT_HOBBIES,
-            order: data.order || DEFAULT_ORDER,
-            visibility: data.visibility || DEFAULT_VISIBILITY,
-            pendingChanges: false,
-          })
-        }
-      },
-
-      resetToDefaults: () => {
-        set({
-          basics: DEFAULT_BASICS,
-          jobIntent: DEFAULT_JOB_INTENT,
-          applicationInfo: DEFAULT_APPLICATION_INFO,
-          eduBackground: DEFAULT_EDU_BACKGROUND,
-          workExperience: DEFAULT_WORK_EXPERIENCE,
-          internshipExperience: DEFAULT_INTERNSHIP_EXPERIENCE,
-          campusExperience: DEFAULT_CAMPUS_EXPERIENCE,
-          projectExperience: DEFAULT_PROJECT_EXPERIENCE,
-          skillSpecialty: DEFAULT_SKILL_SPECIALTY,
-          honorsCertificates: DEFAULT_HONORS_CERTIFICATES,
-          selfEvaluation: DEFAULT_SELF_EVALUATION,
-          hobbies: DEFAULT_HOBBIES,
-          order: DEFAULT_ORDER,
-          visibility: DEFAULT_VISIBILITY,
-          pendingChanges: false,
-        })
-      },
-    }),
-    {
-      name: 'resume-storage',
-      storage: createJSONStorage(() => localStorage),
-      version: 11,
-    },
-  ),
-)
+function buildOfflinePayload(state: ResumeState) {
+  return {
+    basics: state.basics,
+    jobIntent: state.jobIntent,
+    applicationInfo: state.applicationInfo,
+    eduBackground: state.eduBackground,
+    workExperience: state.workExperience,
+    internshipExperience: state.internshipExperience,
+    campusExperience: state.campusExperience,
+    projectExperience: state.projectExperience,
+    skillSpecialty: state.skillSpecialty,
+    honorsCertificates: state.honorsCertificates,
+    selfEvaluation: state.selfEvaluation,
+    hobbies: state.hobbies,
+    order: state.order,
+    visibility: state.visibility,
+  }
+}
 
 export default useResumeStore

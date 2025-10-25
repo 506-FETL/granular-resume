@@ -1,6 +1,5 @@
 import { Repo, type RepoConfig } from '@automerge/automerge-repo'
 import { IndexedDBStorageAdapter } from '@automerge/automerge-repo-storage-indexeddb'
-import { SupabaseNetworkAdapter } from './supabase-network-adapter'
 
 let repoInstance: Repo | null = null
 let currentResumeId: string | null = null
@@ -15,27 +14,23 @@ export function getAutomergeRepo(userId: string, resumeId?: string): Repo {
   }
 
   if (!repoInstance) {
-    repoInstance = createResumeRepo(userId, resumeId)
-    currentResumeId = resumeId || null
+    repoInstance = createResumeRepo(userId)
   }
+
+  currentResumeId = resumeId ?? currentResumeId ?? null
   return repoInstance
 }
 
 /**
  * 创建 Automerge Repo
  */
-function createResumeRepo(userId: string, resumeId?: string): Repo {
+function createResumeRepo(userId: string): Repo {
   const config: RepoConfig = {
     // 本地存储适配器
     storage: new IndexedDBStorageAdapter('resume-automerge-v1'),
 
     // 共享策略（允许多标签页共享）
     sharePolicy: async () => true,
-  }
-
-  // 如果提供了 resumeId，启用实时协作
-  if (resumeId) {
-    config.network = [new SupabaseNetworkAdapter(resumeId)]
   }
 
   const repo = new Repo(config)
@@ -77,9 +72,9 @@ function createResumeRepo(userId: string, resumeId?: string): Repo {
   // eslint-disable-next-line no-console
   console.log('✅ Automerge Repo 已创建', {
     userId,
-    resumeId,
-    hasNetwork: !!resumeId,
-    networkAdapters: config.network?.length || 0,
+    resumeId: currentResumeId,
+    hasNetwork: false,
+    networkAdapters: 0,
   })
 
   return repo
@@ -90,6 +85,13 @@ function createResumeRepo(userId: string, resumeId?: string): Repo {
  */
 export function destroyAutomergeRepo() {
   if (repoInstance) {
+    try {
+      repoInstance.networkSubsystem.disconnect()
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.warn('⚠️ 断开 Automerge 网络适配器时出错', error)
+    }
+
     // Repo 没有明确的销毁方法，设为 null 即可
     repoInstance = null
     currentResumeId = null

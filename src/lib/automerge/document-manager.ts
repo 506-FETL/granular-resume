@@ -4,6 +4,7 @@ import { next as Automerge } from '@automerge/automerge'
 import { DocHandle, Repo } from '@automerge/automerge-repo'
 import { getAutomergeRepo } from './repo'
 import type { AutomergeResumeDocument, ChangeFn } from './schema'
+import { SupabaseNetworkAdapter, type CollaborationCallbacks } from './supabase-network-adapter'
 
 /**
  * 文档管理器
@@ -14,6 +15,10 @@ export class DocumentManager {
   private resumeId: string
   private userId: string
   private isInitializing: boolean = false
+  private repo: Repo | null = null
+  private networkAdapter: SupabaseNetworkAdapter | null = null
+  private currentSessionId: string | null = null
+  private saveListeners = new Set<(result: { success: boolean; error?: unknown }) => void>()
 
   constructor(resumeId: string, userId: string) {
     this.resumeId = resumeId
@@ -22,12 +27,13 @@ export class DocumentManager {
 
   /**
    * 初始化文档
-   * 1. 尝试从 Supabase 加载现有文档（通过 document_url 或二进制数据）
+   * 1. 尝试从 Supabase 加载现有文档（优先使用 metadata 中的 documentUrl，其次使用二进制数据）
    * 2. 如果不存在，创建新文档并保存 URL
    */
   async initialize(): Promise<DocHandle<AutomergeResumeDocument>> {
     this.isInitializing = true
     const repo = getAutomergeRepo(this.userId, this.resumeId)
+    this.repo = repo
 
     // 尝试从 Supabase 加载现有的 Automerge 文档
     const existingHandle = await this.loadFromSupabaseAutomerge(repo)
@@ -87,7 +93,7 @@ export class DocumentManager {
     // eslint-disable-next-line no-console
     console.log('✅ 新文档已就绪')
 
-    // 立即保存到 Supabase（保存 document_url），确保其他窗口能加载到相同的文档
+    // 立即保存到 Supabase（将 documentUrl 写入 metadata），确保其他窗口能加载到相同的文档
     await this.saveToSupabase(handle)
 
     // eslint-disable-next-line no-console
@@ -109,7 +115,7 @@ export class DocumentManager {
       // 使用 maybeSingle() 而不是 single() 来避免 PGRST116 错误的特殊处理
       const { data, error } = await supabase
         .from('automerge_documents')
-        .select('document_data, document_url')
+        .select('document_data, metadata')
         .eq('resume_id', this.resumeId)
         .maybeSingle()
       if (error) {
@@ -126,28 +132,31 @@ export class DocumentManager {
         return null
       }
 
-      // 优先尝试使用 document_url 通过 repo.find 加载
+      const metadata = (data.metadata as Record<string, any> | null) || {}
+      const documentUrl = typeof metadata.documentUrl === 'string' ? metadata.documentUrl : undefined
+
+      // 优先尝试使用 documentUrl 通过 repo.find 加载
       // 这样如果文档已经在 IndexedDB 中，可以直接使用，保持同一个 handle 实例
-      if (data.document_url) {
+      if (documentUrl) {
         try {
           // eslint-disable-next-line no-console
-          console.log('🔗 尝试使用 document_url 加载:', data.document_url)
+          console.log('🔗 尝试使用 documentUrl 加载:', documentUrl)
 
           // 先尝试 find（可能已经在 IndexedDB 中）
-          const handle = await repo.find<AutomergeResumeDocument>(data.document_url as any)
+          const handle = await repo.find<AutomergeResumeDocument>(documentUrl as any)
 
           if (handle) {
             // eslint-disable-next-line no-console
-            console.log('✅ 通过 document_url 找到本地文档')
+            console.log('✅ 通过 documentUrl 找到本地文档')
             await handle.whenReady()
             return handle
           } else {
             // eslint-disable-next-line no-console
-            console.log('📥 document_url 未找到，需要导入二进制数据')
+            console.log('📥 documentUrl 未找到，需要导入二进制数据')
           }
         } catch (err) {
           // eslint-disable-next-line no-console
-          console.warn('⚠️ 通过 document_url 加载失败，尝试导入二进制数据', err)
+          console.warn('⚠️ 通过 documentUrl 加载失败，尝试导入二进制数据', err)
         }
       }
 
@@ -326,12 +335,15 @@ export class DocumentManager {
       {
         resume_id: this.resumeId,
         user_id: this.userId,
-        document_url: documentUrl, // 保存文档 URL 用于协作
         document_data: base64, // 保存为 Base64 字符串
         heads: heads,
         document_version: doc._metadata.version,
         change_count: 0,
         updated_at: new Date().toISOString(),
+        metadata: {
+          ...(doc._metadata ? { docMetadata: doc._metadata } : {}),
+          documentUrl,
+        },
       },
       {
         onConflict: 'resume_id', // 指定冲突字段
@@ -341,10 +353,72 @@ export class DocumentManager {
     if (error) {
       // eslint-disable-next-line no-console
       console.error('❌ 保存到 Supabase 失败', error)
+      this.notifySaveListeners({ success: false, error })
     } else {
       // eslint-disable-next-line no-console
       console.log('💾 已保存到 Supabase', { resumeId: this.resumeId })
+      this.notifySaveListeners({ success: true })
     }
+  }
+
+  onSaveResult(listener: (result: { success: boolean; error?: unknown }) => void): () => void {
+    this.saveListeners.add(listener)
+    return () => {
+      this.saveListeners.delete(listener)
+    }
+  }
+
+  private notifySaveListeners(result: { success: boolean; error?: unknown }) {
+    this.saveListeners.forEach((listener) => {
+      try {
+        listener(result)
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('⚠️ 保存回调执行失败', err)
+      }
+    })
+  }
+
+  enableCollaboration(sessionId: string, callbacks: CollaborationCallbacks = {}) {
+    if (!this.repo) {
+      throw new Error('Automerge repo 尚未初始化')
+    }
+
+    if (this.networkAdapter && this.currentSessionId === sessionId) {
+      return this.networkAdapter
+    }
+
+    // 如果已有其他会话，先清理
+    if (this.networkAdapter) {
+      this.disableCollaboration()
+    }
+
+    const adapter = new SupabaseNetworkAdapter(this.resumeId, sessionId, callbacks)
+    this.repo.networkSubsystem.addNetworkAdapter(adapter)
+    this.networkAdapter = adapter
+    this.currentSessionId = sessionId
+
+    return adapter
+  }
+
+  disableCollaboration() {
+    if (this.repo && this.networkAdapter) {
+      this.repo.networkSubsystem.removeNetworkAdapter(this.networkAdapter)
+      this.networkAdapter = null
+    }
+    this.currentSessionId = null
+  }
+
+  getCollaborationChannelName(): string | null {
+    return this.networkAdapter?.getChannelName() ?? null
+  }
+
+  getCollaborationSessionId(): string | null {
+    return this.currentSessionId
+  }
+
+  broadcastCollaborationEvent(type: string, data: Record<string, any> = {}) {
+    this.networkAdapter?.broadcastControlMessage(type, data)
   }
 
   /**
@@ -416,6 +490,9 @@ export class DocumentManager {
     if (this.saveTimeout) {
       clearTimeout(this.saveTimeout)
     }
+    this.disableCollaboration()
+    this.repo = null
     this.handle = null
+    this.saveListeners.clear()
   }
 }

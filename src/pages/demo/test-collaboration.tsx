@@ -2,8 +2,9 @@ import useAutomergeResumeStore from '@/store/resume/form-automerge'
 import { getCurrentUser } from '@/lib/supabase/user'
 import { useEffect, useState } from 'react'
 import { RealtimeCursors } from '@/components/realtime-cursors'
+import useCurrentResumeStore from '@/store/resume/current'
 
-const TEST_RESUME_ID = '773ab0bf-8abd-45dd-980a-b23f21ca2842'
+const TEST_RESUME_ID = useCurrentResumeStore((state) => state.resumeId)
 
 export default function TestCollaborationPage() {
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null)
@@ -24,7 +25,7 @@ export default function TestCollaborationPage() {
     if (!user?.id || hasInitialized) return
 
     setHasInitialized(true)
-    initializeDocument(TEST_RESUME_ID, user.id)
+    initializeDocument(TEST_RESUME_ID || '', user.id)
 
     return () => {
       cleanup()
