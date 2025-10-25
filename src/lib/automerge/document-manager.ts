@@ -1,4 +1,5 @@
-import type { ResumeSchema } from '@/lib/schema'
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { DEFAULT_ORDER, DEFAULT_VISIBILITY, type ResumeSchema } from '@/lib/schema'
 import supabase from '@/lib/supabase/client'
 import { next as Automerge } from '@automerge/automerge'
 import { DocHandle, Repo } from '@automerge/automerge-repo'
@@ -19,10 +20,16 @@ export class DocumentManager {
   private networkAdapter: SupabaseNetworkAdapter | null = null
   private currentSessionId: string | null = null
   private saveListeners = new Set<(result: { success: boolean; error?: unknown }) => void>()
+  private canPersistToSupabase = true
+  private sharedDocumentUrl?: string
 
-  constructor(resumeId: string, userId: string) {
+  constructor(resumeId: string, userId: string, options?: { sharedDocumentUrl?: string }) {
     this.resumeId = resumeId
     this.userId = userId
+    this.sharedDocumentUrl = options?.sharedDocumentUrl
+    if (this.sharedDocumentUrl) {
+      this.canPersistToSupabase = false
+    }
   }
 
   /**
@@ -30,19 +37,23 @@ export class DocumentManager {
    * 1. 尝试从 Supabase 加载现有文档（优先使用 metadata 中的 documentUrl，其次使用二进制数据）
    * 2. 如果不存在，创建新文档并保存 URL
    */
-  async initialize(): Promise<DocHandle<AutomergeResumeDocument>> {
+  async initialize() {
     this.isInitializing = true
     const repo = getAutomergeRepo(this.userId, this.resumeId)
     this.repo = repo
 
+    if (this.sharedDocumentUrl) {
+      const sharedHandle = await this.loadFromDocumentUrl(repo, this.sharedDocumentUrl)
+      if (sharedHandle) {
+        this.handle = sharedHandle
+        this.isInitializing = false
+        return sharedHandle
+      }
+    }
+
     // 尝试从 Supabase 加载现有的 Automerge 文档
     const existingHandle = await this.loadFromSupabaseAutomerge(repo)
     if (existingHandle) {
-      // eslint-disable-next-line no-console
-      console.log('📂 从 Supabase 加载 Automerge 文档', {
-        resumeId: this.resumeId,
-        documentUrl: existingHandle.url,
-      })
       this.handle = existingHandle
       this.isInitializing = false
       return existingHandle
@@ -71,33 +82,23 @@ export class DocumentManager {
       }
 
       // 确保 order 和 visibility 有默认值
-      if (!doc.order) {
-        doc.order = [] as any
+      if (!doc.order || doc.order.length === 0) {
+        doc.order = [...DEFAULT_ORDER] as any
       }
       if (!doc.visibility) {
-        doc.visibility = {} as any
+        doc.visibility = { ...DEFAULT_VISIBILITY } as any
       }
     })
 
-    // eslint-disable-next-line no-console
-    console.log('✨ 创建新的 Automerge 文档', {
-      resumeId: this.resumeId,
-      documentUrl: handle.url,
-      isReady: handle.isReady(),
-    })
     this.handle = handle
 
     // 等待文档就绪
     await handle.whenReady()
 
-    // eslint-disable-next-line no-console
-    console.log('✅ 新文档已就绪')
-
     // 立即保存到 Supabase（将 documentUrl 写入 metadata），确保其他窗口能加载到相同的文档
-    await this.saveToSupabase(handle)
-
-    // eslint-disable-next-line no-console
-    console.log('💾 新文档已保存到 Supabase，其他窗口将使用相同的 documentUrl')
+    if (this.canPersistToSupabase) {
+      await this.saveToSupabase(handle)
+    }
 
     this.isInitializing = false
     return handle
@@ -108,9 +109,6 @@ export class DocumentManager {
    */
   private async loadFromSupabaseAutomerge(repo: Repo): Promise<DocHandle<AutomergeResumeDocument> | null> {
     try {
-      // eslint-disable-next-line no-console
-      console.log('🔍 正在从 Supabase 查询文档...', { resumeId: this.resumeId })
-
       // 注意：Supabase 会自动将 BYTEA 转换为合适的格式
       // 使用 maybeSingle() 而不是 single() 来避免 PGRST116 错误的特殊处理
       const { data, error } = await supabase
@@ -118,6 +116,7 @@ export class DocumentManager {
         .select('document_data, metadata')
         .eq('resume_id', this.resumeId)
         .maybeSingle()
+
       if (error) {
         // 如果是找不到记录的错误，这是正常的
         if (error.code === 'PGRST116') {
@@ -139,15 +138,10 @@ export class DocumentManager {
       // 这样如果文档已经在 IndexedDB 中，可以直接使用，保持同一个 handle 实例
       if (documentUrl) {
         try {
-          // eslint-disable-next-line no-console
-          console.log('🔗 尝试使用 documentUrl 加载:', documentUrl)
-
           // 先尝试 find（可能已经在 IndexedDB 中）
           const handle = await repo.find<AutomergeResumeDocument>(documentUrl as any)
 
           if (handle) {
-            // eslint-disable-next-line no-console
-            console.log('✅ 通过 documentUrl 找到本地文档')
             await handle.whenReady()
             return handle
           } else {
@@ -167,43 +161,27 @@ export class DocumentManager {
         return null
       }
 
-      // eslint-disable-next-line no-console
-      console.log(
-        '📦 原始数据类型:',
-        typeof data.document_data,
-        Array.isArray(data.document_data) ? '数组' : typeof data.document_data,
-      )
-
       // 将 BYTEA 转换为 Uint8Array
       let uint8Array: Uint8Array
 
       if (data.document_data instanceof Uint8Array) {
         // 已经是 Uint8Array
         uint8Array = data.document_data
-        // eslint-disable-next-line no-console
-        console.log('📦 数据已经是 Uint8Array')
       } else if (Array.isArray(data.document_data)) {
         // 如果是数字数组（某些情况下 Supabase 会返回这种格式）
         uint8Array = new Uint8Array(data.document_data)
-        // eslint-disable-next-line no-console
-        console.log('📦 从数组转换为 Uint8Array')
       } else if (typeof data.document_data === 'string') {
         // PostgreSQL BYTEA 的 hex 格式：\x后跟16进制字符串
         if (data.document_data.startsWith('\\x')) {
           // 移除 \x 前缀
           const hexString = data.document_data.slice(2)
-          // eslint-disable-next-line no-console
-          console.log('📦 Hex 字符串长度:', hexString.length, '前 20 字符:', hexString.slice(0, 20))
 
           // 将 hex 转换为字符串（因为我们存储的是 Base64 字符串的 hex 编码）
           let decodedString = ''
           for (let i = 0; i < hexString.length; i += 2) {
-            const byte = parseInt(hexString.substr(i, 2), 16)
+            const byte = parseInt(hexString.slice(i, i + 2), 16)
             decodedString += String.fromCharCode(byte)
           }
-
-          // eslint-disable-next-line no-console
-          console.log('📦 解码后的字符串前 20 字符:', decodedString.slice(0, 20))
 
           // 现在将 Base64 字符串解码为 Uint8Array
           try {
@@ -212,8 +190,6 @@ export class DocumentManager {
             for (let i = 0; i < binaryString.length; i++) {
               uint8Array[i] = binaryString.charCodeAt(i)
             }
-            // eslint-disable-next-line no-console
-            console.log('✅ 从 hex → Base64 → Uint8Array 转换成功')
           } catch (err) {
             // eslint-disable-next-line no-console
             console.error('❌ Base64 解码失败', err)
@@ -227,8 +203,6 @@ export class DocumentManager {
             for (let i = 0; i < binaryString.length; i++) {
               uint8Array[i] = binaryString.charCodeAt(i)
             }
-            // eslint-disable-next-line no-console
-            console.log('✅ 从 Base64 → Uint8Array 转换成功')
           } catch (err) {
             // eslint-disable-next-line no-console
             console.error('❌ Base64 解码失败', err)
@@ -241,33 +215,12 @@ export class DocumentManager {
         return null
       }
 
-      // eslint-disable-next-line no-console
-      console.log('📦 转换后的 Uint8Array:', uint8Array.length, 'bytes')
-
       // 使用 repo.import 导入已有的 Automerge 文档
       // 这样不会触发 create 导致的循环保存
       const handle = repo.import<AutomergeResumeDocument>(uint8Array)
 
-      // eslint-disable-next-line no-console
-      console.log('✅ 成功从 Supabase 导入文档', {
-        documentUrl: handle.url,
-        resumeId: this.resumeId,
-        dataSize: uint8Array.length,
-        isReady: handle.isReady(),
-      })
-
       // 等待文档就绪
       await handle.whenReady()
-
-      // eslint-disable-next-line no-console
-      console.log('✅ 文档已就绪，可以同步', {
-        documentUrl: handle.url,
-        docContent: handle.doc(),
-      })
-
-      // 确保文档已经注册到 repo 的网络层进行同步
-      // Automerge repo 应该自动处理这个，但我们显式等待一下
-      await new Promise((resolve) => setTimeout(resolve, 100))
 
       return handle
     } catch (err) {
@@ -277,34 +230,74 @@ export class DocumentManager {
     }
   }
 
+  private async loadFromDocumentUrl(
+    repo: Repo,
+    documentUrl: string,
+  ): Promise<DocHandle<AutomergeResumeDocument> | null> {
+    try {
+      const handle = await repo.find<AutomergeResumeDocument>(documentUrl as any)
+      if (handle) {
+        await handle.whenReady()
+        // eslint-disable-next-line no-console
+        console.log('🔁 通过共享链接加载 Automerge 文档', { documentUrl })
+        return handle
+      }
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.warn('⚠️ 通过共享链接加载文档失败', err)
+    }
+    return null
+  }
+
   /**
    * 从 Supabase resume_config 表加载简历数据
    */
   private async loadFromSupabaseConfig(): Promise<Partial<ResumeSchema> | null> {
-    const { data, error } = await supabase.from('resume_config').select('*').eq('resume_id', this.resumeId).single()
+    const { data, error } = await supabase
+      .from('resume_config')
+      .select('*')
+      .eq('resume_id', this.resumeId)
+      .maybeSingle()
 
     if (error) {
+      if (error.code === 'PGRST116' || error.code === '42501') {
+        // 没有权限读取该简历或不存在，进入只读模式（依赖实时协作拉取数据）
+        this.canPersistToSupabase = false
+        // eslint-disable-next-line no-console
+        console.warn('⚠️ 当前用户无法读取 resume_config，进入只读协作模式', {
+          resumeId: this.resumeId,
+          code: error.code,
+        })
+        return null
+      }
       // eslint-disable-next-line no-console
       console.error('❌ 从 Supabase resume_config 加载失败', error)
       return null
     }
 
+    if (!data) {
+      this.canPersistToSupabase = false
+      // eslint-disable-next-line no-console
+      console.warn('⚠️ 未找到 resume_config 记录，进入只读协作模式', { resumeId: this.resumeId })
+      return null
+    }
+
     // 移除数据库特有字段
     const {
-      id: _id,
-      created_at: _created_at,
-      updated_at: _updated_at,
-      resume_id: _resume_id,
-      user_id: _user_id,
-      automerge_enabled: _automerge_enabled,
-      document_version: _document_version,
-      total_changes_count: _total_changes_count,
-      last_automerge_sync: _last_automerge_sync,
-      sync_status: _sync_status,
+      id,
+      created_at,
+      updated_at,
+      resume_id,
+      user_id,
+      automerge_enabled,
+      document_version,
+      total_changes_count,
+      last_automerge_sync,
+      sync_status,
       ...resumeData
     } = data
 
-    return resumeData as Partial<ResumeSchema>
+    return resumeData
   }
 
   /**
@@ -323,13 +316,10 @@ export class DocumentManager {
     // 获取文档 URL（用于协作）
     const documentUrl = handle.url
 
-    // eslint-disable-next-line no-console
-    console.log('💾 准备保存到 Supabase', {
-      resumeId: this.resumeId,
-      documentUrl,
-      binarySize: binary.length,
-      base64Length: base64.length,
-    })
+    if (!this.canPersistToSupabase) {
+      this.notifySaveListeners({ success: true })
+      return
+    }
 
     const { error } = await supabase.from('automerge_documents').upsert(
       {
@@ -355,8 +345,6 @@ export class DocumentManager {
       console.error('❌ 保存到 Supabase 失败', error)
       this.notifySaveListeners({ success: false, error })
     } else {
-      // eslint-disable-next-line no-console
-      console.log('💾 已保存到 Supabase', { resumeId: this.resumeId })
       this.notifySaveListeners({ success: true })
     }
   }
@@ -426,6 +414,10 @@ export class DocumentManager {
    */
   getHandle(): DocHandle<AutomergeResumeDocument> | null {
     return this.handle
+  }
+
+  getDocumentUrl(): string | null {
+    return this.handle?.url ?? this.sharedDocumentUrl ?? null
   }
 
   /**

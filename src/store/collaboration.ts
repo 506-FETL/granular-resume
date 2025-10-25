@@ -68,7 +68,8 @@ const useCollaborationStore = create<CollaborationState>()((set, get) => ({
     }
 
     const sessionId = createSessionId()
-    const shareUrl = buildShareUrl(resumeId, sessionId)
+    const documentUrl = docManager.getDocumentUrl()
+    const shareUrl = buildShareUrl(resumeId, sessionId, documentUrl ?? undefined)
     const color = get().selfColor ?? generateParticipantColor()
 
     set({
@@ -231,7 +232,7 @@ const useCollaborationStore = create<CollaborationState>()((set, get) => ({
         isConnecting: false,
         role: 'guest',
         sessionId,
-        shareUrl: buildShareUrl(resumeId, sessionId),
+        shareUrl: buildShareUrl(resumeId, sessionId, docManager.getDocumentUrl() ?? undefined),
         resumeId,
         roomName: buildRoomName(resumeId, sessionId),
         participants: adapterPeerId
@@ -274,8 +275,8 @@ const useCollaborationStore = create<CollaborationState>()((set, get) => ({
 
     try {
       docManager?.disableCollaboration()
-    } catch (error) {
-      console.error('⚠️ 关闭协作网络失败', error)
+    } catch (error: any) {
+      toast.error('关闭协作时出错，请重试', error.message)
     }
 
     set({
@@ -329,7 +330,9 @@ function createSessionId() {
     if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
       const buffer = new Uint8Array(12)
       crypto.getRandomValues(buffer)
-      return Array.from(buffer, (byte) => byte.toString(36)[0]).join('').slice(0, 16)
+      return Array.from(buffer, (byte) => byte.toString(36)[0])
+        .join('')
+        .slice(0, 16)
     }
   } catch {
     // ignore
@@ -337,10 +340,13 @@ function createSessionId() {
   return Math.random().toString(36).slice(2, 18)
 }
 
-function buildShareUrl(resumeId: string, sessionId: string) {
+function buildShareUrl(resumeId: string, sessionId: string, documentUrl?: string) {
   const url = new URL(window.location.origin + '/editor')
   url.searchParams.set('resumeId', resumeId)
   url.searchParams.set('collabSession', sessionId)
+  if (documentUrl) {
+    url.searchParams.set('docUrl', documentUrl)
+  }
   return url.toString()
 }
 

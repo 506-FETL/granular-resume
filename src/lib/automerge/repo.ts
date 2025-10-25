@@ -7,7 +7,7 @@ let currentResumeId: string | null = null
 /**
  * 获取或创建 Automerge Repo 单例
  */
-export function getAutomergeRepo(userId: string, resumeId?: string): Repo {
+export function getAutomergeRepo(userId: string, resumeId?: string) {
   // 如果 resumeId 变化，需要重新创建 repo（因为网络适配器绑定到特定简历）
   if (repoInstance && resumeId && resumeId !== currentResumeId) {
     destroyAutomergeRepo()

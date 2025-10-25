@@ -207,6 +207,7 @@ export default function ResumePage() {
     const deletePromise = isOfflineResume
       ? deleteOfflineResume(id).then(() => {
           setResumes((prev) => prev.filter((resume) => resume.resume_id !== id))
+          setOfflineResumes((prev) => prev.filter((resume) => resume.resume_id !== id))
         })
       : deleteResume(id).then(() => {
           setResumes((prev) => prev.filter((resume) => resume.resume_id !== id))
@@ -291,7 +292,7 @@ export default function ResumePage() {
 
   if (loading) return <ResumePageSkeleton />
 
-  const hasOfflineResumesToSync = offlineResumes.length > 0 && isOnline
+  const hasOfflineResumesToSync = isOnline && offlineResumes.length > 0
 
   return (
     <div className='container mx-auto p-8'>

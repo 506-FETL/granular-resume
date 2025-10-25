@@ -38,11 +38,15 @@ export function SyncResumesDialog({
   isSyncing = false,
 }: SyncResumesDialogProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [initialIds, setInitialIds] = useState<string[]>([])
 
   useEffect(() => {
-    // 默认全选
-    if (open && offlineResumes.length > 0) {
-      setSelectedIds(offlineResumes.map((r) => r.resume_id))
+    if (open) {
+      setInitialIds((prev) => (prev.length ? prev : offlineResumes.map((r) => r.resume_id)))
+      setSelectedIds((prev) => (prev.length ? prev : offlineResumes.map((r) => r.resume_id)))
+    } else {
+      setInitialIds([])
+      setSelectedIds([])
     }
   }, [open, offlineResumes])
 

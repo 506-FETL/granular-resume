@@ -33,17 +33,16 @@ const HeadBars = ({
             <span>{isOnline ? '在线' : '离线'}</span>
           </div>
         </Highlighter>
-        {hasOfflineResumesToSync && (
-          <Button
-            onClick={() => setShowSyncDialog(true)}
-            variant='outline'
-            size='sm'
-            className={isMobile ? 'w-full' : ''}
-          >
-            <CloudUpload className='h-4 w-4 mr-2' />
-            同步本地简历 ({offlineResumes.length})
-          </Button>
-        )}
+        <Button
+          onClick={() => setShowSyncDialog(true)}
+          variant='outline'
+          size='sm'
+          className={isMobile ? 'w-full' : ''}
+          disabled={!hasOfflineResumesToSync}
+        >
+          <CloudUpload className='h-4 w-4 mr-2' />
+          同步本地简历 ({offlineResumes.length})
+        </Button>
       </div>
     </div>
   )
