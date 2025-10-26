@@ -18,19 +18,21 @@ export class SupabaseNetworkAdapter extends NetworkAdapter {
   private channel: RealtimeChannel | null = null
   peerId?: PeerId = undefined
   peerMetadata?: PeerMetadata = undefined
-  private readonly resumeId: string
+  private readonly documentUrl: string
   private readonly sessionId: string
   private readonly callbacks: CollaborationCallbacks
   private readonly channelName: string
   private readonly presenceMetadata: Record<string, any>
   private ready = false
 
-  constructor(resumeId: string, sessionId: string, callbacks: CollaborationCallbacks = {}) {
+  constructor(documentUrl: string, sessionId: string, callbacks: CollaborationCallbacks = {}) {
     super()
-    this.resumeId = resumeId
+    this.documentUrl = documentUrl
     this.sessionId = sessionId
     this.callbacks = callbacks
-    this.channelName = `automerge:${this.resumeId}:${this.sessionId}`
+    // 使用文档URL的hash作为频道标识，确保相同文档的协作者在同一频道
+    const docHash = this.documentUrl.split('/').pop() || this.documentUrl
+    this.channelName = `automerge:${docHash}:${this.sessionId}`
     this.presenceMetadata = callbacks.presenceMetadata || {}
   }
 

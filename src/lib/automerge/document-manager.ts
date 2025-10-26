@@ -381,7 +381,16 @@ export class DocumentManager {
       this.disableCollaboration()
     }
 
-    const adapter = new SupabaseNetworkAdapter(this.resumeId, sessionId, callbacks)
+    // 使用文档URL而不是resumeId作为频道标识
+    const documentUrl = this.getDocumentUrl()
+    if (!documentUrl) {
+      throw new Error('文档URL不存在，无法开启协作')
+    }
+
+    // eslint-disable-next-line no-console
+    console.log('🔗 开启协作', { documentUrl, sessionId })
+
+    const adapter = new SupabaseNetworkAdapter(documentUrl, sessionId, callbacks)
     this.repo.networkSubsystem.addNetworkAdapter(adapter)
     this.networkAdapter = adapter
     this.currentSessionId = sessionId

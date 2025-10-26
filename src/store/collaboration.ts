@@ -72,6 +72,9 @@ const useCollaborationStore = create<CollaborationState>()((set, get) => ({
     const shareUrl = buildShareUrl(resumeId, sessionId, documentUrl ?? undefined)
     const color = get().selfColor ?? generateParticipantColor()
 
+    // eslint-disable-next-line no-console
+    console.log('🚀 开启协作会话', { sessionId, documentUrl, resumeId })
+
     set({
       isConnecting: true,
       error: null,
@@ -133,7 +136,7 @@ const useCollaborationStore = create<CollaborationState>()((set, get) => ({
         sessionId,
         shareUrl,
         resumeId,
-        roomName: buildRoomName(resumeId, sessionId),
+        roomName: buildRoomName(docManager.getDocumentUrl() ?? '', sessionId),
         participants: adapterPeerId
           ? {
               [adapterPeerId]: {
@@ -172,6 +175,9 @@ const useCollaborationStore = create<CollaborationState>()((set, get) => ({
     }
 
     const color = get().selfColor ?? generateParticipantColor()
+
+    // eslint-disable-next-line no-console
+    console.log('🔗 加入协作会话', { sessionId, resumeId, documentUrl: docManager.getDocumentUrl() })
 
     set({
       isConnecting: true,
@@ -234,7 +240,7 @@ const useCollaborationStore = create<CollaborationState>()((set, get) => ({
         sessionId,
         shareUrl: buildShareUrl(resumeId, sessionId, docManager.getDocumentUrl() ?? undefined),
         resumeId,
-        roomName: buildRoomName(resumeId, sessionId),
+        roomName: buildRoomName(docManager.getDocumentUrl() ?? '', sessionId),
         participants: adapterPeerId
           ? {
               [adapterPeerId]: {
@@ -350,8 +356,10 @@ function buildShareUrl(resumeId: string, sessionId: string, documentUrl?: string
   return url.toString()
 }
 
-function buildRoomName(resumeId: string, sessionId: string) {
-  return `resume-collab:${resumeId}:${sessionId}`
+function buildRoomName(documentUrl: string, sessionId: string) {
+  // 使用文档URL的hash作为房间标识，确保相同文档的协作者在同一房间
+  const docHash = documentUrl.split('/').pop() || documentUrl
+  return `resume-collab:${docHash}:${sessionId}`
 }
 
 function generateParticipantColor() {
