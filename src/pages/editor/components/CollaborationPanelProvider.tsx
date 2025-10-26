@@ -112,10 +112,7 @@ export function CollaborationPanelProvider({
         const params = new URLSearchParams(window.location.search)
         params.set('resumeId', activeResumeId)
         params.set('collabSession', newSessionId)
-        const docUrl = useResumeStore.getState().docManager?.getDocumentUrl()
-        if (docUrl) {
-          params.set('docUrl', docUrl)
-        }
+        // NOTE: 不再将本地 documentUrl 写入分享链接或 URL 参数，避免跨浏览器加载本地 handle
         setSearchParams(params, { replace: true })
         setJoinedSessionId(newSessionId)
         setLastStoppedSessionId(null)

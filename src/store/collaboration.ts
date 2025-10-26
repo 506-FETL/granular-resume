@@ -68,12 +68,12 @@ const useCollaborationStore = create<CollaborationState>()((set, get) => ({
     }
 
     const sessionId = createSessionId()
-    const documentUrl = docManager.getDocumentUrl()
-    const shareUrl = buildShareUrl(resumeId, sessionId, documentUrl ?? undefined)
+    // 不在分享链接中包含本地 documentUrl（见 buildShareUrl 注释）
+    const shareUrl = buildShareUrl(resumeId, sessionId)
     const color = get().selfColor ?? generateParticipantColor()
 
     // eslint-disable-next-line no-console
-    console.log('🚀 开启协作会话', { sessionId, documentUrl, resumeId })
+    console.log('🚀 开启协作会话', { sessionId, resumeId })
 
     set({
       isConnecting: true,
@@ -136,7 +136,8 @@ const useCollaborationStore = create<CollaborationState>()((set, get) => ({
         sessionId,
         shareUrl,
         resumeId,
-        roomName: buildRoomName(docManager.getDocumentUrl() ?? '', sessionId),
+        // 使用 resumeId 代替 documentUrl 来生成房间名，resumeId 在不同浏览器/设备间稳定
+        roomName: buildRoomName(resumeId, sessionId),
         participants: adapterPeerId
           ? {
               [adapterPeerId]: {
@@ -238,9 +239,11 @@ const useCollaborationStore = create<CollaborationState>()((set, get) => ({
         isConnecting: false,
         role: 'guest',
         sessionId,
-        shareUrl: buildShareUrl(resumeId, sessionId, docManager.getDocumentUrl() ?? undefined),
+        // 不在分享链接中包含本地 documentUrl（见 buildShareUrl 注释）
+        shareUrl: buildShareUrl(resumeId, sessionId),
         resumeId,
-        roomName: buildRoomName(docManager.getDocumentUrl() ?? '', sessionId),
+        // 使用 resumeId 代替 documentUrl 来生成房间名，resumeId 在不同浏览器/设备间稳定
+        roomName: buildRoomName(resumeId, sessionId),
         participants: adapterPeerId
           ? {
               [adapterPeerId]: {
@@ -346,20 +349,19 @@ function createSessionId() {
   return Math.random().toString(36).slice(2, 18)
 }
 
-function buildShareUrl(resumeId: string, sessionId: string, documentUrl?: string) {
+function buildShareUrl(resumeId: string, sessionId: string) {
   const url = new URL(window.location.origin + '/editor')
   url.searchParams.set('resumeId', resumeId)
   url.searchParams.set('collabSession', sessionId)
-  if (documentUrl) {
-    url.searchParams.set('docUrl', documentUrl)
-  }
+  // 不再在分享链接中包含本地 documentUrl（automerge handle URL），
+  // 因为该 URL 在不同浏览器/设备上通常不可用，会导致接收方尝试加载失败。
   return url.toString()
 }
 
-function buildRoomName(documentUrl: string, sessionId: string) {
-  // 使用文档URL的hash作为房间标识，确保相同文档的协作者在同一房间
-  const docHash = documentUrl.split('/').pop() || documentUrl
-  return `resume-collab:${docHash}:${sessionId}`
+function buildRoomName(resumeId: string, sessionId: string) {
+  // 直接使用 resumeId 作为房间标识的一部分，保证不同浏览器/设备使用相同的标识
+  const idPart = resumeId || 'unknown'
+  return `resume-collab:${idPart}:${sessionId}`
 }
 
 function generateParticipantColor() {

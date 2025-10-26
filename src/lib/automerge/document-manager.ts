@@ -8,6 +8,28 @@ import type { AutomergeResumeDocument, ChangeFn } from './schema'
 import { SupabaseNetworkAdapter, type CollaborationCallbacks } from './supabase-network-adapter'
 
 /**
+ * 生成确定性的 actor ID，用于确保所有协作者使用相同的文档 URL
+ */
+function generateDeterministicActor(resumeId: string): Uint8Array {
+  const hash = simpleHash(resumeId)
+  const arr = new Uint8Array(16)
+  for (let i = 0; i < 16; i++) {
+    arr[i] = (hash >> (i * 8)) & 0xff
+  }
+  return arr
+}
+
+function simpleHash(str: string): number {
+  let hash = 0
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i)
+    hash = (hash << 5) - hash + char
+    hash = hash & hash
+  }
+  return hash
+}
+
+/**
  * 文档管理器
  * 负责文档的创建、加载、保存
  */
@@ -64,7 +86,7 @@ export class DocumentManager {
 
     // 创建新的 Automerge 文档
     // repo.create() 会生成正确格式的 Automerge DocumentId
-    const handle = repo.create<AutomergeResumeDocument>()
+    const handle = repo.create<any>({ actor: generateDeterministicActor(this.resumeId) })
 
     handle.change((doc) => {
       // 初始化元数据
@@ -341,8 +363,15 @@ export class DocumentManager {
     )
 
     if (error) {
-      // eslint-disable-next-line no-console
-      console.error('❌ 保存到 Supabase 失败', error)
+      // 如果是 RLS/权限问题（例如 42501），切换到只读协作模式以避免以后重复失败
+      if ((error as any)?.code === '42501' || (error as any)?.status === 403) {
+        this.canPersistToSupabase = false
+        // eslint-disable-next-line no-console
+        console.warn('⚠️ 当前用户无权写入 automerge_documents，切换到只读协作模式', { resumeId: this.resumeId, error })
+      } else {
+        // eslint-disable-next-line no-console
+        console.error('❌ 保存到 Supabase 失败', error)
+      }
       this.notifySaveListeners({ success: false, error })
     } else {
       this.notifySaveListeners({ success: true })
@@ -381,19 +410,104 @@ export class DocumentManager {
       this.disableCollaboration()
     }
 
-    // 使用文档URL而不是resumeId作为频道标识
-    const documentUrl = this.getDocumentUrl()
-    if (!documentUrl) {
-      throw new Error('文档URL不存在，无法开启协作')
-    }
-
+    // 准备开启协作：优先从 Supabase automerge_documents 表加载已有的二进制快照与 metadata
+    // 以 resumeId 为唯一键，确保不同协作者基于相同快照开始协作，避免各自新建本地文档
     // eslint-disable-next-line no-console
-    console.log('🔗 开启协作', { documentUrl, sessionId })
+    console.log('🔗 开始准备协作（确保导入/映射文档）', { sessionId, resumeId: this.resumeId })
 
-    const adapter = new SupabaseNetworkAdapter(documentUrl, sessionId, callbacks)
+    // repo 已经在 initialize 中创建过，断言其存在以便在后面的异步任务中使用
+    const repo = this.repo as Repo
+
+    // 先创建 adapter 并注册，但 localDocumentUrl 由下面的异步任务补充（如果数据库里有内容）
+    const adapter = new SupabaseNetworkAdapter(this.resumeId, sessionId, callbacks)
+    // 先使用现有的本地 documentUrl（如果已经有 handle）
+    const existingDocUrl = this.getDocumentUrl() || null
+    adapter.setLocalDocumentUrl(existingDocUrl)
     this.repo.networkSubsystem.addNetworkAdapter(adapter)
     this.networkAdapter = adapter
     this.currentSessionId = sessionId
+
+    // 异步尝试从 Supabase 加载 automerge 文档快照并在可用时导入/映射
+    ;(async () => {
+      try {
+        const { data, error } = await supabase
+          .from('automerge_documents')
+          .select('document_data, metadata')
+          .eq('resume_id', this.resumeId)
+          .maybeSingle()
+
+        if (error) {
+          // eslint-disable-next-line no-console
+          console.warn('⚠️ 查询 automerge_documents 时出错，继续使用本地文档（如有）', error)
+          return
+        }
+
+        if (!data) return
+
+        const metadata = (data.metadata as Record<string, any> | null) || {}
+        const metadataDocumentUrl = typeof metadata.documentUrl === 'string' ? metadata.documentUrl : undefined
+
+        // 如果数据库包含二进制数据，尝试导入为本地 handle（这会在本地生成可用的 handle.url）
+        if (data.document_data) {
+          try {
+            let uint8Array: Uint8Array
+
+            if (data.document_data instanceof Uint8Array) {
+              uint8Array = data.document_data
+            } else if (Array.isArray(data.document_data)) {
+              uint8Array = new Uint8Array(data.document_data)
+            } else if (typeof data.document_data === 'string') {
+              if (data.document_data.startsWith('\\x')) {
+                const hexString = data.document_data.slice(2)
+                let decodedString = ''
+                for (let i = 0; i < hexString.length; i += 2) {
+                  const byte = parseInt(hexString.slice(i, i + 2), 16)
+                  decodedString += String.fromCharCode(byte)
+                }
+                const binaryString = atob(decodedString)
+                uint8Array = new Uint8Array(binaryString.length)
+                for (let i = 0; i < binaryString.length; i++) {
+                  uint8Array[i] = binaryString.charCodeAt(i)
+                }
+              } else {
+                const binaryString = atob(data.document_data)
+                uint8Array = new Uint8Array(binaryString.length)
+                for (let i = 0; i < binaryString.length; i++) {
+                  uint8Array[i] = binaryString.charCodeAt(i)
+                }
+              }
+            } else {
+              uint8Array = new Uint8Array()
+            }
+
+            if (uint8Array && uint8Array.length > 0) {
+              try {
+                const imported = repo.import<AutomergeResumeDocument>(uint8Array)
+                await imported.whenReady()
+                if (!this.handle) {
+                  this.handle = imported
+                }
+                // eslint-disable-next-line no-console
+                console.log('🔁 成功从 Supabase 导入 Automerge 文档快照', { resumeId: this.resumeId })
+              } catch (err) {
+                // eslint-disable-next-line no-console
+                console.warn('⚠️ 导入 Automerge 二进制失败，继续流程', err)
+              }
+            }
+          } catch (err) {
+            // eslint-disable-next-line no-console
+            console.warn('⚠️ 解析数据库中的 document_data 失败', err)
+          }
+        }
+
+        // 最终确定适配器的 localDocumentUrl（优先使用当前 handle.url，再用 metadata 中的 documentUrl）
+        const finalLocalUrl = this.getDocumentUrl() || metadataDocumentUrl || null
+        adapter.setLocalDocumentUrl(finalLocalUrl)
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.warn('⚠️ 异步加载 automerge_documents 失败', err)
+      }
+    })()
 
     return adapter
   }
