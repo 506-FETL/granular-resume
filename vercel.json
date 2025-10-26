@@ -15,10 +15,5 @@
         }
       ]
     }
-  ],
-  "functions": {
-    "src/**/*.ts": {
-      "maxDuration": 30
-    }
-  }
+  ]
 }
