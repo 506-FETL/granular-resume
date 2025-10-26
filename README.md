@@ -76,6 +76,28 @@ pnpm build
 pnpm preview
 ```
 
+## 🚀 部署到 Vercel
+
+1. **连接仓库**：在 [Vercel](https://vercel.com) 中导入你的 GitHub 仓库
+
+2. **配置环境变量**：在项目设置中添加以下环境变量：
+
+   ```
+   VITE_SUPABASE_URL=https://your-project.supabase.co
+   VITE_SUPABASE_PUBLISHABLE_KEY=your_anon_key
+   ```
+
+3. **部署配置**：项目已包含 `vercel.json`，会自动应用以下设置：
+   - 缓存控制头（用于静态资源优化）
+   - 函数超时设置（支持长时间 WebSocket 连接）
+
+4. **验证部署**：
+   - 检查实时协作功能是否正常
+   - 确认环境变量状态指示器显示"配置正确"
+   - 测试多人同时编辑简历
+
+> **注意**：Vercel 的无服务器函数有执行时间限制，实时协作功能已优化以处理连接中断和自动重连。
+
 ## 🗃️ 数据模型（核心表）
 
 > 以 `resume_config` 为例：一张记录**用户简历配置与内容**的表，JSONB 存储各模块数据，配合 RLS 控制权限。
@@ -181,6 +203,17 @@ A: Supabase Realtime 基于行变更推送；你可以在前端只提取需要�
 
 **Q: 导出 PDF 的排版怎么保证与页面一致？**
 A: 使用与页面同构的模板引擎/样式（可用 `@react-pdf/renderer` 或浏览器 `print to PDF`），保持组件单一来源。(TODO)
+
+**Q: Vercel 部署后实时协作不工作怎么办？**
+A: 请检查以下几点：
+
+1. 确保环境变量 `VITE_SUPABASE_URL` 和 `VITE_SUPABASE_PUBLISHABLE_KEY` 在 Vercel 项目设置中正确配置
+2. 检查浏览器控制台是否有 WebSocket 连接错误
+3. 确认 Supabase 项目已启用 Realtime 功能
+4. 如果连接频繁断开，可能是 Vercel 的无服务器函数超时限制，应用已配置自动重连机制
+
+**Q: 实时协作连接状态如何查看？**
+A: 界面右上角会显示参与者数量的徽章。如果显示"配置错误"，说明环境变量未正确设置。
 
 ## 🗺️ Roadmap
 

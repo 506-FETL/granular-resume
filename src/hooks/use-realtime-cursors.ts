@@ -149,6 +149,15 @@ export const useRealtimeCursors = ({
         if (status === REALTIME_SUBSCRIBE_STATES.SUBSCRIBED) {
           await channel.track({ key: userId })
           channelRef.current = channel
+        } else if (status === REALTIME_SUBSCRIBE_STATES.CLOSED) {
+          // 在Vercel等平台上，连接可能会被意外关闭，尝试重连
+          setTimeout(() => {
+            if (channelRef.current === channel) {
+              // 如果还是同一个channel，清除状态
+              setCursors({})
+              channelRef.current = null
+            }
+          }, 1000)
         } else {
           setCursors({})
           channelRef.current = null
