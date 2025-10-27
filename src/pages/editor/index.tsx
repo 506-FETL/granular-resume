@@ -41,6 +41,7 @@ function Editor() {
   const navigate = useNavigate()
   const queryResumeId = searchParams.get('resumeId')
   const sharedDocUrl = searchParams.get('docUrl')
+  const collabSessionParam = searchParams.get('collabSession')
   const activeResumeId = resumeId ?? queryResumeId ?? undefined
 
   const {
@@ -81,10 +82,13 @@ function Editor() {
   }, [])
 
   useEffect(() => {
-    if (!resumeId && queryResumeId) {
+    if (queryResumeId && collabSessionParam) {
+      // 如果有协作会话参数，强制切换到链接中的简历
+      setCurrentResume(queryResumeId, 'default')
+    } else if (!resumeId && queryResumeId) {
       setCurrentResume(queryResumeId, 'default')
     }
-  }, [resumeId, queryResumeId, setCurrentResume])
+  }, [resumeId, queryResumeId, collabSessionParam, setCurrentResume])
 
   useEffect(() => {
     if (!activeResumeId) {
