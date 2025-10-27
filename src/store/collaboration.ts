@@ -129,6 +129,11 @@ const useCollaborationStore = create<CollaborationState>()((set, get) => ({
       const adapter = docManager.enableCollaboration(sessionId, callbacks)
       adapterPeerId = adapter.peerId || null
 
+      // 发起者开始协作后，立即保存最新文档到数据库，确保协作者能导入最新快照
+      if (docManager.getHandle()) {
+        await docManager.saveToSupabase(docManager.getHandle()!)
+      }
+
       set({
         isSharing: true,
         isConnecting: false,

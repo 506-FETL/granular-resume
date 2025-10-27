@@ -428,8 +428,17 @@ export class DocumentManager {
     this.currentSessionId = sessionId
 
     // 异步尝试从 Supabase 加载 automerge 文档快照并在可用时导入/映射
+    // 注意：如果已经有 handle（例如发起者），不要导入数据库快照，让网络同步处理
     ;(async () => {
       try {
+        // 如果已经有 handle，跳过导入，让网络同步处理
+        if (this.handle) {
+          // 直接设置 localDocumentUrl
+          const finalLocalUrl = this.getDocumentUrl() || null
+          adapter.setLocalDocumentUrl(finalLocalUrl)
+          return
+        }
+
         const { data, error } = await supabase
           .from('automerge_documents')
           .select('document_data, metadata')
