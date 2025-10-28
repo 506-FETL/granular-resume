@@ -1,9 +1,8 @@
+import type { CollaborationCallbacks } from '@/lib/automerge/supabase-network-adapter'
+import { clearStoredSession, rememberSessionRole } from '@/lib/collaboration/session-storage'
+import useResumeStore from '@/store/resume/form'
 import { toast } from 'sonner'
 import { create } from 'zustand'
-
-import { clearStoredSession, rememberSessionRole } from '@/lib/collaboration/session-storage'
-import type { CollaborationCallbacks } from '@/lib/automerge/supabase-network-adapter'
-import useResumeStore from '@/store/resume/form'
 
 type CollaborationRole = 'host' | 'guest'
 
@@ -394,6 +393,7 @@ const useCollaborationStore = create<CollaborationState>()((set, get) => ({
 
   stopSharing: ({ silent } = {}) => {
     const state = get()
+
     if (!state.isSharing && !state.sessionId) {
       return
     }

@@ -2,12 +2,45 @@ import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
 import supabase from '../client'
 import { getCurrentUser } from '../user'
 
-export async function updateResumeConfig(resumeId: string, data: any) {
+const camelToSnakeKeyMap: Record<string, string> = {
+  jobIntent: 'job_intent',
+  applicationInfo: 'application_info',
+  eduBackground: 'edu_background',
+  workExperience: 'work_experience',
+  internshipExperience: 'internship_experience',
+  campusExperience: 'campus_experience',
+  projectExperience: 'project_experience',
+  skillSpecialty: 'skill_specialty',
+  honorsCertificates: 'honors_certificates',
+  selfEvaluation: 'self_evaluation',
+  lastAutomergeSync: 'last_automerge_sync',
+  totalChangesCount: 'total_changes_count',
+  documentVersion: 'document_version',
+}
+
+function normalizeResumePayload(data: Record<string, any>) {
+  const normalized: Record<string, any> = {}
+
+  Object.entries(data).forEach(([key, value]) => {
+    const mappedKey = camelToSnakeKeyMap[key] ?? key
+    normalized[mappedKey] = value
+  })
+
+  return normalized
+}
+
+export async function updateResumeConfig(resumeId: string, data: Record<string, any>) {
   const user = await getCurrentUser()
 
   if (!user) throw new Error('用户未登陆')
 
-  const { error } = await supabase.from('resume_config').update(data).eq('resume_id', resumeId).eq('user_id', user.id)
+  const payload = normalizeResumePayload(data)
+
+  const { error } = await supabase
+    .from('resume_config')
+    .update(payload)
+    .eq('resume_id', resumeId)
+    .eq('user_id', user.id)
 
   if (error) throw error
 }

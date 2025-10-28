@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { ErrorBoundary } from 'react-error-boundary'
 import { BrowserRouter } from 'react-router-dom'
@@ -10,18 +10,20 @@ import './index.css'
 const app = createRoot(document.getElementById('root')!)
 
 app.render(
-  <ErrorBoundary FallbackComponent={ErrorFallback}>
-    <BrowserRouter>
-      <SidebarProvider
-        style={
-          {
-            '--sidebar-width': 'calc(var(--spacing) * 72)',
-            '--header-height': 'calc(var(--spacing) * 12)',
-          } as React.CSSProperties
-        }
-      >
-        <App />
-      </SidebarProvider>
-    </BrowserRouter>
-  </ErrorBoundary>,
+  <StrictMode>
+    <ErrorBoundary FallbackComponent={ErrorFallback}>
+      <BrowserRouter>
+        <SidebarProvider
+          style={
+            {
+              '--sidebar-width': 'calc(var(--spacing) * 72)',
+              '--header-height': 'calc(var(--spacing) * 12)',
+            } as React.CSSProperties
+          }
+        >
+          <App />
+        </SidebarProvider>
+      </BrowserRouter>
+    </ErrorBoundary>
+  </StrictMode>,
 )

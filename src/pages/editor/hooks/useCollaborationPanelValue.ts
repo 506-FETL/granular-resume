@@ -103,7 +103,11 @@ export function useCollaborationPanelValue({
     params.delete('docUrl')
     setSearchParams(params, { replace: true })
     setCollabDialogOpen(false)
-  }, [sessionId, setSearchParams, stopSharing])
+
+    if (collaborationRole === 'guest') {
+      navigate('/resume')
+    }
+  }, [collaborationRole, navigate, sessionId, setSearchParams, stopSharing])
 
   const handleCopyShareLink = useCallback(() => {
     if (!shareUrl) return

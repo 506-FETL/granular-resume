@@ -149,7 +149,6 @@ const useResumeStore = create<ResumeState>()((set, get) => ({
     set((prev) => ({
       [key]: { ...prev[key], ...sanitized },
       pendingChanges: true,
-      isSyncing: true,
     }))
 
     state.docManager?.change((doc) => {
@@ -170,7 +169,7 @@ const useResumeStore = create<ResumeState>()((set, get) => ({
       return
     }
 
-    set({ order: newOrder, pendingChanges: true, isSyncing: true })
+    set({ order: newOrder, pendingChanges: true })
     state.docManager?.change((doc) => {
       doc.order = [...newOrder]
     })
@@ -193,7 +192,6 @@ const useResumeStore = create<ResumeState>()((set, get) => ({
     set((prev) => ({
       visibility: { ...prev.visibility, [id]: nextValue },
       pendingChanges: true,
-      isSyncing: true,
     }))
 
     state.docManager?.change((doc) => {
@@ -222,7 +220,6 @@ const useResumeStore = create<ResumeState>()((set, get) => ({
     set((prev) => ({
       visibility: { ...prev.visibility, [id]: isHidden },
       pendingChanges: true,
-      isSyncing: true,
     }))
 
     state.docManager?.change((doc) => {
@@ -351,6 +348,10 @@ const useResumeStore = create<ResumeState>()((set, get) => ({
       handle.on('change', changeHandler)
       const offChange = () => handle.off('change', changeHandler)
 
+      const offSaveStart = manager.onSaveStart(() => {
+        set({ isSyncing: true })
+      })
+
       const offSave = manager.onSaveResult(({ success, error }) => {
         if (success) {
           set({
@@ -371,7 +372,7 @@ const useResumeStore = create<ResumeState>()((set, get) => ({
         ...mapDocToState(doc),
         docManager: manager,
         docHandle: handle,
-        cleanupFns: [offChange, offSave],
+        cleanupFns: [offChange, offSaveStart, offSave],
         isSyncing: false,
         pendingChanges: false,
         syncError: null,

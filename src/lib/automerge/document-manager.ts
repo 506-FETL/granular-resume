@@ -42,6 +42,7 @@ export class DocumentManager {
   private networkAdapter: SupabaseNetworkAdapter | null = null
   private currentSessionId: string | null = null
   private saveListeners = new Set<(result: { success: boolean; error?: unknown }) => void>()
+  private saveStartListeners = new Set<() => void>()
   private canPersistToSupabase = true
   private sharedDocumentUrl?: string
 
@@ -356,6 +357,8 @@ export class DocumentManager {
       return
     }
 
+    this.notifySaveStart()
+
     const { error } = await supabase.from('automerge_documents').upsert(
       {
         resume_id: this.resumeId,
@@ -398,6 +401,13 @@ export class DocumentManager {
     }
   }
 
+  onSaveStart(listener: () => void): () => void {
+    this.saveStartListeners.add(listener)
+    return () => {
+      this.saveStartListeners.delete(listener)
+    }
+  }
+
   private notifySaveListeners(result: { success: boolean; error?: unknown }) {
     this.saveListeners.forEach((listener) => {
       try {
@@ -405,6 +415,17 @@ export class DocumentManager {
       } catch (err) {
         // eslint-disable-next-line no-console
         console.error('⚠️ 保存回调执行失败', err)
+      }
+    })
+  }
+
+  private notifySaveStart() {
+    this.saveStartListeners.forEach((listener) => {
+      try {
+        listener()
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('⚠️ 保存开始回调执行失败', err)
       }
     })
   }
@@ -638,6 +659,9 @@ export class DocumentManager {
     if (this.saveTimeout) {
       clearTimeout(this.saveTimeout)
     }
+
+    this.saveListeners.clear()
+    this.saveStartListeners.clear()
     this.disableCollaboration()
     this.repo = null
     this.handle = null
