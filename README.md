@@ -1,237 +1,236 @@
 # Resume · 智能简历平台
 
-> 一款面向个人与团队的**所见即所得（WYSIWYG）简历编辑与协作**应用：离线可用、实时同步、可扩展模板、支持多端部署。
+> 一体化的所见即所得简历工作台：离线/在线统一存储、Automerge 实时协作、可定制模板主题。
 
 - 在线演示（Demo）：**[https://506resume.vercel.app/](https://506resume.vercel.app/)**
 
-## ✨ 特性
+## 🥁 最新进展
 
-- **所见即所得编辑**：模块化区块（个人信息、教育、工作、项目、技能等），支持拖拽排序与按需显示。
-- **离线优先**：使用 **IndexedDB** 持久化本地草稿，即使断网也能编辑；联网自动同步。
-- **实时协作**：接入 **Supabase Realtime**，多端/多人同时编辑自动合并，延迟低、体验丝滑。
-- **冲突合并策略**：字段级合并 + 删除优先（tombstone）保护，避免“互相覆盖”。
-- **安全与权限**：依赖 Supabase Auth（匿名/登录）、行级安全（RLS）与最小权限访问。
-- **可塑的模板系统**：以 **JSON Schema** 驱动渲染，不限语言与风格，适配校园/社招/实习等场景。
-- **一键导出**：将当前视图导出为 **PDF / JSON**（保存原始数据）以便投递与备份。
-- **前端工程化**：Vite + React + TypeScript + ESLint + Prettier，开发体验流畅。
-- **一键部署**：内置 `vercel.json`，默认上云到 Vercel，亦可自托管。
+- **Automerge + Supabase 双引擎协作**：自研 `SupabaseNetworkAdapter`，通过 Realtime 频道传输 Automerge diff，支持分享链接、角色管理、实时光标与协作者在线状态。
+- **离线/云端一体化简历库**：新的仪表盘整合 IndexedDB 草稿与云端文档，提供批量同步、选择性迁移、远程删除同步提示。
+- **模块化编辑体验升级**：Tiptap 3 富文本 + 12 个语义区块表单，支持拖拽排序、按模块隐藏、主题/字体/间距实时预览。
+- **账号与偏好中心**：接入 Supabase Auth 登录注册、忘记密码跳转、个人资料页与环境变量健康检查。
+
+## ✨ 核心特性
+
+- **WYSIWYG 简历编辑器**：侧边抽屉驱动的区块表单 + 实时预览，覆盖个人信息、教育/工作/实习、项目、技能、荣誉、自我评价等模块；内置富文本能力（高亮、列表、图片、对齐等）。
+- **实时协作**：Automerge 文档驱动的数据层，点击一键生成分享链接，协作人数、角色、光标位置与颜色实时可视。
+- **离线优先与容灾**：所有草稿自动落盘到 IndexedDB，断网继续编辑；恢复网络后自动回放更改，也可手动触发同步。
+- **同步与版本守护**：字段级合并策略 + 删除优先，云端保存 Automerge 快照与 heads，确保新会话立即对齐；远端删除时提供 toast 提示与跳转。
+- **可扩展模板系统**：JSON Schema + Zustand 配置器定义字段、默认值、主题；Preview 组件支持主题色、字体、间距等即刻切换。
+- **工程化体验**：Vite 7 + React 19 + Tailwind CSS v4 + pnpm，配合 shadcn/ui、motion、lucide/Tabler 图标，快速开发与迭代。
 
 ## 🧱 技术栈
 
-- **前端**：Vite · React · TypeScript
-- **样式/组件**：Tailwind CSS · shadcn/ui（按需拉取组件）
-- **数据层**：IndexedDB（本地） + Supabase（云端 Postgres / Realtime）
-- **工具链**：ESLint（TypeScript 插件）· Prettier · pnpm
-- **部署**：Vercel（可替换为任意静态托管或自建 Nginx）
+- **前端框架**：React 19 · Vite 7 · React Router 7
+- **编辑器与 UI**：Tiptap 3 · Tailwind CSS 4 · shadcn/ui · motion · lucide-react
+- **状态管理**：Zustand · React Hook Form · Zod
+- **协作与数据层**：Automerge Repo · IndexedDB Storage · Supabase (Auth / Postgres / Realtime)
+- **工具链**：TypeScript 5.9 · ESLint 9 · Prettier 3 · pnpm
 
 ## 📦 目录结构
 
 ```
 .
-├─ public/                 # 静态资源
+├─ public/                        # 静态资源
 ├─ src/
-│  ├─ app/                 # App 入口/路由
-│  ├─ components/          # 通用组件 & 模板组件
-│  ├─ features/resume/     # 简历编辑相关模块（状态、视图、逻辑）
+│  ├─ components/                 # 通用 UI、业务组件（协作面板、抽屉、光标等）
+│  ├─ contexts/                   # 全局上下文（拖拽、协作面板）
+│  ├─ hooks/                      # 自定义 hooks（实时光标、设备检测等）
 │  ├─ lib/
-│  │  ├─ db/               # IndexedDB 封装（offline-resumes）
-│  │  ├─ supabase/         # 客户端 & Realtime 订阅
-│  │  ├─ automerge/        # Automerge 相关逻辑
-│  │  └─ schema/           # JSON Schema 与类型
-│  ├─ pages/               # 页面（Demo/编辑/预览）
-│  └─ styles/              # 全局样式
-├─ .env.example            # 环境变量示例（见下）
+│  │  ├─ automerge/               # Automerge 文档管理、Supabase 网络适配器
+│  │  ├─ collaboration/           # 协作会话本地缓存 & 工具
+│  │  ├─ supabase/                # Supabase 客户端、数据访问层
+│  │  ├─ schema/                  # JSON Schema、默认值、类型定义
+│  │  ├─ offline-resume-manager.ts# IndexedDB 数据层
+│  │  └─ resume-sync-service.ts   # 离线 → 云端同步服务
+│  ├─ pages/                      # 路由页面（登录、注册、仪表盘、编辑器、个人中心等）
+│  ├─ store/                      # Zustand 状态仓库
+│  ├─ styles/                     # Tailwind & 全局样式
+│  ├─ App.tsx
+│  ├─ main.tsx
+│  └─ index.css
+├─ package.json
+├─ pnpm-lock.yaml
 ├─ vite.config.ts
 ├─ vercel.json
-├─ package.json
 └─ README.md
 ```
 
 ## ⚙️ 环境变量
 
-在项目根目录创建 `.env` 或 `.env.local`（Vite 只会注入以 `VITE_` 开头的变量）：
+在根目录创建 `.env.local`，并设置以下变量：
 
 ```bash
 VITE_SUPABASE_URL=https://xxx.supabase.co
-VITE_SUPABASE_ANON_KEY=your_public_anon_key
+VITE_SUPABASE_PUBLISHABLE_KEY=your_anon_key
 
-# 可选：
-VITE_APP_NAME=506 Resume
+# 可选：用于 Supabase 忘记密码重定向
+VITE_BASE_URL=https://506resume.vercel.app
 ```
+
+> Vite 仅会注入以 `VITE_` 开头的变量。推荐在开发环境使用 `.env.local`，部署到 Vercel 时在项目 Settings → Environment Variables 中配置。
 
 ## 🚀 快速开始
 
 ```bash
-# 1) 安装依赖（推荐 pnpm）
-pnpm i
-
-# 2) 本地开发
-pnpm dev
-# 本地地址通常为 http://localhost:5173
-
-# 3) 生产构建
-pnpm build
-
-# 4) 本地预览生产包
-pnpm preview
+pnpm install        # 安装依赖
+pnpm dev            # 启动开发服务器：http://localhost:5173
+pnpm build          # 生产构建
+pnpm preview        # 本地预览生产包
 ```
 
-## 🚀 部署到 Vercel
+## ☁️ 部署到 Vercel
 
-1. **连接仓库**：在 [Vercel](https://vercel.com) 中导入你的 GitHub 仓库
-
-2. **配置环境变量**：在项目设置中添加以下环境变量：
-
+1. **连接仓库**：在 [Vercel](https://vercel.com) 导入 Git 仓库，选择 `pnpm`。
+2. **配置环境变量**：在 Vercel 项目 Settings 中新增：
    ```
-   VITE_SUPABASE_URL=https://your-project.supabase.co
-   VITE_SUPABASE_PUBLISHABLE_KEY=your_anon_key
+   VITE_SUPABASE_URL=…
+   VITE_SUPABASE_PUBLISHABLE_KEY=…
+   VITE_BASE_URL=https://<your-domain> (可选)
    ```
-
-3. **部署配置**：项目已包含 `vercel.json`，会自动应用以下设置：
-   - 缓存控制头（用于静态资源优化）
-   - 函数超时设置（支持长时间 WebSocket 连接）
-
+3. **数据库与权限**：按照下方 `Supabase 数据模型` 建表并配置 RLS；确保部署环境的匿名 Key 拥有访问权限。
 4. **验证部署**：
-   - 检查实时协作功能是否正常
-   - 确认环境变量状态指示器显示"配置正确"
-   - 测试多人同时编辑简历
+   - 登录后检查仪表盘是否能加载在线 + 离线列表；
+   - 触发一次协作链接，确认协作者可以加入并看到实时光标；
+   - 查看右上角的环境状态徽章是否显示「配置正确」。
 
-> **注意**：Vercel 的无服务器函数有执行时间限制，实时协作功能已优化以处理连接中断和自动重连。
+> `vercel.json` 默认启用了静态资源缓存和对长连接友好的设置，可按需调整。
 
-## 🗃️ 数据模型（核心表）
+## 🗃️ Supabase 数据模型
 
-> 以 `resume_config` 为例：一张记录**用户简历配置与内容**的表，JSONB 存储各模块数据，配合 RLS 控制权限。
+### `resume_config`（核心简历数据）
 
 ```sql
 create table public.resume_config (
-  id                 bigint generated by default as identity primary key,
-  created_at         timestamp with time zone not null default now(),
-  user_id            uuid not null default auth.uid(),
-  type               text default 'default',
-  basics             jsonb,
-  job_intent         jsonb,
-  application_info   jsonb,
-  edu_background     jsonb,
-  work_experience    jsonb,
+  id bigint generated by default as identity primary key,
+  resume_id uuid not null default gen_random_uuid(),
+  user_id uuid not null default auth.uid(),
+  type text default 'default',
+  display_name text,
+  description text,
+  basics jsonb,
+  job_intent jsonb,
+  application_info jsonb,
+  edu_background jsonb,
+  work_experience jsonb,
   internship_experience jsonb,
-  campus_experience  jsonb,
+  campus_experience jsonb,
   project_experience jsonb,
-  skill_specialty    jsonb,
+  skill_specialty jsonb,
   honors_certificates jsonb,
-  self_evaluation    jsonb,
-  hobbies            jsonb,
-  "order"            jsonb default '["basics","jobIntent","applicationInfo","eduBackground"]'::jsonb
+  self_evaluation jsonb,
+  hobbies jsonb,
+  "order" jsonb default '["basics","jobIntent","applicationInfo","eduBackground"]'::jsonb,
+  visibility jsonb,
+  document_version integer default 1,
+  total_changes_count integer default 0,
+  last_automerge_sync timestamptz,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
 );
 
--- 为了让 Realtime UPDATE 推送包含变更前后，建议：
-ALTER TABLE public.resume_config REPLICA IDENTITY FULL;
+alter table public.resume_config
+  add constraint resume_config_resume_id_unique unique (resume_id);
+
+alter table public.resume_config enable row level security;
+
+-- 每个用户只能访问自己的简历
+create policy "users can read own resume"
+  on public.resume_config
+  for select using (auth.uid() = user_id);
+
+create policy "users can modify own resume"
+  on public.resume_config
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- 为 Realtime 推送包含变更前后的值
+alter table public.resume_config replica identity full;
 ```
 
-> 说明：
->
-> - `order` 用于前端渲染顺序与显示控制；
-> - 每个模块均为 `jsonb`，便于前端灵活演进；
-> - 结合 RLS 与策略，可限制只能读写自己的简历。
+### `automerge_documents`（协作文档快照）
 
-## 🧩 离线与同步（架构与流程）
+```sql
+create table public.automerge_documents (
+  resume_id uuid primary key references public.resume_config(resume_id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  document_data text,         -- Automerge.save() 的 Base64
+  heads jsonb,
+  document_version integer default 1,
+  change_count integer default 0,
+  metadata jsonb,
+  updated_at timestamptz default now()
+);
 
-### IndexedDB 封装（离线优先）
+alter table public.automerge_documents enable row level security;
 
-- 数据库名称：`offline-resumes`
-- 表：`resumes`（键：`resume_id`，值：基础元信息 + `data` 各模块部分字段）
-- 用途：在**未登录**或**弱网**情况下本地编辑、保存草稿；登录后与云端对齐。
+create policy "owner can read document"
+  on public.automerge_documents
+  for select using (auth.uid() = user_id);
 
-### 登录后合并策略（本地 ↔ 远端）
+create policy "owner can write document"
+  on public.automerge_documents
+  for insert with check (auth.uid() = user_id);
 
-> **目标**：用户在未登录时创建/编辑的本地简历，在登录后与云端已有版本**安全合并**，尽量避免丢失。
+create policy "owner can update document"
+  on public.automerge_documents
+  for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+```
 
-**建议实现（字段级、可落地）**：
+> `DocumentManager` 会优先使用 `metadata.documentUrl` 找回同一个 Automerge 文档；若无快照，会回退到 `resume_config` 的 JSON 字段生成默认文档。
 
-1. **每个字段维护元信息**：`{ value, updatedAt, deleted? }`
-2. **合并规则（逐字段）**：
-   - 若出现冲突（本地与远端均更新），**较新的 `updatedAt` 胜出**；
-   - 删除标记优先：若一端 `deleted = true` 且时间更新更近，**以删除为准**（tombstone）；
-   - `order`（渲染顺序）按**最近更新**的版本覆盖；
+## 🧩 协作与同步架构
 
-3. **乐观更新**：前端先应用本地写入并广播；失败再回滚/重放；
-4. **幂等性**：云端按 `resume_id` + `field` 维度去重/覆盖，避免重复事件。
+1. **初始化阶段**：`DocumentManager` 优先尝试从 `automerge_documents` 拉取快照；若没有则从 `resume_config` JSON 初始化，并持久化 `documentUrl`。
+2. **本地编辑流**：表单数据写入 Automerge 文档；对离线 ID（`local-*`）使用 IndexedDB；在线状态下 3 秒内聚合写入 Supabase。
+3. **实时协作**：发起者点击「开启协作」后创建 session，`SupabaseNetworkAdapter` 通过 `automerge:resume:{resumeId}:{sessionId}` 频道转发 diff；协作者加入时自动导入最新快照并回放缺失变化。
+4. **Presence & 光标**：`RealtimeCursors` 监听同一 `roomName`，广播鼠标坐标与昵称，实现成员标识。
+5. **离线同步**：`SyncResumesDialog` 支持批量勾选本地草稿 → 云端，合并后保留历史；远端删除时根据订阅触发 toast 提示与界面刷新。
 
-> 说明：该策略简单稳定、易于审计；如需更强一致性，可引入 **CRDT（如 Automerge）** 做更细粒度合并。
+## 🧪 关键用例
 
-### Realtime 订阅（多人协作）
-
-- 订阅目标：`resume_config` 的 `UPDATE/INSERT/DELETE`
-- 过滤条件：`resume_id = ?`（或 `user_id = current_user`）
-- 事件处理：
-  1. 收到事件 → 合并到本地状态（按上文规则）
-  2. 如激活的是当前文档，则刷新视图（最小代价重渲染）
-  3. 将合并后的版本写入 IndexedDB，供离线回放
-
-## 🧪 关键用例（E2E）
-
-- [x] 未登录创建简历 → 断网编辑 → 恢复网络 → 登录 → 自动与云端合并
-- [x] 多端同时打开同一份简历 → 互不覆盖、延迟内一致
-- [x] 删除与修改冲突 → 以时间戳最近的一方为准（删除优先）
-- [x] 拖拽排序与隐藏 → `order` 字段按最近更新覆盖
-- [x] 导出 PDF/JSON → 与页面视图一致
+- [x] 未登录创建 `local-*` 简历 → 断网编辑 → 登录后在同步对话框中勾选 → 批量迁移到云端。
+- [x] 同一份简历多人实时编辑：字段级合并 + Automerge heads 确保顺序一致，协作者退出后链接立即失效。
+- [x] 协作者删除或远程删除在线简历：主会话收到通知并回退到列表页，避免编辑空文档。
+- [x] 手动保存与自动保存互补：Pending 状态提示 + 最近一次成功同步时间戳。
 
 ## 🛡️ 安全与权限
 
-- **RLS**：仅允许 `user_id = auth.uid()` 访问对应行；
-- **最小权限**：前端仅使用 **Anon Key** 访问公开策略；
-- **审计**：开启 `REPLICA IDENTITY FULL` 以便 Realtime 发送完整变更记录（更易调试合并）。
+- 依赖 Supabase Auth（支持匿名/邮箱登录），前端只持有匿名 Key。
+- `resume_config` & `automerge_documents` 均启用 RLS，限制为 `auth.uid()` 拥有者。
+- `automerge_documents` 仅存储 Base64 快照 + metadata，不包含明文密码等敏感数据。
+- 通过 `x-client-info` 自定义 Header 便于 Supabase 侧追踪调用来源。
 
-## 🔧 开发脚本
+## 🛠️ 常见问题
 
-```bash
-pnpm dev       # 本地开发
-pnpm build     # 构建生产包
-pnpm preview   # 本地预览构建产物
-pnpm lint      # 代码规范检查
-```
+**Q: 协作者如何加入？**  
+A: 发起者点击「开启协作」后复制链接，访问者需登录 Supabase 后自动加入；链接携带 `resumeId` 与 `collabSession`，对等端会导入最新快照。
 
-## 🛠️ 常见问题（FAQ）
+**Q: 忘记密码的重置链接跳转失败？**  
+A: 请在环境变量中配置 `VITE_BASE_URL`，Supabase 将把重置链接重定向至 `<BASE_URL>/editor`。
 
-**Q: 未登录可否创建并长期保存简历？**
-A: 可以，数据保存在浏览器 IndexedDB。登录可选择会与云端合并并持续双向同步。
-
-**Q: 多人协作时如何避免覆盖？**
-A: 采用字段级合并 + 删除优先 + 时间戳裁决，更细粒度引入了 **Automerge** 文本型冲突解决。(TODO)
-
-**Q: 如何只订阅某表的部分字段变化？**
-A: Supabase Realtime 基于行变更推送；你可以在前端只提取需要的字段，或在云端用视图/函数裁剪。
-
-**Q: 导出 PDF 的排版怎么保证与页面一致？**
-A: 使用与页面同构的模板引擎/样式（可用 `@react-pdf/renderer` 或浏览器 `print to PDF`），保持组件单一来源。(TODO)
-
-**Q: Vercel 部署后实时协作不工作怎么办？**
-A: 请检查以下几点：
-
-1. 确保环境变量 `VITE_SUPABASE_URL` 和 `VITE_SUPABASE_PUBLISHABLE_KEY` 在 Vercel 项目设置中正确配置
-2. 检查浏览器控制台是否有 WebSocket 连接错误
-3. 确认 Supabase 项目已启用 Realtime 功能
-4. 如果连接频繁断开，可能是 Vercel 的无服务器函数超时限制，应用已配置自动重连机制
-
-**Q: 实时协作连接状态如何查看？**
-A: 界面右上角会显示参与者数量的徽章。如果显示"配置错误"，说明环境变量未正确设置。
+**Q: 没有 Supabase 权限时还能协作吗？**  
+A: 若命中 RLS 拒绝，`DocumentManager` 会进入只读协作模式：继续接收他人广播的 Automerge diff，但本地不会再尝试持久化至云端。
 
 ## 🗺️ Roadmap
 
-- [ ] 内置更多模板与主题（校园/校招/外企/学术）
-- [ ] 细粒度文本 CRDT（Automerge）与“插入/删除”级冲突解决
-- [ ] 模板市场（上传/分享/一键应用）
-- [ ] 多语言与RTL（从右到左）支持
-- [ ] Webhook/Edge Functions：自动生成快照与版本回滚
-- [ ] AI 助理：要点抽取、要素补全、风格润色与多语言翻译
+- [x] Automerge CRDT 实时协作（含分享链接、实时光标）
+- [x] 离线草稿与云端同步对话框
+- [ ] 正式版导出（PDF/JSON）
+- [ ] 模板市场 & 多主题库
+- [ ] 多语言/RTL 支持
+- [ ] AI 助理：要点抽取、反馈建议
+- [ ] Webhook / Edge Functions 生成版本快照
 
-## 🤝 贡献
+## 🤝 贡献指南
 
-欢迎 Issue / PR！提交前请确保：
+欢迎提交 Issue / PR！在提交前请确认：
 
-1. 通过 `pnpm lint`；
-2. 遵循约定式提交（建议）；
-3. 新增/变更功能附带必要的单元/端到端用例。
+1. `pnpm install` 安装依赖；
+2. `pnpm exec eslint "src/**/*.{ts,tsx}"` 保持代码风格；
+3. 附带必要的单元或端到端验证（若涉及核心逻辑或同步流程）；
+4. 建议遵循约定式提交信息。
 
 ## 📝 License
 
-本项目使用 **MIT** 许可证开源。详见 [LICENSE](./LICENSE)。
+本项目使用 **MIT** 许可证，详见 [LICENSE](./LICENSE)。

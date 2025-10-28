@@ -122,7 +122,9 @@ function Editor() {
     let unSubscribe: (() => void) | undefined
     let cancelled = false
 
-    ;(async () => {
+    subscribeToResumeUpdates()
+
+    async function subscribeToResumeUpdates() {
       try {
         unSubscribe = await subscribeToResumeConfigUpdates((payload) => {
           if (cancelled) return
@@ -143,7 +145,7 @@ function Editor() {
       } catch (error: any) {
         toast.error(`监听简历更新失败, ${error.message || '未知错误'}`)
       }
-    })()
+    }
 
     return () => {
       cancelled = true

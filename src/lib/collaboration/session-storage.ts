@@ -47,8 +47,7 @@ function writeStore(entries: StoredSession[]) {
 export function rememberSessionRole(entry: StoredSession) {
   const entries = readStore()
   const filtered = entries.filter(
-    (item) =>
-      item.sessionId !== entry.sessionId || item.resumeId !== entry.resumeId || item.userId !== entry.userId,
+    (item) => item.sessionId !== entry.sessionId || item.resumeId !== entry.resumeId || item.userId !== entry.userId,
   )
   filtered.push(entry)
   writeStore(filtered)
