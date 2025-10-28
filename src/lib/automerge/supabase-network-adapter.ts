@@ -26,7 +26,8 @@ export class SupabaseNetworkAdapter extends NetworkAdapter {
   private ready = false
   // 本地 documentUrl（handle.url），用于在接收消息时将来自网络的 documentId 映射到本地 handle
   private localDocumentUrl: string | null = null
-  // 收到但尚未分派到本地文档的消息缓存（当 localDocumentUrl 未知时使用）
+  private localDocumentId: string | null = null
+  // 收到但尚未分派到本地文档的消息缓存（当本地文档信息未知时使用）
   private pendingMessages: Array<{ senderId: any; targetId: any; messageType: any; documentId: any; message: string }> =
     []
 
@@ -44,16 +45,18 @@ export class SupabaseNetworkAdapter extends NetworkAdapter {
   }
 
   /**
-   * 设置本地文档 URL（Automerge handle.url），用于将远端消息映射到本地文档
+   * 设置本地文档信息（Automerge handle.url + documentId），用于将远端消息映射到本地文档
    */
-  setLocalDocumentUrl(url: string | null) {
-    this.localDocumentUrl = url
-    if (this.localDocumentUrl) {
+  setLocalDocumentInfo({ documentUrl, documentId }: { documentUrl: string | null; documentId: string | null }) {
+    this.localDocumentUrl = documentUrl
+    this.localDocumentId = documentId
+    if (this.localDocumentId) {
       // 冲刷队列（最多 200 条以防内存泄漏）
       const toFlush = this.pendingMessages.splice(0, 200)
       toFlush.forEach(({ senderId, targetId, messageType, documentId, message }) => {
         try {
           const uint8Array = this.base64ToUint8Array(message)
+          const resolvedDocumentId = this.localDocumentId || documentId
           const messageObj: Message = {
             type: messageType || 'message',
             senderId,
@@ -61,12 +64,16 @@ export class SupabaseNetworkAdapter extends NetworkAdapter {
             data: uint8Array,
           }
           // 设置消息的 documentId 和 channelId
-          ;(messageObj as any).documentId = documentId
-          ;(messageObj as any).channelId = documentId
+          ;(messageObj as any).documentId = resolvedDocumentId
+          ;(messageObj as any).channelId = resolvedDocumentId
 
           // debug: 打印将要发给 repo 的消息结构
           // eslint-disable-next-line no-console
-          console.log('🧭 冲刷缓存并发给 repo', { emittedMessage: messageObj })
+          console.log('🧭 冲刷缓存并发给 repo', {
+            emittedMessage: messageObj,
+            originalDocumentId: documentId,
+            mappedDocumentId: resolvedDocumentId,
+          })
 
           // 发给 repo
           this.emit('message', messageObj)
@@ -140,8 +147,8 @@ export class SupabaseNetworkAdapter extends NetworkAdapter {
         return
       }
 
-      // 如果本地 documentUrl 还未就绪，则缓存消息，等待 setLocalDocumentUrl 时冲刷
-      if (!this.localDocumentUrl) {
+      // 如果本地文档信息还未就绪，则缓存消息，等待 setLocalDocumentInfo 时冲刷
+      if (!this.localDocumentId) {
         // 限制队列长度
         if (this.pendingMessages.length < 1000) {
           this.pendingMessages.push({ senderId, targetId, messageType, documentId, message })
@@ -149,7 +156,7 @@ export class SupabaseNetworkAdapter extends NetworkAdapter {
 
         // 记录并返回
         // eslint-disable-next-line no-console
-        console.log('⚠️ localDocumentUrl 未就绪，已缓存同步消息', { senderId, targetId, documentId })
+        console.log('⚠️ localDocumentId 未就绪，已缓存同步消息', { senderId, targetId, documentId })
         return
       }
 
@@ -162,9 +169,11 @@ export class SupabaseNetworkAdapter extends NetworkAdapter {
         data: uint8Array,
       }
 
-      // 设置消息的 documentId 和 channelId 为接收到的 documentId
-      ;(messageObj as any).documentId = documentId
-      ;(messageObj as any).channelId = documentId
+      const resolvedDocumentId = this.localDocumentId || documentId || this.resumeId
+
+      // 设置消息的 documentId 和 channelId，优先映射到本地文档 URL
+      ;(messageObj as any).documentId = resolvedDocumentId
+      ;(messageObj as any).channelId = resolvedDocumentId
 
       // debug: 打印接收到的消息
       // eslint-disable-next-line no-console
@@ -180,7 +189,7 @@ export class SupabaseNetworkAdapter extends NetworkAdapter {
         bytes: uint8Array.length,
         messageType: messageObj.type,
         originalDocumentId: documentId,
-        mappedDocumentId: this.localDocumentUrl,
+        mappedDocumentId: resolvedDocumentId,
         listenerCount: this.listenerCount('message'),
       })
 
@@ -321,7 +330,7 @@ export class SupabaseNetworkAdapter extends NetworkAdapter {
     })
 
     // 优先使用 message 中携带的 documentId（通常由 automerge-repo 提供），若不存在则使用本地 known documentUrl，最后回退到 resumeId
-    const outgoingDocumentId = (message as any).documentId || this.localDocumentUrl || this.resumeId
+    const outgoingDocumentId = (message as any).documentId || this.localDocumentId || this.resumeId
 
     this.channel.send({
       type: 'broadcast',

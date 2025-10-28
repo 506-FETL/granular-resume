@@ -8,7 +8,6 @@ import { defineConfig, globalIgnores } from 'eslint/config'
 // 在 ESLint 配置中使用 Node.js 环境变量
 const env = process.env.VITE_ENV || 'development'
 const isProduction = env === 'production'
-const isDevelopment = env === 'development'
 
 export default defineConfig([
   globalIgnores(['dist']),
@@ -22,7 +21,10 @@ export default defineConfig([
     ],
     languageOptions: {
       ecmaVersion: 2020,
-      globals: globals.browser,
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+      },
     },
     rules: {
       'no-console': isProduction ? 'error' : 'warn', // 生产环境禁用 console,开发环境警告

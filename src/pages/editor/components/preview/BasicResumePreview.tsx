@@ -1,10 +1,11 @@
 import { Badge } from '@/components/ui/badge'
 import useAge from '@/hooks/useAge'
-import useResumeStore from '@/store/resume/form'
-import useResumeConfigStore from '@/store/resume/config'
-import parser from 'html-react-parser'
-import type { ProficiencyLevel, ORDERType, ResumeSchema } from '@/lib/schema'
+import type { ORDERType, ProficiencyLevel, ResumeSchema } from '@/lib/schema'
 import { getFontFamilyCSS, themeColorMap } from '@/lib/schema'
+import useResumeConfigStore from '@/store/resume/config'
+import useResumeStore from '@/store/resume/form'
+import parser from 'html-react-parser'
+import type React from 'react'
 import { ResumeWrapper, useResumeContext } from './resume-context'
 
 const skillProficiencyMap: { [key in ProficiencyLevel]: number } = {
@@ -179,18 +180,35 @@ function BasicsModule({ data, age }: { data: ResumeSchema; age?: string | number
             )}
           </>
         )}
+
         {basics.gender && basics.gender !== '不填' && (
           <>
             <span>{basics.gender}</span>
             {(basics.nation || basics.maritalStatus) && <span style={{ color: theme.textMuted }}>|</span>}
           </>
         )}
+
         {basics.nation && (
           <>
             <span>{basics.nation}</span>
             {basics.maritalStatus && <span style={{ color: theme.textMuted }}>|</span>}
           </>
         )}
+
+        {basics.heightCm && (
+          <>
+            <span>{basics.heightCm}cm</span>
+            {basics.weightKg && <span style={{ color: theme.textMuted }}>|</span>}
+          </>
+        )}
+
+        {basics.weightKg && (
+          <>
+            <span>{basics.weightKg}kg</span>
+            {basics.maritalStatus && <span style={{ color: theme.textMuted }}>|</span>}
+          </>
+        )}
+
         {basics.maritalStatus && basics.maritalStatus !== '不填' && <span>{basics.maritalStatus}</span>}
       </div>
 
@@ -532,7 +550,7 @@ function BasicResumePreview() {
     pagePadding: `${configStore.spacing.pageMargin}px`,
     sectionMargin: `${configStore.spacing.sectionSpacing}px`,
     sectionTitleMargin: '0.75rem',
-    itemSpacing: '0.75rem',
+    itemSpacing: '0.55rem',
     paragraphSpacing: '0.25rem',
     lineHeight: configStore.spacing.lineHeight,
     proseLineHeight: configStore.spacing.lineHeight,

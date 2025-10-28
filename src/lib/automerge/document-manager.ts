@@ -69,6 +69,10 @@ export class DocumentManager {
       if (sharedHandle) {
         this.handle = sharedHandle
         this.isInitializing = false
+        this.networkAdapter?.setLocalDocumentInfo({
+          documentUrl: this.getDocumentUrl(),
+          documentId: this.getDocumentId(),
+        })
         return sharedHandle
       }
     }
@@ -78,6 +82,10 @@ export class DocumentManager {
     if (existingHandle) {
       this.handle = existingHandle
       this.isInitializing = false
+      this.networkAdapter?.setLocalDocumentInfo({
+        documentUrl: this.getDocumentUrl(),
+        documentId: this.getDocumentId(),
+      })
       return existingHandle
     }
 
@@ -116,6 +124,11 @@ export class DocumentManager {
 
     // 等待文档就绪
     await handle.whenReady()
+
+    this.networkAdapter?.setLocalDocumentInfo({
+      documentUrl: this.getDocumentUrl(),
+      documentId: this.getDocumentId(),
+    })
 
     // 立即保存到 Supabase（将 documentUrl 写入 metadata），确保其他窗口能加载到相同的文档
     if (this.canPersistToSupabase) {
@@ -418,11 +431,13 @@ export class DocumentManager {
     // repo 已经在 initialize 中创建过，断言其存在以便在后面的异步任务中使用
     const repo = this.repo as Repo
 
-    // 先创建 adapter 并注册，但 localDocumentUrl 由下面的异步任务补充（如果数据库里有内容）
+    // 先创建 adapter 并注册，但本地文档信息由下面的异步任务补充（如果数据库里有内容）
     const adapter = new SupabaseNetworkAdapter(this.resumeId, sessionId, callbacks)
-    // 先使用现有的本地 documentUrl（如果已经有 handle）
-    const existingDocUrl = this.getDocumentUrl() || null
-    adapter.setLocalDocumentUrl(existingDocUrl)
+    // 先使用现有的本地 document 信息（如果已经有 handle）
+    adapter.setLocalDocumentInfo({
+      documentUrl: this.getDocumentUrl(),
+      documentId: this.getDocumentId(),
+    })
     this.repo.networkSubsystem.addNetworkAdapter(adapter)
     this.networkAdapter = adapter
     this.currentSessionId = sessionId
@@ -433,9 +448,11 @@ export class DocumentManager {
       try {
         // 如果已经有 handle，跳过导入，让网络同步处理
         if (this.handle) {
-          // 直接设置 localDocumentUrl
-          const finalLocalUrl = this.getDocumentUrl() || null
-          adapter.setLocalDocumentUrl(finalLocalUrl)
+          // 直接同步本地文档信息
+          adapter.setLocalDocumentInfo({
+            documentUrl: this.getDocumentUrl(),
+            documentId: this.getDocumentId(),
+          })
           return
         }
 
@@ -509,9 +526,12 @@ export class DocumentManager {
           }
         }
 
-        // 最终确定适配器的 localDocumentUrl（优先使用当前 handle.url，再用 metadata 中的 documentUrl）
+        // 最终确定适配器的本地文档信息（优先使用当前 handle.url，再用 metadata 中的 documentUrl）
         const finalLocalUrl = this.getDocumentUrl() || metadataDocumentUrl || null
-        adapter.setLocalDocumentUrl(finalLocalUrl)
+        adapter.setLocalDocumentInfo({
+          documentUrl: finalLocalUrl,
+          documentId: this.getDocumentId(),
+        })
       } catch (err) {
         // eslint-disable-next-line no-console
         console.warn('⚠️ 异步加载 automerge_documents 失败', err)
@@ -550,6 +570,10 @@ export class DocumentManager {
 
   getDocumentUrl(): string | null {
     return this.handle?.url ?? this.sharedDocumentUrl ?? null
+  }
+
+  getDocumentId(): string | null {
+    return this.handle?.documentId ?? null
   }
 
   /**

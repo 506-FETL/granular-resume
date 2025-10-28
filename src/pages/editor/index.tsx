@@ -140,8 +140,8 @@ function Editor() {
             navigate('/resume')
           }, 1500)
         })
-      } catch {
-        // ignore
+      } catch (error: any) {
+        toast.error(`监听简历更新失败, ${error.message || '未知错误'}`)
       }
     })()
 

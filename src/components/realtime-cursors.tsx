@@ -1,7 +1,6 @@
 'use client'
 
 import { Cursor } from '@/components/cursor'
-import { ConnectionStatus } from '@/components/connection-status'
 import { useRealtimeCursors } from '@/hooks/use-realtime-cursors'
 
 const THROTTLE_MS = 50
@@ -11,7 +10,6 @@ export const RealtimeCursors = ({ roomName, username }: { roomName: string; user
 
   return (
     <div>
-      <ConnectionStatus roomName={roomName} username={username} />
       {Object.keys(cursors).map((id) => (
         <Cursor
           key={id}

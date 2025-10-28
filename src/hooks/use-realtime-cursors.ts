@@ -1,6 +1,6 @@
-import supabase from '@/lib/supabase/client'
-import { REALTIME_SUBSCRIBE_STATES, RealtimeChannel } from '@supabase/supabase-js'
+import { RealtimeChannel, REALTIME_SUBSCRIBE_STATES } from '@supabase/supabase-js'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import supabase from '@/lib/supabase/client'
 
 /**
  * Throttle a callback to a certain delay, It will only call the callback if the delay has passed, with the arguments
@@ -11,7 +11,7 @@ const useThrottleCallback = <Params extends unknown[], Return>(
   delay: number,
 ) => {
   const lastCall = useRef(0)
-  const timeout = useRef<number | null>(null)
+  const timeout = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   return useCallback(
     (...args: Params) => {
@@ -74,13 +74,12 @@ export const useRealtimeCursors = ({
 
   const callback = useCallback(
     (event: MouseEvent) => {
-      // 使用 pageX/pageY 包含滚动偏移，这样光标位置在滚动后也是正确的
-      const { pageX, pageY } = event
+      const { clientX, clientY } = event
 
       const payload: CursorEventPayload = {
         position: {
-          x: pageX,
-          y: pageY,
+          x: clientX,
+          y: clientY,
         },
         user: {
           id: userId,
@@ -149,15 +148,6 @@ export const useRealtimeCursors = ({
         if (status === REALTIME_SUBSCRIBE_STATES.SUBSCRIBED) {
           await channel.track({ key: userId })
           channelRef.current = channel
-        } else if (status === REALTIME_SUBSCRIBE_STATES.CLOSED) {
-          // 在Vercel等平台上，连接可能会被意外关闭，尝试重连
-          setTimeout(() => {
-            if (channelRef.current === channel) {
-              // 如果还是同一个channel，清除状态
-              setCursors({})
-              channelRef.current = null
-            }
-          }, 1000)
         } else {
           setCursors({})
           channelRef.current = null
@@ -168,7 +158,7 @@ export const useRealtimeCursors = ({
       channel.unsubscribe()
       channelRef.current = null
     }
-  }, [roomName, userId])
+  }, [])
 
   useEffect(() => {
     // Add event listener for mousemove

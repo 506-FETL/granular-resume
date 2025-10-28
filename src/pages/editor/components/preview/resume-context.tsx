@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, type PropsWithChildren } from 'react'
 
 /**
@@ -144,7 +145,7 @@ export const defaultSpacing: ResumeSpacing = {
   pagePadding: '1rem',
   sectionMargin: '1rem',
   sectionTitleMargin: '0.75rem',
-  itemSpacing: '0.75rem',
+  itemSpacing: '0.55rem',
   paragraphSpacing: '0.25rem',
   lineHeight: 1.6,
   proseLineHeight: 1.6,
