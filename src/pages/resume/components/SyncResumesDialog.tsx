@@ -1,4 +1,6 @@
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
   Dialog,
@@ -9,10 +11,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { FileText, Calendar } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { Calendar, FileText } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 interface OfflineResume {
   resume_id: string

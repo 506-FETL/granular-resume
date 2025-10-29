@@ -4,8 +4,8 @@
  * 使用 IndexedDB 存储本地简历
  */
 
-import { openDB, type DBSchema, type IDBPDatabase } from 'idb'
 import type { ResumeSchema } from '@/lib/schema'
+import { openDB, type DBSchema, type IDBPDatabase } from 'idb'
 
 interface ResumeDB extends DBSchema {
   resumes: {

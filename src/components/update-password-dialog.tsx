@@ -13,7 +13,7 @@ import { Label } from '@/components/ui/label'
 import { useDebounce } from '@/hooks/use-debounce'
 import supabase from '@/lib/supabase/client'
 import { IconLock } from '@tabler/icons-react'
-import { useCallback, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { toast } from 'sonner'
 import { Spinner } from './ui/spinner'
 

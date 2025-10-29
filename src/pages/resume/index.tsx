@@ -1,7 +1,4 @@
 /* eslint-disable no-console */
-import { SyncResumesDialog } from '@/components/SyncResumesDialog'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { deleteOfflineResume, getAllOfflineResumes, isOfflineResumeId } from '@/lib/offline-resume-manager'
@@ -9,15 +6,15 @@ import { syncOfflineResumesToCloud } from '@/lib/resume-sync-service'
 import { subscribeToResumeConfigUpdates } from '@/lib/supabase/resume'
 import { deleteResume, getAllResumesFromUser } from '@/lib/supabase/resume/form'
 import { getCurrentUser } from '@/lib/supabase/user'
+import { SyncResumesDialog } from '@/pages/resume/components/SyncResumesDialog'
 import useCurrentResumeStore, { type ResumeType } from '@/store/resume/current'
-import { CloudUpload, Wifi, WifiOff } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { CreateResumeCard } from './components/CreateResumeCard'
-import { ResumeCard } from './components/ResumeCard'
 import HeadBars from './components/HeadBars'
+import { ResumeCard } from './components/ResumeCard'
 
 interface Resume {
   resume_id: string
@@ -243,6 +240,20 @@ export default function ResumePage() {
           : resume,
       ),
     )
+
+    if (resumeId.startsWith('local-')) {
+      setOfflineResumes((prev) =>
+        prev.map((resume) =>
+          resume.resume_id === resumeId
+            ? {
+                ...resume,
+                display_name: updates.display_name,
+                description: updates.description,
+              }
+            : resume,
+        ),
+      )
+    }
   }
 
   // 处理同步简历
