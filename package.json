@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix"
   },
   "dependencies": {
     "@automerge/automerge": "^3.1.2",
@@ -50,6 +52,7 @@
     "clsx": "^2.1.1",
     "cobe": "^0.6.5",
     "date-fns": "^4.1.0",
+    "eslint-plugin-antfu": "^3.1.1",
     "html-react-parser": "^5.2.6",
     "idb": "^8.0.3",
     "input-otp": "^1.4.2",
@@ -74,6 +77,8 @@
     "zustand": "^5.0.8"
   },
   "devDependencies": {
+    "@antfu/eslint-config": "^6.2.0",
+    "@eslint-react/eslint-plugin": "^2.2.4",
     "@eslint/js": "^9.36.0",
     "@types/lodash.throttle": "^4.1.9",
     "@types/node": "^24.6.0",
@@ -81,8 +86,9 @@
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^5.0.4",
     "eslint": "^9.36.0",
-    "eslint-plugin-react-hooks": "^5.2.0",
-    "eslint-plugin-react-refresh": "^0.4.22",
+    "eslint-plugin-format": "^1.0.2",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.4.0",
     "jiti": "^2.6.1",
     "prettier": "^3.6.2",

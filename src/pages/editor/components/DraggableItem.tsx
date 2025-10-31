@@ -1,9 +1,9 @@
-import { useDraggableItem } from '@/hooks/use-draggable-item'
 import type { ReactNode } from 'react'
-import { cn } from '@/lib/utils'
 import { motion } from 'motion/react'
-import { useDrag } from '@/contexts/DragContext'
 import { useEffect, useState } from 'react'
+import { useDrag } from '@/contexts/DragContext'
+import { useDraggableItem } from '@/hooks/use-draggable-item'
+import { cn } from '@/lib/utils'
 
 interface DraggableItemProps {
   id: string
@@ -37,17 +37,19 @@ export function DraggableItem({
     if (elementRef.current) {
       const rect = elementRef.current.getBoundingClientRect()
       const computedStyle = window.getComputedStyle(elementRef.current)
-      const marginRight = parseFloat(computedStyle.marginRight)
-      const marginLeft = parseFloat(computedStyle.marginLeft)
+      const marginRight = Number.parseFloat(computedStyle.marginRight)
+      const marginLeft = Number.parseFloat(computedStyle.marginLeft)
       setElementWidth(rect.width + marginRight + marginLeft)
     }
   }, [elementRef])
 
   // 计算 x 轴偏移量
   const calculateXOffset = () => {
-    if (disabled) return 0
+    if (disabled)
+      return 0
     // 如果没有拖拽或没有元素宽度，返回 0
-    if (!draggedItem || !elementWidth) return 0
+    if (!draggedItem || !elementWidth)
+      return 0
 
     const draggedIndex = draggedItem.index
     const currentIndex = index
@@ -132,7 +134,7 @@ export function DraggableItem({
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -5 }}
           transition={{ duration: 0.15 }}
-          className='absolute -top-8 left-1/2 -translate-x-1/2 text-xs text-muted-foreground bg-background px-2 py-1 rounded border shadow-sm whitespace-nowrap z-10'
+          className="absolute -top-8 left-1/2 -translate-x-1/2 text-xs text-muted-foreground bg-background px-2 py-1 rounded border shadow-sm whitespace-nowrap z-10"
         >
           {hoverHintText}
         </motion.div>

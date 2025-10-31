@@ -1,7 +1,7 @@
-import supabase from '@/lib/supabase/client'
 import { useEffect, useState } from 'react'
+import supabase from '@/lib/supabase/client'
 
-export const useCurrentUserName = () => {
+export function useCurrentUserName() {
   const [name, setName] = useState<string | null>(null)
 
   useEffect(() => {

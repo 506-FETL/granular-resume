@@ -1,16 +1,16 @@
+import { zodResolver } from '@hookform/resolvers/zod'
+import { motion } from 'motion/react'
+import { useEffect } from 'react'
+import { useForm } from 'react-hook-form'
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { resumeSchema } from '@/lib/schema'
 import { cn } from '@/lib/utils'
 import useResumeStore from '@/store/resume/form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { motion } from 'motion/react'
-import { useEffect } from 'react'
-import { useForm } from 'react-hook-form'
 
 function ApplicationInfoForm({ className }: { className?: string }) {
-  const applicationInfo = useResumeStore((state) => state.applicationInfo)
-  const updateForm = useResumeStore((state) => state.updateForm)
+  const applicationInfo = useResumeStore(state => state.applicationInfo)
+  const updateForm = useResumeStore(state => state.updateForm)
 
   const form = useForm({
     resolver: zodResolver(resumeSchema.shape.applicationInfo),
@@ -28,16 +28,16 @@ function ApplicationInfoForm({ className }: { className?: string }) {
 
   return (
     <Form {...form}>
-      <form id='application-info-form' className={cn(className)}>
-        <motion.div layout className='grid gap-4 justify-items-start sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4'>
+      <form id="application-info-form" className={cn(className)}>
+        <motion.div layout className="grid gap-4 justify-items-start sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
           <FormField
             control={form.control}
-            name='applicationSchool'
+            name="applicationSchool"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>报考院校</FormLabel>
                 <FormControl>
-                  <Input placeholder='例如：清华大学 / 北京大学' {...field} />
+                  <Input placeholder="例如：清华大学 / 北京大学" {...field} />
                 </FormControl>
               </FormItem>
             )}
@@ -45,12 +45,12 @@ function ApplicationInfoForm({ className }: { className?: string }) {
 
           <FormField
             control={form.control}
-            name='applicationMajor'
+            name="applicationMajor"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>报考专业</FormLabel>
                 <FormControl>
-                  <Input placeholder='例如：计算机科学与技术 / 软件工程' {...field} />
+                  <Input placeholder="例如：计算机科学与技术 / 软件工程" {...field} />
                 </FormControl>
               </FormItem>
             )}

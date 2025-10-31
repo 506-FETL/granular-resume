@@ -1,5 +1,5 @@
-import type { SupabaseUser } from '@/pages/editor/types'
 import type { ReactNode } from 'react'
+import type { SupabaseUser } from '@/pages/editor/types'
 
 export interface CollaborationPanelContextValue {
   isMobile: boolean

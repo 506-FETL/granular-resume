@@ -1,11 +1,12 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { DEFAULT_ORDER, DEFAULT_VISIBILITY, type ResumeSchema } from '@/lib/schema'
-import supabase from '@/lib/supabase/client'
-import { next as Automerge } from '@automerge/automerge'
-import { DocHandle, Repo } from '@automerge/automerge-repo'
-import { getAutomergeRepo } from './repo'
+import type { DocHandle, Repo } from '@automerge/automerge-repo'
 import type { AutomergeResumeDocument, ChangeFn } from './schema'
-import { SupabaseNetworkAdapter, type CollaborationCallbacks } from './supabase-network-adapter'
+import type { CollaborationCallbacks } from './supabase-network-adapter'
+import type { ResumeSchema } from '@/lib/schema'
+import { next as Automerge } from '@automerge/automerge'
+import { DEFAULT_ORDER, DEFAULT_VISIBILITY } from '@/lib/schema'
+import supabase from '@/lib/supabase/client'
+import { getAutomergeRepo } from './repo'
+import { SupabaseNetworkAdapter } from './supabase-network-adapter'
 
 /**
  * 生成确定性的 actor ID，用于确保所有协作者使用相同的文档 URL
@@ -14,7 +15,7 @@ function generateDeterministicActor(resumeId: string): Uint8Array {
   const hash = simpleHash(resumeId)
   const arr = new Uint8Array(16)
   for (let i = 0; i < 16; i++) {
-    arr[i] = (hash >> (i * 8)) & 0xff
+    arr[i] = (hash >> (i * 8)) & 0xFF
   }
   return arr
 }
@@ -41,7 +42,7 @@ export class DocumentManager {
   private repo: Repo | null = null
   private networkAdapter: SupabaseNetworkAdapter | null = null
   private currentSessionId: string | null = null
-  private saveListeners = new Set<(result: { success: boolean; error?: unknown }) => void>()
+  private saveListeners = new Set<(result: { success: boolean, error?: unknown }) => void>()
   private saveStartListeners = new Set<() => void>()
   private canPersistToSupabase = true
   private sharedDocumentUrl?: string
@@ -158,7 +159,7 @@ export class DocumentManager {
         if (error.code === 'PGRST116') {
           return null
         }
-        // eslint-disable-next-line no-console
+
         console.error('❌ 查询 Automerge 文档失败', error)
         return null
       }
@@ -180,19 +181,19 @@ export class DocumentManager {
           if (handle) {
             await handle.whenReady()
             return handle
-          } else {
+          }
+          else {
             // eslint-disable-next-line no-console
             console.log('📥 documentUrl 未找到，需要导入二进制数据')
           }
-        } catch (err) {
-          // eslint-disable-next-line no-console
+        }
+        catch (err) {
           console.warn('⚠️ 通过 documentUrl 加载失败，尝试导入二进制数据', err)
         }
       }
 
       // 使用二进制数据导入
       if (!data.document_data) {
-        // eslint-disable-next-line no-console
         console.warn('⚠️ 数据库中没有 document_data，无法加载')
         return null
       }
@@ -203,10 +204,12 @@ export class DocumentManager {
       if (data.document_data instanceof Uint8Array) {
         // 已经是 Uint8Array
         uint8Array = data.document_data
-      } else if (Array.isArray(data.document_data)) {
+      }
+      else if (Array.isArray(data.document_data)) {
         // 如果是数字数组（某些情况下 Supabase 会返回这种格式）
         uint8Array = new Uint8Array(data.document_data)
-      } else if (typeof data.document_data === 'string') {
+      }
+      else if (typeof data.document_data === 'string') {
         // PostgreSQL BYTEA 的 hex 格式：\x后跟16进制字符串
         if (data.document_data.startsWith('\\x')) {
           // 移除 \x 前缀
@@ -215,7 +218,7 @@ export class DocumentManager {
           // 将 hex 转换为字符串（因为我们存储的是 Base64 字符串的 hex 编码）
           let decodedString = ''
           for (let i = 0; i < hexString.length; i += 2) {
-            const byte = parseInt(hexString.slice(i, i + 2), 16)
+            const byte = Number.parseInt(hexString.slice(i, i + 2), 16)
             decodedString += String.fromCharCode(byte)
           }
 
@@ -226,12 +229,13 @@ export class DocumentManager {
             for (let i = 0; i < binaryString.length; i++) {
               uint8Array[i] = binaryString.charCodeAt(i)
             }
-          } catch (err) {
-            // eslint-disable-next-line no-console
+          }
+          catch (err) {
             console.error('❌ Base64 解码失败', err)
             return null
           }
-        } else {
+        }
+        else {
           // 直接作为 Base64 解码
           try {
             const binaryString = atob(data.document_data)
@@ -239,14 +243,14 @@ export class DocumentManager {
             for (let i = 0; i < binaryString.length; i++) {
               uint8Array[i] = binaryString.charCodeAt(i)
             }
-          } catch (err) {
-            // eslint-disable-next-line no-console
+          }
+          catch (err) {
             console.error('❌ Base64 解码失败', err)
             return null
           }
         }
-      } else {
-        // eslint-disable-next-line no-console
+      }
+      else {
         console.error('❌ 未知的数据格式', data.document_data)
         return null
       }
@@ -259,8 +263,8 @@ export class DocumentManager {
       await handle.whenReady()
 
       return handle
-    } catch (err) {
-      // eslint-disable-next-line no-console
+    }
+    catch (err) {
       console.error('❌ 从 Supabase 加载 Automerge 文档失败', err)
       return null
     }
@@ -278,8 +282,8 @@ export class DocumentManager {
         console.log('🔁 通过共享链接加载 Automerge 文档', { documentUrl })
         return handle
       }
-    } catch (err) {
-      // eslint-disable-next-line no-console
+    }
+    catch (err) {
       console.warn('⚠️ 通过共享链接加载文档失败', err)
     }
     return null
@@ -299,21 +303,21 @@ export class DocumentManager {
       if (error.code === 'PGRST116' || error.code === '42501') {
         // 没有权限读取该简历或不存在，进入只读模式（依赖实时协作拉取数据）
         this.canPersistToSupabase = false
-        // eslint-disable-next-line no-console
+
         console.warn('⚠️ 当前用户无法读取 resume_config，进入只读协作模式', {
           resumeId: this.resumeId,
           code: error.code,
         })
         return null
       }
-      // eslint-disable-next-line no-console
+
       console.error('❌ 从 Supabase resume_config 加载失败', error)
       return null
     }
 
     if (!data) {
       this.canPersistToSupabase = false
-      // eslint-disable-next-line no-console
+
       console.warn('⚠️ 未找到 resume_config 记录，进入只读协作模式', { resumeId: this.resumeId })
       return null
     }
@@ -341,7 +345,8 @@ export class DocumentManager {
    */
   async saveToSupabase(handle: DocHandle<AutomergeResumeDocument>) {
     const doc = handle.doc()
-    if (!doc) return
+    if (!doc)
+      return
 
     const binary = Automerge.save(doc)
     const heads = Automerge.getHeads(doc)
@@ -364,7 +369,7 @@ export class DocumentManager {
         resume_id: this.resumeId,
         user_id: this.userId,
         document_data: base64, // 保存为 Base64 字符串
-        heads: heads,
+        heads,
         document_version: doc._metadata.version,
         change_count: 0,
         updated_at: new Date().toISOString(),
@@ -382,19 +387,20 @@ export class DocumentManager {
       // 如果是 RLS/权限问题（例如 42501），切换到只读协作模式以避免以后重复失败
       if ((error as any)?.code === '42501' || (error as any)?.status === 403) {
         this.canPersistToSupabase = false
-        // eslint-disable-next-line no-console
+
         console.warn('⚠️ 当前用户无权写入 automerge_documents，切换到只读协作模式', { resumeId: this.resumeId, error })
-      } else {
-        // eslint-disable-next-line no-console
+      }
+      else {
         console.error('❌ 保存到 Supabase 失败', error)
       }
       this.notifySaveListeners({ success: false, error })
-    } else {
+    }
+    else {
       this.notifySaveListeners({ success: true })
     }
   }
 
-  onSaveResult(listener: (result: { success: boolean; error?: unknown }) => void): () => void {
+  onSaveResult(listener: (result: { success: boolean, error?: unknown }) => void): () => void {
     this.saveListeners.add(listener)
     return () => {
       this.saveListeners.delete(listener)
@@ -408,12 +414,12 @@ export class DocumentManager {
     }
   }
 
-  private notifySaveListeners(result: { success: boolean; error?: unknown }) {
+  private notifySaveListeners(result: { success: boolean, error?: unknown }) {
     this.saveListeners.forEach((listener) => {
       try {
         listener(result)
-      } catch (err) {
-        // eslint-disable-next-line no-console
+      }
+      catch (err) {
         console.error('⚠️ 保存回调执行失败', err)
       }
     })
@@ -423,8 +429,8 @@ export class DocumentManager {
     this.saveStartListeners.forEach((listener) => {
       try {
         listener()
-      } catch (err) {
-        // eslint-disable-next-line no-console
+      }
+      catch (err) {
         console.error('⚠️ 保存开始回调执行失败', err)
       }
     })
@@ -484,12 +490,12 @@ export class DocumentManager {
           .maybeSingle()
 
         if (error) {
-          // eslint-disable-next-line no-console
           console.warn('⚠️ 查询 automerge_documents 时出错，继续使用本地文档（如有）', error)
           return
         }
 
-        if (!data) return
+        if (!data)
+          return
 
         const metadata = (data.metadata as Record<string, any> | null) || {}
         const metadataDocumentUrl = typeof metadata.documentUrl === 'string' ? metadata.documentUrl : undefined
@@ -501,14 +507,16 @@ export class DocumentManager {
 
             if (data.document_data instanceof Uint8Array) {
               uint8Array = data.document_data
-            } else if (Array.isArray(data.document_data)) {
+            }
+            else if (Array.isArray(data.document_data)) {
               uint8Array = new Uint8Array(data.document_data)
-            } else if (typeof data.document_data === 'string') {
+            }
+            else if (typeof data.document_data === 'string') {
               if (data.document_data.startsWith('\\x')) {
                 const hexString = data.document_data.slice(2)
                 let decodedString = ''
                 for (let i = 0; i < hexString.length; i += 2) {
-                  const byte = parseInt(hexString.slice(i, i + 2), 16)
+                  const byte = Number.parseInt(hexString.slice(i, i + 2), 16)
                   decodedString += String.fromCharCode(byte)
                 }
                 const binaryString = atob(decodedString)
@@ -516,14 +524,16 @@ export class DocumentManager {
                 for (let i = 0; i < binaryString.length; i++) {
                   uint8Array[i] = binaryString.charCodeAt(i)
                 }
-              } else {
+              }
+              else {
                 const binaryString = atob(data.document_data)
                 uint8Array = new Uint8Array(binaryString.length)
                 for (let i = 0; i < binaryString.length; i++) {
                   uint8Array[i] = binaryString.charCodeAt(i)
                 }
               }
-            } else {
+            }
+            else {
               uint8Array = new Uint8Array()
             }
 
@@ -536,13 +546,13 @@ export class DocumentManager {
                 }
                 // eslint-disable-next-line no-console
                 console.log('🔁 成功从 Supabase 导入 Automerge 文档快照', { resumeId: this.resumeId })
-              } catch (err) {
-                // eslint-disable-next-line no-console
+              }
+              catch (err) {
                 console.warn('⚠️ 导入 Automerge 二进制失败，继续流程', err)
               }
             }
-          } catch (err) {
-            // eslint-disable-next-line no-console
+          }
+          catch (err) {
             console.warn('⚠️ 解析数据库中的 document_data 失败', err)
           }
         }
@@ -553,8 +563,8 @@ export class DocumentManager {
           documentUrl: finalLocalUrl,
           documentId: this.getDocumentId(),
         })
-      } catch (err) {
-        // eslint-disable-next-line no-console
+      }
+      catch (err) {
         console.warn('⚠️ 异步加载 automerge_documents 失败', err)
       }
     })()
@@ -609,7 +619,6 @@ export class DocumentManager {
    */
   change(changeFn: ChangeFn<AutomergeResumeDocument>) {
     if (!this.handle) {
-      // eslint-disable-next-line no-console
       console.error('❌ 文档未初始化')
       return
     }

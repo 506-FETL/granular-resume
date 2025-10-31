@@ -1,4 +1,9 @@
 /* eslint-disable no-console */
+import type { ResumeType } from '@/store/resume/current'
+import { AnimatePresence, motion } from 'motion/react'
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { deleteOfflineResume, getAllOfflineResumes, isOfflineResumeId } from '@/lib/offline-resume-manager'
@@ -7,11 +12,7 @@ import { subscribeToResumeConfigUpdates } from '@/lib/supabase/resume'
 import { deleteResume, getAllResumesFromUser } from '@/lib/supabase/resume/form'
 import { getCurrentUser } from '@/lib/supabase/user'
 import { SyncResumesDialog } from '@/pages/resume/components/SyncResumesDialog'
-import useCurrentResumeStore, { type ResumeType } from '@/store/resume/current'
-import { AnimatePresence, motion } from 'motion/react'
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { toast } from 'sonner'
+import useCurrentResumeStore from '@/store/resume/current'
 import { CreateResumeCard } from './components/CreateResumeCard'
 import HeadBars from './components/HeadBars'
 import { ResumeCard } from './components/ResumeCard'
@@ -52,8 +53,9 @@ export default function ResumePage() {
         if (user) {
           try {
             const onlineResumes = await getAllResumesFromUser()
-            allResumes = onlineResumes.map((r) => ({ ...r, isOffline: false }))
-          } catch (error: any) {
+            allResumes = onlineResumes.map(r => ({ ...r, isOffline: false }))
+          }
+          catch (error: any) {
             if (error.message !== '用户未登陆') {
               toast.error('加载在线简历失败')
             }
@@ -64,7 +66,7 @@ export default function ResumePage() {
         let formattedOfflineResumes: Resume[] = []
         try {
           const localResumes = await getAllOfflineResumes()
-          formattedOfflineResumes = localResumes.map((r) => ({
+          formattedOfflineResumes = localResumes.map(r => ({
             resume_id: r.resume_id,
             created_at: r.created_at,
             type: r.type as ResumeType,
@@ -73,7 +75,8 @@ export default function ResumePage() {
             isOffline: true,
           }))
           allResumes = [...allResumes, ...formattedOfflineResumes]
-        } catch {
+        }
+        catch {
           // 忽略离线简历加载错误
         }
 
@@ -89,10 +92,12 @@ export default function ResumePage() {
             })
           }, 1000)
         }
-      } catch {
+      }
+      catch {
         // 错误处理
         toast.error('加载简历失败')
-      } finally {
+      }
+      finally {
         setLoading(false)
       }
     }
@@ -100,7 +105,8 @@ export default function ResumePage() {
 
   useEffect(() => {
     // 只有在线模式才订阅在线简历更新
-    if (!isOnline) return
+    if (!isOnline)
+      return
 
     let unSubscribe: () => void | undefined
 
@@ -117,7 +123,7 @@ export default function ResumePage() {
           }
           setResumes((prev) => {
             // 防止重复添加
-            if (prev.some((r) => r.resume_id === resume.resume_id)) {
+            if (prev.some(r => r.resume_id === resume.resume_id)) {
               return prev
             }
             return [resume, ...prev]
@@ -125,8 +131,8 @@ export default function ResumePage() {
           break
         }
         case 'UPDATE': {
-          setResumes((prev) =>
-            prev.map((resume) =>
+          setResumes(prev =>
+            prev.map(resume =>
               resume.resume_id === payload.new.resume_id
                 ? {
                     ...resume,
@@ -157,11 +163,11 @@ export default function ResumePage() {
           const syncPromise = async () => {
             // 重新加载在线简历
             const onlineResumes = await getAllResumesFromUser()
-            const formattedOnlineResumes = onlineResumes.map((r) => ({ ...r, isOffline: false }))
+            const formattedOnlineResumes = onlineResumes.map(r => ({ ...r, isOffline: false }))
 
             // 保留离线简历，只更新在线简历
             setResumes((prev) => {
-              const offlineOnly = prev.filter((r) => r.isOffline)
+              const offlineOnly = prev.filter(r => r.isOffline)
               return [...formattedOnlineResumes, ...offlineOnly]
             })
           }
@@ -198,16 +204,16 @@ export default function ResumePage() {
 
     // 如果是在线简历，标记为本地删除
     if (!isOfflineResume) {
-      setLocalDeletingIds((prev) => new Set(prev).add(id))
+      setLocalDeletingIds(prev => new Set(prev).add(id))
     }
 
     const deletePromise = isOfflineResume
       ? deleteOfflineResume(id).then(() => {
-          setResumes((prev) => prev.filter((resume) => resume.resume_id !== id))
-          setOfflineResumes((prev) => prev.filter((resume) => resume.resume_id !== id))
+          setResumes(prev => prev.filter(resume => resume.resume_id !== id))
+          setOfflineResumes(prev => prev.filter(resume => resume.resume_id !== id))
         })
       : deleteResume(id).then(() => {
-          setResumes((prev) => prev.filter((resume) => resume.resume_id !== id))
+          setResumes(prev => prev.filter(resume => resume.resume_id !== id))
         })
 
     toast.promise(deletePromise, {
@@ -228,9 +234,9 @@ export default function ResumePage() {
   }
 
   // 处理简历更新
-  function handleResumeUpdate(resumeId: string, updates: { display_name: string; description: string }) {
-    setResumes((prev) =>
-      prev.map((resume) =>
+  function handleResumeUpdate(resumeId: string, updates: { display_name: string, description: string }) {
+    setResumes(prev =>
+      prev.map(resume =>
         resume.resume_id === resumeId
           ? {
               ...resume,
@@ -242,8 +248,8 @@ export default function ResumePage() {
     )
 
     if (resumeId.startsWith('local-')) {
-      setOfflineResumes((prev) =>
-        prev.map((resume) =>
+      setOfflineResumes(prev =>
+        prev.map(resume =>
           resume.resume_id === resumeId
             ? {
                 ...resume,
@@ -258,7 +264,8 @@ export default function ResumePage() {
 
   // 处理同步简历
   async function handleSyncResumes(selectedIds: string[]) {
-    if (selectedIds.length === 0) return
+    if (selectedIds.length === 0)
+      return
 
     setIsSyncing(true)
     setSyncingIds(new Set(selectedIds))
@@ -268,19 +275,19 @@ export default function ResumePage() {
 
       if (result.success > 0) {
         // 从简历列表中移除已同步的本地简历，并重新加载在线简历
-        setResumes((prev) => prev.filter((r) => !selectedIds.includes(r.resume_id)))
+        setResumes(prev => prev.filter(r => !selectedIds.includes(r.resume_id)))
 
         // 重新加载在线简历
         const onlineResumes = await getAllResumesFromUser()
-        const newOnlineResumes = onlineResumes.map((r) => ({ ...r, isOffline: false }))
+        const newOnlineResumes = onlineResumes.map(r => ({ ...r, isOffline: false }))
         setResumes((prev) => {
           // 合并并去重
-          const offline = prev.filter((r) => r.isOffline)
+          const offline = prev.filter(r => r.isOffline)
           return [...newOnlineResumes, ...offline]
         })
 
         // 更新离线简历列表
-        const remaining = offlineResumes.filter((r) => !selectedIds.includes(r.resume_id))
+        const remaining = offlineResumes.filter(r => !selectedIds.includes(r.resume_id))
         setOfflineResumes(remaining)
 
         if (remaining.length === 0) {
@@ -293,20 +300,23 @@ export default function ResumePage() {
       if (result.failed > 0) {
         toast.error(`${result.failed} 个简历同步失败`)
       }
-    } catch {
+    }
+    catch {
       toast.error('同步失败，请稍后重试')
-    } finally {
+    }
+    finally {
       setIsSyncing(false)
       setSyncingIds(new Set())
     }
   }
 
-  if (loading) return <ResumePageSkeleton />
+  if (loading)
+    return <ResumePageSkeleton />
 
   const hasOfflineResumesToSync = isOnline && offlineResumes.length > 0
 
   return (
-    <div className='container mx-auto p-8'>
+    <div className="container mx-auto p-8">
       <HeadBars
         setShowSyncDialog={setShowSyncDialog}
         hasOfflineResumesToSync={hasOfflineResumesToSync}
@@ -315,12 +325,12 @@ export default function ResumePage() {
       />
 
       <motion.div
-        className='grid grid-cols-1 items-center md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'
+        className="grid grid-cols-1 items-center md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3, delay: 0.2 }}
       >
-        <AnimatePresence mode='popLayout'>
+        <AnimatePresence mode="popLayout">
           {resumes.map((resume, index) => {
             const isSyncingThis = syncingIds.has(resume.resume_id)
             return (
@@ -357,7 +367,7 @@ export default function ResumePage() {
           })}
 
           <motion.div
-            key='create-card'
+            key="create-card"
             layout
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -371,7 +381,7 @@ export default function ResumePage() {
               isOnline={isOnline}
               onResumeCreated={(resume) => {
                 if (resume.isOffline) {
-                  setResumes((prev) => [resume, ...prev])
+                  setResumes(prev => [resume, ...prev])
                 }
               }}
             />
@@ -383,7 +393,7 @@ export default function ResumePage() {
       <SyncResumesDialog
         open={showSyncDialog}
         onOpenChange={setShowSyncDialog}
-        offlineResumes={offlineResumes.map((r) => ({
+        offlineResumes={offlineResumes.map(r => ({
           resume_id: r.resume_id,
           display_name: r.display_name || '未命名简历',
           description: r.description,
@@ -397,41 +407,43 @@ export default function ResumePage() {
   )
 }
 
-const ResumePageSkeleton = () => (
-  <div className='container mx-auto p-8'>
-    <motion.div
-      className='mb-8'
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
-      <Skeleton className='h-9 w-48 mb-2' />
-      <Skeleton className='h-5 w-64' />
-    </motion.div>
+function ResumePageSkeleton() {
+  return (
+    <div className="container mx-auto p-8">
+      <motion.div
+        className="mb-8"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <Skeleton className="h-9 w-48 mb-2" />
+        <Skeleton className="h-5 w-64" />
+      </motion.div>
 
-    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>
-      {Array.from({ length: 8 }, (_, idx) => idx).map((i) => (
-        <motion.div
-          key={i}
-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: i * 0.05 }}
-        >
-          <Card>
-            <CardHeader>
-              <div className='flex items-center justify-between mb-4'>
-                <Skeleton className='h-8 w-8 rounded-full' />
-                <Skeleton className='h-4 w-20' />
-              </div>
-              <Skeleton className='h-6 w-3/4 mb-2' />
-              <Skeleton className='h-4 w-1/2' />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className='h-10 w-full' />
-            </CardContent>
-          </Card>
-        </motion.div>
-      ))}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {Array.from({ length: 8 }, (_, idx) => idx).map(i => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: i * 0.05 }}
+          >
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between mb-4">
+                  <Skeleton className="h-8 w-8 rounded-full" />
+                  <Skeleton className="h-4 w-20" />
+                </div>
+                <Skeleton className="h-6 w-3/4 mb-2" />
+                <Skeleton className="h-4 w-1/2" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-10 w-full" />
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
+      </div>
     </div>
-  </div>
-)
+  )
+}

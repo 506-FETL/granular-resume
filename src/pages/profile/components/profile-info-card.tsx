@@ -1,3 +1,7 @@
+import type { User } from '@supabase/supabase-js'
+import { IconCalendar, IconMail, IconShield, IconUser } from '@tabler/icons-react'
+import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
@@ -5,10 +9,6 @@ import { useCurrentUserName } from '@/hooks/use-current-user-name'
 import { useDebounce } from '@/hooks/use-debounce'
 import supabase from '@/lib/supabase/client'
 import { updateProfile } from '@/lib/supabase/user'
-import type { User } from '@supabase/supabase-js'
-import { IconCalendar, IconMail, IconShield, IconUser } from '@tabler/icons-react'
-import { useEffect, useState } from 'react'
-import { toast } from 'sonner'
 import { EditableField } from './editable-field'
 import { ProfileAvatar } from './profile-avatar'
 import { ReadonlyField } from './readonly-field'
@@ -65,9 +65,11 @@ export function ProfileInfoCard({ user: initialUser }: ProfileInfoCardProps) {
 
       toast.success('用户名更新成功')
       setEditingName(false)
-    } catch {
+    }
+    catch {
       toast.error('用户名更新失败，请稍后重试')
-    } finally {
+    }
+    finally {
       setSavingName(false)
     }
   }
@@ -82,7 +84,7 @@ export function ProfileInfoCard({ user: initialUser }: ProfileInfoCardProps) {
       return
     }
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (!/^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/.test(email)) {
       toast.error('请输入有效的邮箱地址')
       return
     }
@@ -98,9 +100,11 @@ export function ProfileInfoCard({ user: initialUser }: ProfileInfoCardProps) {
 
       toast.success('邮箱更新请求已发送，请查收验证邮件')
       setEditingEmail(false)
-    } catch {
+    }
+    catch {
       toast.error('邮箱更新失败，请稍后重试')
-    } finally {
+    }
+    finally {
       setSavingEmail(false)
     }
   }
@@ -109,7 +113,8 @@ export function ProfileInfoCard({ user: initialUser }: ProfileInfoCardProps) {
   const debouncedUpdateEmail = useDebounce(updateEmail, 500)
 
   const formatRegistrationDate = (dateString?: string) => {
-    if (!dateString) return '未知'
+    if (!dateString)
+      return '未知'
     return new Date(dateString).toLocaleDateString('zh-CN', {
       year: 'numeric',
       month: 'long',
@@ -135,17 +140,17 @@ export function ProfileInfoCard({ user: initialUser }: ProfileInfoCardProps) {
         <CardTitle>个人资料</CardTitle>
         <CardDescription>你的基本账户信息</CardDescription>
       </CardHeader>
-      <CardContent className='space-y-6'>
-        <div className='flex items-center gap-6'>
+      <CardContent className="space-y-6">
+        <div className="flex items-center gap-6">
           <ProfileAvatar />
-          <div className='space-y-1'>
-            <h3 className='text-2xl font-semibold'>{currentName}</h3>
-            <p className='text-muted-foreground flex items-center gap-2'>
-              <IconMail className='h-4 w-4' />
+          <div className="space-y-1">
+            <h3 className="text-2xl font-semibold">{currentName}</h3>
+            <p className="text-muted-foreground flex items-center gap-2">
+              <IconMail className="h-4 w-4" />
               {email}
             </p>
-            <Badge variant={user.email_confirmed_at ? 'outline' : 'destructive'} className='mt-2 gap-1'>
-              <IconShield className='h-3 w-3' />
+            <Badge variant={user.email_confirmed_at ? 'outline' : 'destructive'} className="mt-2 gap-1">
+              <IconShield className="h-3 w-3" />
               {user.email_confirmed_at ? '邮箱已验证' : '邮箱未验证'}
             </Badge>
           </div>
@@ -153,11 +158,11 @@ export function ProfileInfoCard({ user: initialUser }: ProfileInfoCardProps) {
 
         <Separator />
 
-        <div className='grid gap-4 sm:grid-cols-2'>
+        <div className="grid gap-4 sm:grid-cols-2">
           <EditableField
-            id='name'
-            label='用户名'
-            icon={<IconUser className='h-4 w-4' />}
+            id="name"
+            label="用户名"
+            icon={<IconUser className="h-4 w-4" />}
             value={fullName}
             isEditing={editingName}
             isSaving={savingName}
@@ -168,10 +173,10 @@ export function ProfileInfoCard({ user: initialUser }: ProfileInfoCardProps) {
           />
 
           <EditableField
-            id='email'
-            label='邮箱地址'
-            icon={<IconMail className='h-4 w-4' />}
-            type='email'
+            id="email"
+            label="邮箱地址"
+            icon={<IconMail className="h-4 w-4" />}
+            type="email"
             value={email}
             isEditing={editingEmail}
             isSaving={savingEmail}
@@ -182,16 +187,16 @@ export function ProfileInfoCard({ user: initialUser }: ProfileInfoCardProps) {
           />
 
           <ReadonlyField
-            id='created'
-            label='注册时间'
-            icon={<IconCalendar className='h-4 w-4' />}
+            id="created"
+            label="注册时间"
+            icon={<IconCalendar className="h-4 w-4" />}
             value={formatRegistrationDate(user.created_at)}
           />
 
           <ReadonlyField
-            id='updated'
-            label='最后更新'
-            icon={<IconCalendar className='h-4 w-4' />}
+            id="updated"
+            label="最后更新"
+            icon={<IconCalendar className="h-4 w-4" />}
             value={formatRegistrationDate(user.updated_at || user.created_at)}
           />
         </div>

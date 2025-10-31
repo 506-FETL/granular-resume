@@ -1,11 +1,11 @@
+import type React from 'react'
+import type { ORDERType, ProficiencyLevel, ResumeSchema } from '@/lib/schema'
+import parser from 'html-react-parser'
 import { Badge } from '@/components/ui/badge'
 import useAge from '@/hooks/useAge'
-import type { ORDERType, ProficiencyLevel, ResumeSchema } from '@/lib/schema'
 import { getFontFamilyCSS, themeColorMap } from '@/lib/schema'
 import useResumeConfigStore from '@/store/resume/config'
 import useResumeStore from '@/store/resume/form'
-import parser from 'html-react-parser'
-import type React from 'react'
 import { ResumeWrapper, useResumeContext } from './resume-context'
 
 const skillProficiencyMap: { [key in ProficiencyLevel]: number } = {
@@ -17,7 +17,8 @@ const skillProficiencyMap: { [key in ProficiencyLevel]: number } = {
 }
 
 function formatDuration(duration?: string[]): string | undefined {
-  if (!duration?.[0]) return undefined
+  if (!duration?.[0])
+    return undefined
   return `${duration[0]} - ${duration[1] || '至今'}`
 }
 
@@ -42,7 +43,7 @@ function Section({
   return (
     <section style={{ marginBottom: spacing.sectionMargin }}>
       <h2
-        className='m-0 border-b-2'
+        className="m-0 border-b-2"
         style={{
           fontSize: font.sectionTitleSize,
           fontWeight: font.boldWeight,
@@ -54,7 +55,7 @@ function Section({
       >
         {title}
       </h2>
-      <div className='flex flex-col' style={{ gap: spacing.itemSpacing }}>
+      <div className="flex flex-col" style={{ gap: spacing.itemSpacing }}>
         {children}
       </div>
     </section>
@@ -81,10 +82,10 @@ function Entry({
 }) {
   return (
     <div>
-      <div className='flex justify-between items-start gap-4 mb-2'>
-        <div className='flex items-baseline gap-3 flex-1'>
+      <div className="flex justify-between items-start gap-4 mb-2">
+        <div className="flex items-baseline gap-3 flex-1">
           <h3
-            className='m-0'
+            className="m-0"
             style={{
               fontSize: font.contentSize,
               fontWeight: font.boldWeight,
@@ -107,7 +108,7 @@ function Entry({
         </div>
         {duration && (
           <div
-            className='whitespace-nowrap'
+            className="whitespace-nowrap"
             style={{
               fontSize: font.smallSize,
               color: theme.textMuted,
@@ -117,18 +118,18 @@ function Entry({
           </div>
         )}
       </div>
-      {content && <div className='prose'>{parser(content)}</div>}
+      {content && <div className="prose">{parser(content)}</div>}
     </div>
   )
 }
 
-function BasicsModule({ data, age }: { data: ResumeSchema; age?: string | number }) {
+function BasicsModule({ data, age }: { data: ResumeSchema, age?: string | number }) {
   const { theme, font, spacing } = useResumeContext()
   const { basics, jobIntent } = data
 
   return (
     <header
-      className='flex flex-col items-center'
+      className="flex flex-col items-center"
       style={{
         borderColor: theme.primaryColor,
         marginBottom: spacing.sectionMargin,
@@ -136,7 +137,7 @@ function BasicsModule({ data, age }: { data: ResumeSchema; age?: string | number
       }}
     >
       <h1
-        className='text-center m-0'
+        className="text-center m-0"
         style={{
           fontSize: font.nameSize,
           fontWeight: font.boldWeight,
@@ -156,7 +157,8 @@ function BasicsModule({ data, age }: { data: ResumeSchema; age?: string | number
             fontWeight: font.mediumWeight,
           }}
         >
-          求职意向：{jobIntent.jobIntent}
+          求职意向：
+          {jobIntent.jobIntent}
           {jobIntent.intentionalCity && ` | ${jobIntent.intentionalCity}`}
           {jobIntent.expectedSalary && ` | ${jobIntent.expectedSalary}K`}
           {jobIntent.dateEntry && jobIntent.dateEntry !== '不填' && ` | ${jobIntent.dateEntry}`}
@@ -164,7 +166,7 @@ function BasicsModule({ data, age }: { data: ResumeSchema; age?: string | number
       )}
 
       <div
-        className='flex flex-wrap justify-center'
+        className="flex flex-wrap justify-center"
         style={{
           gap: spacing.itemSpacing,
           fontSize: font.contentSize,
@@ -174,7 +176,10 @@ function BasicsModule({ data, age }: { data: ResumeSchema; age?: string | number
       >
         {age && (
           <>
-            <span>{age}岁</span>
+            <span>
+              {age}
+              岁
+            </span>
             {(basics.gender || basics.nation || basics.maritalStatus) && (
               <span style={{ color: theme.textMuted }}>|</span>
             )}
@@ -197,14 +202,20 @@ function BasicsModule({ data, age }: { data: ResumeSchema; age?: string | number
 
         {basics.heightCm && (
           <>
-            <span>{basics.heightCm}cm</span>
+            <span>
+              {basics.heightCm}
+              cm
+            </span>
             {basics.weightKg && <span style={{ color: theme.textMuted }}>|</span>}
           </>
         )}
 
         {basics.weightKg && (
           <>
-            <span>{basics.weightKg}kg</span>
+            <span>
+              {basics.weightKg}
+              kg
+            </span>
             {basics.maritalStatus && <span style={{ color: theme.textMuted }}>|</span>}
           </>
         )}
@@ -213,7 +224,7 @@ function BasicsModule({ data, age }: { data: ResumeSchema; age?: string | number
       </div>
 
       <div
-        className='flex flex-wrap justify-center'
+        className="flex flex-wrap justify-center"
         style={{
           gap: spacing.itemSpacing,
           fontSize: font.contentSize,
@@ -240,7 +251,10 @@ function BasicsModule({ data, age }: { data: ResumeSchema; age?: string | number
               marginTop: '0.5em',
             }}
           >
-            <span style={{ fontWeight: font.mediumWeight }}>{field.label}：</span>
+            <span style={{ fontWeight: font.mediumWeight }}>
+              {field.label}
+              ：
+            </span>
             <span>{field.value}</span>
           </div>
         ))}
@@ -256,7 +270,7 @@ function ApplicationInfoModule({ data }: { data: ResumeSchema }) {
   const { applicationInfo } = data
 
   return (
-    <Section title='报考信息' theme={theme} font={font} spacing={spacing}>
+    <Section title="报考信息" theme={theme} font={font} spacing={spacing}>
       {applicationInfo.applicationSchool && (
         <div
           style={{
@@ -264,7 +278,8 @@ function ApplicationInfoModule({ data }: { data: ResumeSchema }) {
             lineHeight: spacing.lineHeight,
           }}
         >
-          报考院校：<span style={{ fontWeight: font.mediumWeight }}>{applicationInfo.applicationSchool}</span>
+          报考院校：
+          <span style={{ fontWeight: font.mediumWeight }}>{applicationInfo.applicationSchool}</span>
         </div>
       )}
       {applicationInfo.applicationMajor && (
@@ -274,7 +289,8 @@ function ApplicationInfoModule({ data }: { data: ResumeSchema }) {
             lineHeight: spacing.lineHeight,
           }}
         >
-          报考专业：<span style={{ fontWeight: font.mediumWeight }}>{applicationInfo.applicationMajor}</span>
+          报考专业：
+          <span style={{ fontWeight: font.mediumWeight }}>{applicationInfo.applicationMajor}</span>
         </div>
       )}
     </Section>
@@ -289,10 +305,10 @@ function EduBackgroundModule({ data }: { data: ResumeSchema }) {
   const { eduBackground } = data
 
   return (
-    <Section title='教育背景' theme={theme} font={font} spacing={spacing}>
+    <Section title="教育背景" theme={theme} font={font} spacing={spacing}>
       {eduBackground.items.map((item, index) => {
-        const subtitle =
-          item.degree && item.degree !== '不填' ? `${item.professional}（${item.degree}）` : item.professional
+        const subtitle
+          = item.degree && item.degree !== '不填' ? `${item.professional}（${item.degree}）` : item.professional
         const duration = formatDuration(item.duration)
 
         return (
@@ -319,7 +335,7 @@ function WorkExperienceModule({ data }: { data: any }) {
   const { workExperience } = data
 
   return (
-    <Section title='工作经历' theme={theme} font={font} spacing={spacing}>
+    <Section title="工作经历" theme={theme} font={font} spacing={spacing}>
       {workExperience.items.map((item: any, index: number) => (
         <Entry
           key={`work-${index}`}
@@ -343,7 +359,7 @@ function InternshipExperienceModule({ data }: { data: any }) {
   const { internshipExperience } = data
 
   return (
-    <Section title='实习经验' theme={theme} font={font} spacing={spacing}>
+    <Section title="实习经验" theme={theme} font={font} spacing={spacing}>
       {internshipExperience.items.map((item: any, index: number) => (
         <Entry
           key={`intern-${index}`}
@@ -367,7 +383,7 @@ function ProjectExperienceModule({ data }: { data: any }) {
   const { projectExperience } = data
 
   return (
-    <Section title='项目经验' theme={theme} font={font} spacing={spacing}>
+    <Section title="项目经验" theme={theme} font={font} spacing={spacing}>
       {projectExperience.items.map((item: any, index: number) => (
         <Entry
           key={`project-${index}`}
@@ -391,7 +407,7 @@ function CampusExperienceModule({ data }: { data: any }) {
   const { campusExperience } = data
 
   return (
-    <Section title='校园经历' theme={theme} font={font} spacing={spacing}>
+    <Section title="校园经历" theme={theme} font={font} spacing={spacing}>
       {campusExperience.items.map((item: any, index: number) => (
         <Entry
           key={`campus-${index}`}
@@ -415,24 +431,24 @@ function SkillSpecialtyModule({ data }: { data: any }) {
   const { skillSpecialty } = data
 
   return (
-    <Section title='技能特长' theme={theme} font={font} spacing={spacing}>
-      {skillSpecialty.description && <div className='prose'>{parser(skillSpecialty.description)}</div>}
+    <Section title="技能特长" theme={theme} font={font} spacing={spacing}>
+      {skillSpecialty.description && <div className="prose">{parser(skillSpecialty.description)}</div>}
 
       {skillSpecialty.skills && skillSpecialty.skills.length > 0 && (
-        <div className='grid gap-4 mt-2' style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}>
+        <div className="grid gap-4 mt-2" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}>
           {skillSpecialty.skills.map((skill: any, index: number) => {
             const percentage = skillProficiencyMap[skill.proficiencyLevel as keyof typeof skillProficiencyMap] || 50
 
             return (
-              <div key={`skill-${index}`} className='flex flex-col gap-1'>
+              <div key={`skill-${index}`} className="flex flex-col gap-1">
                 {skill.displayType === 'percentage' && (
-                  <div className='flex items-center gap-2'>
+                  <div className="flex items-center gap-2">
                     <div
-                      className='flex-1 h-2 rounded overflow-hidden'
+                      className="flex-1 h-2 rounded overflow-hidden"
                       style={{ backgroundColor: theme.progressBarBg }}
                     >
                       <div
-                        className='h-full transition-all duration-300'
+                        className="h-full transition-all duration-300"
                         style={{
                           width: `${percentage}%`,
                           backgroundColor: theme.progressBarFill,
@@ -440,13 +456,14 @@ function SkillSpecialtyModule({ data }: { data: any }) {
                       />
                     </div>
                     <span
-                      className='min-w-[3em] text-right'
+                      className="min-w-[3em] text-right"
                       style={{
                         fontSize: font.smallSize,
                         color: theme.textMuted,
                       }}
                     >
-                      {percentage}%
+                      {percentage}
+                      %
                     </span>
                   </div>
                 )}
@@ -476,8 +493,8 @@ function HonorsCertificatesModule({ data }: { data: any }) {
   const { honorsCertificates } = data
 
   return (
-    <Section title='荣誉证书' theme={theme} font={font} spacing={spacing}>
-      {honorsCertificates.description && <div className='prose'>{parser(honorsCertificates.description)}</div>}
+    <Section title="荣誉证书" theme={theme} font={font} spacing={spacing}>
+      {honorsCertificates.description && <div className="prose">{parser(honorsCertificates.description)}</div>}
 
       {honorsCertificates.certificates && honorsCertificates.certificates.length > 0 && (
         <div style={{ fontSize: font.contentSize, lineHeight: spacing.lineHeight }}>
@@ -501,8 +518,8 @@ function SelfEvaluationModule({ data }: { data: any }) {
   const { selfEvaluation } = data
 
   return (
-    <Section title='自我评价' theme={theme} font={font} spacing={spacing}>
-      <div className='prose'>{parser(selfEvaluation.content)}</div>
+    <Section title="自我评价" theme={theme} font={font} spacing={spacing}>
+      <div className="prose">{parser(selfEvaluation.content)}</div>
     </Section>
   )
 }
@@ -515,13 +532,13 @@ function HobbiesModule({ data }: { data: any }) {
   const { hobbies } = data
 
   return (
-    <Section title='兴趣爱好' theme={theme} font={font} spacing={spacing}>
-      {hobbies.description && <div className='prose'>{parser(hobbies.description)}</div>}
+    <Section title="兴趣爱好" theme={theme} font={font} spacing={spacing}>
+      {hobbies.description && <div className="prose">{parser(hobbies.description)}</div>}
 
       {hobbies.hobbies && hobbies.hobbies.length > 0 && (
-        <div className='flex flex-wrap gap-2'>
+        <div className="flex flex-wrap gap-2">
           {hobbies.hobbies.map((hobby: any) => (
-            <Badge variant='outline' key={hobby.name} style={{ backgroundColor: theme.badgeBg }}>
+            <Badge variant="outline" key={hobby.name} style={{ backgroundColor: theme.badgeBg }}>
               {hobby.name}
             </Badge>
           ))}
@@ -538,7 +555,7 @@ function HobbiesModule({ data }: { data: any }) {
  */
 function BasicResumePreview() {
   const data = useResumeStore()
-  const getVisibility = useResumeStore((state) => state.getVisibility)
+  const getVisibility = useResumeStore(state => state.getVisibility)
   const age = useAge(data.basics.birthMonth)
 
   // ============ 从 store 获取配置 ============
@@ -589,9 +606,11 @@ function BasicResumePreview() {
         return getVisibility('workExperience') ? null : <WorkExperienceModule key={moduleType} data={data} />
 
       case 'internshipExperience':
-        return getVisibility('internshipExperience') ? null : (
-          <InternshipExperienceModule key={moduleType} data={data} />
-        )
+        return getVisibility('internshipExperience')
+          ? null
+          : (
+              <InternshipExperienceModule key={moduleType} data={data} />
+            )
 
       case 'projectExperience':
         return getVisibility('projectExperience') ? null : <ProjectExperienceModule key={moduleType} data={data} />
@@ -621,7 +640,7 @@ function BasicResumePreview() {
 
   return (
     <ResumeWrapper theme={theme} spacing={spacing} font={font}>
-      {data.order.map((moduleType) => renderModule(moduleType))}
+      {data.order.map(moduleType => renderModule(moduleType))}
     </ResumeWrapper>
   )
 }

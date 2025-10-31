@@ -62,12 +62,13 @@ export function parseShortcutKeys(props: {
 }) {
   const { shortcutKeys, delimiter = '+', capitalize = true } = props
 
-  if (!shortcutKeys) return []
+  if (!shortcutKeys)
+    return []
 
   return shortcutKeys
     .split(delimiter)
-    .map((key) => key.trim())
-    .map((key) => formatShortcutKey(key, isMac(), capitalize))
+    .map(key => key.trim())
+    .map(key => formatShortcutKey(key, isMac(), capitalize))
 }
 
 /**
@@ -77,7 +78,8 @@ export function parseShortcutKeys(props: {
  * @returns boolean indicating if the mark exists in the schema
  */
 export function isMarkInSchema(markName: string, editor: Editor | null): boolean {
-  if (!editor?.schema) return false
+  if (!editor?.schema)
+    return false
   return editor.schema.spec.marks.get(markName) !== undefined
 }
 
@@ -88,7 +90,8 @@ export function isMarkInSchema(markName: string, editor: Editor | null): boolean
  * @returns boolean indicating if the node exists in the schema
  */
 export function isNodeInSchema(nodeName: string, editor: Editor | null): boolean {
-  if (!editor?.schema) return false
+  if (!editor?.schema)
+    return false
   return editor.schema.spec.nodes.get(nodeName) !== undefined
 }
 
@@ -140,11 +143,12 @@ export function isValidPosition(pos: number | null | undefined): pos is number {
  * @returns True if at least one of the extensions is available, false otherwise
  */
 export function isExtensionAvailable(editor: Editor | null, extensionNames: string | string[]): boolean {
-  if (!editor) return false
+  if (!editor)
+    return false
 
   const names = Array.isArray(extensionNames) ? extensionNames : [extensionNames]
 
-  const found = names.some((name) => editor.extensionManager.extensions.some((ext) => ext.name === name))
+  const found = names.some(name => editor.extensionManager.extensions.some(ext => ext.name === name))
 
   if (!found) {
     console.warn(
@@ -169,7 +173,8 @@ export function findNodeAtPosition(editor: Editor, position: number) {
       return null
     }
     return node
-  } catch (error) {
+  }
+  catch (error) {
     console.error(`Error getting node at position ${position}:`, error)
     return null
   }
@@ -187,10 +192,11 @@ export function findNodePosition(props: {
   editor: Editor | null
   node?: TiptapNode | null
   nodePos?: number | null
-}): { pos: number; node: TiptapNode } | null {
+}): { pos: number, node: TiptapNode } | null {
   const { editor, node, nodePos } = props
 
-  if (!editor || !editor.state?.doc) return null
+  if (!editor || !editor.state?.doc)
+    return null
 
   // Zero is valid position
   const hasValidNode = node !== undefined && node !== null
@@ -239,12 +245,14 @@ export function findNodePosition(props: {
  * @returns boolean indicating if the selected node matches any of the specified types
  */
 export function isNodeTypeSelected(editor: Editor | null, types: string[] = []): boolean {
-  if (!editor || !editor.state.selection) return false
+  if (!editor || !editor.state.selection)
+    return false
 
   const { state } = editor
   const { selection } = state
 
-  if (selection.empty) return false
+  if (selection.empty)
+    return false
 
   if (selection instanceof NodeSelection) {
     const node = selection.node
@@ -281,7 +289,7 @@ export async function handleImageUpload(
     if (abortSignal?.aborted) {
       throw new Error('Upload cancelled')
     }
-    await new Promise((resolve) => setTimeout(resolve, 500))
+    await new Promise(resolve => setTimeout(resolve, 500))
     onProgress?.({ progress })
   }
 
@@ -307,9 +315,9 @@ interface ProtocolOptions {
 
 type ProtocolConfig = Array<ProtocolOptions | string>
 
-const ATTR_WHITESPACE =
+const ATTR_WHITESPACE
   // eslint-disable-next-line no-control-regex
-  /[\u0000-\u0020\u00A0\u1680\u180E\u2000-\u2029\u205F\u3000]/g
+  = /[\u0000-\u0020\u00A0\u1680\u180E\u2000-\u2029\u205F\u3000]/g
 
 export function isAllowedUri(uri: string | undefined, protocols?: ProtocolConfig) {
   const allowedProtocols: string[] = ['http', 'https', 'ftp', 'ftps', 'mailto', 'tel', 'callto', 'sms', 'cid', 'xmpp']
@@ -325,8 +333,8 @@ export function isAllowedUri(uri: string | undefined, protocols?: ProtocolConfig
   }
 
   return (
-    !uri ||
-    uri
+    !uri
+    || uri
       .replace(ATTR_WHITESPACE, '')
       .match(new RegExp(`^(?:(?:${allowedProtocols.join('|')}):|[^a-z]|[a-z0-9+.\-]+(?:[^a-z+.\-:]|$))`, 'i'))
   )
@@ -339,7 +347,8 @@ export function sanitizeUrl(inputUrl: string, baseUrl: string, protocols?: Proto
     if (isAllowedUri(url.href, protocols)) {
       return url.href
     }
-  } catch {
+  }
+  catch {
     // If URL creation fails, it's considered invalid
   }
   return '#'

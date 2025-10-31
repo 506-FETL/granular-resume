@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Moon, Sun } from 'lucide-react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 
 import { cn } from '@/lib/utils'
@@ -8,7 +8,7 @@ interface AnimatedThemeTogglerProps extends React.ComponentPropsWithoutRef<'butt
   duration?: number
 }
 
-export const AnimatedThemeToggler = ({ className, duration = 400, ...props }: AnimatedThemeTogglerProps) => {
+export function AnimatedThemeToggler({ className, duration = 400, ...props }: AnimatedThemeTogglerProps) {
   const [isDark, setIsDark] = useState(false)
   const buttonRef = useRef<HTMLButtonElement>(null)
 
@@ -29,9 +29,11 @@ export const AnimatedThemeToggler = ({ className, duration = 400, ...props }: An
   }, [])
 
   const toggleTheme = useCallback(async () => {
-    if (!buttonRef.current) return
+    if (!buttonRef.current)
+      return
 
     await document.startViewTransition(() => {
+      // eslint-disable-next-line react-dom/no-flush-sync
       flushSync(() => {
         const newTheme = !isDark
         setIsDark(newTheme)
@@ -60,7 +62,7 @@ export const AnimatedThemeToggler = ({ className, duration = 400, ...props }: An
   return (
     <button ref={buttonRef} onClick={toggleTheme} className={cn(className)} {...props}>
       {!isDark ? <Sun /> : <Moon />}
-      <span className='sr-only'>Toggle theme</span>
+      <span className="sr-only">Toggle theme</span>
     </button>
   )
 }

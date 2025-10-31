@@ -9,11 +9,11 @@ export function PreferencesCard() {
         <CardTitle>偏好设置</CardTitle>
         <CardDescription>自定义你的使用体验</CardDescription>
       </CardHeader>
-      <CardContent className='space-y-4'>
-        <div className='flex items-center justify-between'>
-          <div className='space-y-0.5'>
+      <CardContent className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
             <Label>主题设置</Label>
-            <p className='text-muted-foreground text-sm'>切换明暗主题</p>
+            <p className="text-muted-foreground text-sm">切换明暗主题</p>
           </div>
           <AnimatedThemeToggler />
         </div>

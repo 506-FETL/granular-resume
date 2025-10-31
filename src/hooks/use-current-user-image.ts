@@ -1,7 +1,7 @@
-import supabase from '@/lib/supabase/client'
 import { useEffect, useState } from 'react'
+import supabase from '@/lib/supabase/client'
 
-export const useCurrentUserImage = () => {
+export function useCurrentUserImage() {
   const [image, setImage] = useState<string | null>(null)
 
   useEffect(() => {

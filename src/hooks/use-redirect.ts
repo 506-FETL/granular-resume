@@ -1,9 +1,9 @@
-import supabase from '@/lib/supabase/client'
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
+import supabase from '@/lib/supabase/client'
 
-export const alreadyLoggedRedirect = (redirect: string = '/') => {
+export function useAlreadyLoggedRedirect(redirect: string = '/') {
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -15,5 +15,5 @@ export const alreadyLoggedRedirect = (redirect: string = '/') => {
       }
     }
     checkUser()
-  }, [])
+  }, [navigate, redirect])
 }

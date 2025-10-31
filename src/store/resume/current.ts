@@ -15,7 +15,7 @@ interface CurrentResumeState {
  */
 const useCurrentResumeStore = create<CurrentResumeState>()(
   persist(
-    (set) => ({
+    set => ({
       resumeId: null,
       resumeType: null,
       setCurrentResume: (id, type) => set({ resumeId: id, resumeType: type }),

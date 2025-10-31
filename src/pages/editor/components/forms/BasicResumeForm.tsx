@@ -1,3 +1,11 @@
+import type { BasicFormType, Gender, MaritalStatus, PoliticalStatus, WorkYears } from '@/lib/schema'
+import type { ShallowPartial } from '@/lib/utils'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { REGEXP_ONLY_DIGITS } from 'input-otp'
+import { Cake, Delete, Plus } from 'lucide-react'
+import { motion } from 'motion/react'
+import { useEffect, useState } from 'react'
+import { useFieldArray, useForm } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form'
@@ -7,16 +15,9 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { useIsMobile } from '@/hooks/use-mobile'
-import type { BasicFormType, Gender, MaritalStatus, PoliticalStatus, WorkYears } from '@/lib/schema'
 import { resumeSchema } from '@/lib/schema'
-import { cn, type ShallowPartial } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 import useResumeStore from '@/store/resume/form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { REGEXP_ONLY_DIGITS } from 'input-otp'
-import { Cake, Delete, Plus } from 'lucide-react'
-import { motion } from 'motion/react'
-import { useEffect, useState } from 'react'
-import { useFieldArray, useForm } from 'react-hook-form'
 
 const genderOptions: Gender[] = ['不填', '男', '女', '其他']
 const workYearsOptions: WorkYears[] = ['不填', '应届', '1年', '2年', '3-5年', '5-10年', '10年以上']
@@ -24,8 +25,8 @@ const maritalStatusOptions: MaritalStatus[] = ['不填', '未婚', '已婚', '�
 const politicalStatusOptions: PoliticalStatus[] = ['不填', '中共党员', '中共预备党员', '共青团员', '群众', '其他']
 
 function BasicResumeForm({ className }: { className?: string }) {
-  const basics = useResumeStore((state) => state.basics)
-  const updateForm = useResumeStore((state) => state.updateForm)
+  const basics = useResumeStore(state => state.basics)
+  const updateForm = useResumeStore(state => state.updateForm)
   const isMobile = useIsMobile()
 
   const form = useForm({
@@ -53,34 +54,34 @@ function BasicResumeForm({ className }: { className?: string }) {
 
   return (
     <Form {...form}>
-      <form id='basic-resume-form' className={cn(className)}>
-        <motion.div layout className='grid gap-4 justify-items-start sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4'>
+      <form id="basic-resume-form" className={cn(className)}>
+        <motion.div layout className="grid gap-4 justify-items-start sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           <FormField
             control={form.control}
-            name='name'
+            name="name"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>您的姓名</FormLabel>
                 <FormControl>
-                  <Input placeholder='输入您的姓名' {...field} />
+                  <Input placeholder="输入您的姓名" {...field} />
                 </FormControl>
               </FormItem>
             )}
           />
           <FormField
             control={form.control}
-            name='gender'
+            name="gender"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>性别</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder='请选择性别' />
+                      <SelectValue placeholder="请选择性别" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {genderOptions.map((o) => (
+                    {genderOptions.map(o => (
                       <SelectItem key={o} value={o}>
                         {o}
                       </SelectItem>
@@ -92,7 +93,7 @@ function BasicResumeForm({ className }: { className?: string }) {
           />
           <FormField
             control={form.control}
-            name='birthMonth'
+            name="birthMonth"
             render={({ field }) => {
               return (
                 <FormItem>
@@ -100,17 +101,17 @@ function BasicResumeForm({ className }: { className?: string }) {
                   <FormControl>
                     <Popover open={open} onOpenChange={setOpen}>
                       <PopoverTrigger asChild>
-                        <Button variant='outline' id='date'>
+                        <Button variant="outline" id="date">
                           {field.value ? field.value : '选择日期'}
                           <Cake />
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className='w-auto overflow-hidden p-0' align='start'>
+                      <PopoverContent className="w-auto overflow-hidden p-0" align="start">
                         <Calendar
-                          mode='single'
+                          mode="single"
                           defaultMonth={new Date(field.value || '2002-1-1')}
                           selected={field.value ? new Date(field.value) : undefined}
-                          captionLayout='dropdown'
+                          captionLayout="dropdown"
                           onSelect={(date) => {
                             field.onChange(date && date.toLocaleDateString())
                           }}
@@ -125,18 +126,18 @@ function BasicResumeForm({ className }: { className?: string }) {
 
           <FormField
             control={form.control}
-            name='workYears'
+            name="workYears"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>工作年限</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder='不填' />
+                      <SelectValue placeholder="不填" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {workYearsOptions.map((o) => (
+                    {workYearsOptions.map(o => (
                       <SelectItem key={o} value={o}>
                         {o}
                       </SelectItem>
@@ -149,12 +150,12 @@ function BasicResumeForm({ className }: { className?: string }) {
 
           <FormField
             control={form.control}
-            name='phone'
+            name="phone"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>联系方式</FormLabel>
                 <FormControl>
-                  <Input placeholder='手机号' {...field} />
+                  <Input placeholder="手机号" {...field} />
                 </FormControl>
               </FormItem>
             )}
@@ -162,12 +163,12 @@ function BasicResumeForm({ className }: { className?: string }) {
 
           <FormField
             control={form.control}
-            name='email'
+            name="email"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>联系邮箱</FormLabel>
                 <FormControl>
-                  <Input placeholder='you@example.com' {...field} />
+                  <Input placeholder="you@example.com" {...field} />
                 </FormControl>
               </FormItem>
             )}
@@ -175,18 +176,18 @@ function BasicResumeForm({ className }: { className?: string }) {
 
           <FormField
             control={form.control}
-            name='maritalStatus'
+            name="maritalStatus"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>婚姻状况</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder='不填' />
+                      <SelectValue placeholder="不填" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {maritalStatusOptions.map((o) => (
+                    {maritalStatusOptions.map(o => (
                       <SelectItem key={o} value={o}>
                         {o}
                       </SelectItem>
@@ -199,7 +200,7 @@ function BasicResumeForm({ className }: { className?: string }) {
 
           <FormField
             control={form.control}
-            name='heightCm'
+            name="heightCm"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>身高(cm)</FormLabel>
@@ -224,7 +225,7 @@ function BasicResumeForm({ className }: { className?: string }) {
           />
           <FormField
             control={form.control}
-            name='weightKg'
+            name="weightKg"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>体重(kg)</FormLabel>
@@ -252,12 +253,12 @@ function BasicResumeForm({ className }: { className?: string }) {
 
           <FormField
             control={form.control}
-            name='nation'
+            name="nation"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>民族</FormLabel>
                 <FormControl>
-                  <Input placeholder='请输入民族' {...field} />
+                  <Input placeholder="请输入民族" {...field} />
                 </FormControl>
               </FormItem>
             )}
@@ -265,12 +266,12 @@ function BasicResumeForm({ className }: { className?: string }) {
 
           <FormField
             control={form.control}
-            name='nativePlace'
+            name="nativePlace"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>籍贯</FormLabel>
                 <FormControl>
-                  <Input placeholder='四川 / 江苏南京' {...field} />
+                  <Input placeholder="四川 / 江苏南京" {...field} />
                 </FormControl>
               </FormItem>
             )}
@@ -278,18 +279,18 @@ function BasicResumeForm({ className }: { className?: string }) {
 
           <FormField
             control={form.control}
-            name='politicalStatus'
+            name="politicalStatus"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>政治面貌</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder='共青团员' />
+                      <SelectValue placeholder="共青团员" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {politicalStatusOptions.map((o) => (
+                    {politicalStatusOptions.map(o => (
                       <SelectItem key={o} value={o}>
                         {o}
                       </SelectItem>
@@ -300,14 +301,14 @@ function BasicResumeForm({ className }: { className?: string }) {
             )}
           />
         </motion.div>
-        <Separator className='mt-6' />
-        <Button type='button' variant='outline' size={isMobile ? 'icon' : 'sm'} onClick={onAddField} className='mt-6'>
+        <Separator className="mt-6" />
+        <Button type="button" variant="outline" size={isMobile ? 'icon' : 'sm'} onClick={onAddField} className="mt-6">
           <Plus />
           {!isMobile && '添加自定义字段'}
         </Button>
-        <div className='mt-6 grid gap-4 justify-items-start sm:grid-cols-2 md:grid-cols-3'>
+        <div className="mt-6 grid gap-4 justify-items-start sm:grid-cols-2 md:grid-cols-3">
           {fields.map((item, index) => (
-            <motion.div key={item.id} transition={{ duration: 0.2 }} className='flex gap-2 items-end' layout>
+            <motion.div key={item.id} transition={{ duration: 0.2 }} className="flex gap-2 items-end" layout>
               <FormField
                 control={form.control}
                 name={`customFields.${index}.label`}
@@ -315,7 +316,7 @@ function BasicResumeForm({ className }: { className?: string }) {
                   <FormItem>
                     <FormLabel>标签</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder='标签' />
+                      <Input {...field} placeholder="标签" />
                     </FormControl>
                   </FormItem>
                 )}
@@ -327,12 +328,12 @@ function BasicResumeForm({ className }: { className?: string }) {
                   <FormItem>
                     <FormLabel>值</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder='值' />
+                      <Input {...field} placeholder="值" />
                     </FormControl>
                   </FormItem>
                 )}
               />
-              <Button type='button' variant='destructive' size={isMobile ? 'icon' : 'sm'} onClick={() => remove(index)}>
+              <Button type="button" variant="destructive" size={isMobile ? 'icon' : 'sm'} onClick={() => remove(index)}>
                 <Delete />
                 {!isMobile && '删除'}
               </Button>

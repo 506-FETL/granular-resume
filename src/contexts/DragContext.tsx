@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useRef, useCallback, type ReactNode } from 'react'
+import type { ReactNode } from 'react'
+import { createContext, use, useCallback, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 interface DragItem {
@@ -33,7 +34,7 @@ export function DragProvider({ children }: { children: ReactNode }) {
   const [overIndex, setOverIndex] = useState<number | null>(null) // 当前悬停的索引
   const [previewPos, setPreviewPos] = useState({ x: 0, y: 0 }) // 预览位置
   const [initialRect, setInitialRect] = useState<DOMRect | null>(null) // 初始位置
-  const itemsRef = useRef<Map<string, { index: number; element: HTMLElement }>>(new Map()) // 注册的可拖拽元素
+  const itemsRef = useRef<Map<string, { index: number, element: HTMLElement }>>(new Map()) // 注册的可拖拽元素
   const positionsRef = useRef<ItemPosition[]>([]) // 元素位置数据
   const startPosRef = useRef({ x: 0, y: 0 }) // 拖拽起始位置
 
@@ -81,7 +82,8 @@ export function DragProvider({ children }: { children: ReactNode }) {
 
   const updateOverIndex = useCallback(
     (clientX: number, clientY: number) => {
-      if (!draggedItem || !initialRect) return
+      if (!draggedItem || !initialRect)
+        return
 
       // 更新预览位置
       const offsetX = clientX - startPosRef.current.x
@@ -95,7 +97,8 @@ export function DragProvider({ children }: { children: ReactNode }) {
       let minDistance = Infinity
 
       positionsRef.current.forEach((pos) => {
-        if (pos.id === draggedItem.id) return
+        if (pos.id === draggedItem.id)
+          return
 
         const distance = Math.abs(clientX - pos.centerX)
 
@@ -110,7 +113,8 @@ export function DragProvider({ children }: { children: ReactNode }) {
 
       if (firstPos && clientX < firstPos.left) {
         newOverIndex = 0
-      } else if (lastPos && clientX > lastPos.right) {
+      }
+      else if (lastPos && clientX > lastPos.right) {
         newOverIndex = positionsRef.current.length - 1
       }
 
@@ -133,7 +137,8 @@ export function DragProvider({ children }: { children: ReactNode }) {
 
   // 渲染拖拽预览
   const renderDragPreview = () => {
-    if (!draggedItem || !initialRect) return null
+    if (!draggedItem || !initialRect)
+      return null
 
     return createPortal(
       <div
@@ -150,7 +155,7 @@ export function DragProvider({ children }: { children: ReactNode }) {
           transition: 'transform 0.1s ease',
         }}
       >
-        <div className='h-full w-full shadow-2xl rounded-lg border-primary/50 bg-background/95 backdrop-blur-sm'>
+        <div className="h-full w-full shadow-2xl rounded-lg border-primary/50 bg-background/95 backdrop-blur-sm">
           {/* 克隆原始内容 */}
           <div
             dangerouslySetInnerHTML={{
@@ -164,7 +169,7 @@ export function DragProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <DragContext.Provider
+    <DragContext
       value={{
         draggedItem,
         overIndex,
@@ -177,13 +182,13 @@ export function DragProvider({ children }: { children: ReactNode }) {
     >
       {children}
       {renderDragPreview()}
-    </DragContext.Provider>
+    </DragContext>
   )
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
 export function useDrag() {
-  const context = useContext(DragContext)
+  const context = use(DragContext)
   if (!context) {
     throw new Error('useDrag must be used within DragProvider')
   }

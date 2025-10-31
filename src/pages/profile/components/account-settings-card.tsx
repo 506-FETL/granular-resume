@@ -1,13 +1,13 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Label } from '@/components/ui/label'
-import { Separator } from '@/components/ui/separator'
-import { UpdatePasswordDialog } from '@/components/update-password-dialog'
-import { getCurrentUser } from '@/lib/supabase/user'
 import type { User } from '@supabase/supabase-js'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { SessionInfo } from './session-info'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Label } from '@/components/ui/label'
+import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
+import { UpdatePasswordDialog } from '@/components/update-password-dialog'
+import { getCurrentUser } from '@/lib/supabase/user'
+import { SessionInfo } from './session-info'
 
 interface AccountSettingsCardProps {
   user: User
@@ -27,8 +27,9 @@ export function AccountSettingsCard({ user }: AccountSettingsCardProps) {
           lastSignInAt: user.last_sign_in_at || undefined,
           provider: user.app_metadata.provider || 'email',
         })
-      } catch (error) {
-        toast.error('加载会话信息失败' + error)
+      }
+      catch (error) {
+        toast.error(`加载会话信息失败${error}`)
       }
     }
 
@@ -36,7 +37,8 @@ export function AccountSettingsCard({ user }: AccountSettingsCardProps) {
   }, [user])
 
   const formatDate = (dateString?: string) => {
-    if (!dateString) return '未知'
+    if (!dateString)
+      return '未知'
     const date = new Date(dateString)
     const now = new Date()
     const diffInMs = now.getTime() - date.getTime()
@@ -47,9 +49,11 @@ export function AccountSettingsCard({ user }: AccountSettingsCardProps) {
     if (diffInHours < 1) {
       const diffInMinutes = Math.floor(diffInMs / (1000 * 60))
       return diffInMinutes < 1 ? '刚刚' : `${diffInMinutes} 分钟前`
-    } else if (diffInHours < 24) {
+    }
+    else if (diffInHours < 24) {
       return `${diffInHours} 小时前`
-    } else if (diffInDays < 7) {
+    }
+    else if (diffInDays < 7) {
       return `${diffInDays} 天前`
     }
 
@@ -69,11 +73,11 @@ export function AccountSettingsCard({ user }: AccountSettingsCardProps) {
         <CardTitle>账户设置</CardTitle>
         <CardDescription>管理你的账户安全和偏好</CardDescription>
       </CardHeader>
-      <CardContent className='space-y-4'>
-        <div className='flex items-center justify-between'>
-          <div className='space-y-0.5'>
+      <CardContent className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
             <Label>修改密码</Label>
-            <p className='text-muted-foreground text-sm'>更新你的账户密码以保护安全</p>
+            <p className="text-muted-foreground text-sm">更新你的账户密码以保护安全</p>
           </div>
           <UpdatePasswordDialog />
         </div>
@@ -86,32 +90,34 @@ export function AccountSettingsCard({ user }: AccountSettingsCardProps) {
   )
 }
 
-const LoadingSkeleton = () => (
-  <div className='rounded-xl border bg-card shadow-sm p-6 space-y-6'>
-    <div className='space-y-2'>
-      <Skeleton className='h-6 w-32 rounded-lg' />
-      <Skeleton className='h-4 w-64' />
-    </div>
-    <Separator />
-    <div className='space-y-4'>
-      <div className='flex items-center justify-between py-3'>
-        <div className='space-y-2'>
-          <Skeleton className='h-4 w-24' />
-          <Skeleton className='h-3 w-48' />
-        </div>
-        <Skeleton className='h-9 w-24 rounded-md' />
+function LoadingSkeleton() {
+  return (
+    <div className="rounded-xl border bg-card shadow-sm p-6 space-y-6">
+      <div className="space-y-2">
+        <Skeleton className="h-6 w-32 rounded-lg" />
+        <Skeleton className="h-4 w-64" />
       </div>
       <Separator />
-      <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-        <div className='space-y-2'>
-          <Skeleton className='h-4 w-20' />
-          <Skeleton className='h-5 w-full' />
+      <div className="space-y-4">
+        <div className="flex items-center justify-between py-3">
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-3 w-48" />
+          </div>
+          <Skeleton className="h-9 w-24 rounded-md" />
         </div>
-        <div className='space-y-2'>
-          <Skeleton className='h-4 w-24' />
-          <Skeleton className='h-5 w-full' />
+        <Separator />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-5 w-full" />
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-5 w-full" />
+          </div>
         </div>
       </div>
     </div>
-  </div>
-)
+  )
+}

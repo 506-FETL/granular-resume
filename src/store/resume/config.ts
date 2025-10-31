@@ -1,13 +1,12 @@
+import type { FontConfigType, SpacingConfigType, ThemeConfigType } from '@/lib/schema'
+import { create } from 'zustand'
+import { createJSONStorage, persist } from 'zustand/middleware'
 import {
   DEFAULT_FONT_CONFIG,
   DEFAULT_SPACING_CONFIG,
   DEFAULT_THEME_CONFIG,
-  type FontConfigType,
-  type SpacingConfigType,
-  type ThemeConfigType,
+
 } from '@/lib/schema'
-import { create } from 'zustand'
-import { createJSONStorage, persist } from 'zustand/middleware'
 
 interface ResumeConfigState {
   // 间距配置
@@ -29,14 +28,14 @@ interface ResumeConfigState {
 
 const useResumeConfigStore = create<ResumeConfigState>()(
   persist(
-    (set) => ({
+    set => ({
       spacing: DEFAULT_SPACING_CONFIG,
       font: DEFAULT_FONT_CONFIG,
       theme: DEFAULT_THEME_CONFIG,
 
-      updateSpacing: (data) => set((state) => ({ spacing: { ...state.spacing, ...data } })),
-      updateFont: (data) => set((state) => ({ font: { ...state.font, ...data } })),
-      updateTheme: (data) => set((state) => ({ theme: { ...state.theme, ...data } })),
+      updateSpacing: data => set(state => ({ spacing: { ...state.spacing, ...data } })),
+      updateFont: data => set(state => ({ font: { ...state.font, ...data } })),
+      updateTheme: data => set(state => ({ theme: { ...state.theme, ...data } })),
       resetConfig: () =>
         set({
           spacing: DEFAULT_SPACING_CONFIG,

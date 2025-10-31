@@ -1,3 +1,9 @@
+import type { SupabaseUser } from './types'
+import type { VisibilityItemsType } from '@/lib/schema'
+import { Edit } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { toast } from 'sonner'
 import { DraggableList } from '@/components/DraggableList'
 import { RealtimeCursors } from '@/components/realtime-cursors'
 import { SideTabs, SideTabsWrapper, Tab, ViewPort } from '@/components/SideTabs'
@@ -10,16 +16,11 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { DragProvider } from '@/contexts/DragContext'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { isOfflineResumeId } from '@/lib/offline-resume-manager'
-import type { VisibilityItemsType } from '@/lib/schema'
 import { subscribeToResumeConfigUpdates } from '@/lib/supabase/resume'
 import { getCurrentUser } from '@/lib/supabase/user'
 import useCollaborationStore from '@/store/collaboration'
 import useCurrentResumeStore from '@/store/resume/current'
 import useResumeStore from '@/store/resume/form'
-import { Edit } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
-import { toast } from 'sonner'
 import { CollaborationControls } from './components/CollaborationControls'
 import { CollaborationDialog } from './components/CollaborationDialog'
 import { CollaborationPanelProvider } from './components/CollaborationPanelProvider'
@@ -27,7 +28,6 @@ import { DraggableItem } from './components/DraggableItem'
 import ResumePreview from './components/preview/BasicResumePreview'
 import { ResumeConfigToolbar } from './components/ResumeConfigToolbar'
 import { ITEMS } from './data'
-import type { SupabaseUser } from './types'
 
 function Editor() {
   const isMobile = useIsMobile()
@@ -36,7 +36,7 @@ function Editor() {
   const [searchParams] = useSearchParams()
   const [currentUser, setCurrentUserState] = useState<SupabaseUser>(null)
   const { theme } = useTheme()
-  const resumeId = useCurrentResumeStore((state) => state.resumeId)
+  const resumeId = useCurrentResumeStore(state => state.resumeId)
   const { setCurrentResume } = useCurrentResumeStore()
   const navigate = useNavigate()
   const queryResumeId = searchParams.get('resumeId')
@@ -54,9 +54,9 @@ function Editor() {
     loadResumeData,
   } = useResumeStore()
 
-  const roomName = useCollaborationStore((state) => state.roomName)
+  const roomName = useCollaborationStore(state => state.roomName)
 
-  const orderDraggable = order.filter((id) => id !== 'basics')
+  const orderDraggable = order.filter(id => id !== 'basics')
   const fill = theme === 'dark' ? '#0c0a09' : '#fafaf9'
   const stroke = theme === 'dark' ? '#3d3b3b' : '#e7e5e4'
   const userDisplayName = useMemo(() => (currentUser ? getUserDisplayName(currentUser) : ''), [currentUser])
@@ -85,7 +85,8 @@ function Editor() {
     if (queryResumeId && collabSessionParam) {
       // 如果有协作会话参数，强制切换到链接中的简历
       setCurrentResume(queryResumeId, 'default')
-    } else if (!resumeId && queryResumeId) {
+    }
+    else if (!resumeId && queryResumeId) {
       setCurrentResume(queryResumeId, 'default')
     }
   }, [resumeId, queryResumeId, collabSessionParam, setCurrentResume])
@@ -101,7 +102,8 @@ function Editor() {
 
     loadResumeData(activeResumeId, sharedDocUrl ? { documentUrl: sharedDocUrl } : undefined)
       .catch((error: any) => {
-        if (cancelled) return
+        if (cancelled)
+          return
         toast.error(`加载简历失败, ${error.message || '未知错误'}`)
         navigate('/resume')
       })
@@ -117,7 +119,8 @@ function Editor() {
   }, [activeResumeId, loadResumeData, navigate, sharedDocUrl])
 
   useEffect(() => {
-    if (!activeResumeId || isOfflineResumeId(activeResumeId) || !currentUser) return
+    if (!activeResumeId || isOfflineResumeId(activeResumeId) || !currentUser)
+      return
 
     let unSubscribe: (() => void) | undefined
     let cancelled = false
@@ -127,11 +130,14 @@ function Editor() {
     async function subscribeToResumeUpdates() {
       try {
         unSubscribe = await subscribeToResumeConfigUpdates((payload) => {
-          if (cancelled) return
-          if (payload.eventType !== 'DELETE') return
+          if (cancelled)
+            return
+          if (payload.eventType !== 'DELETE')
+            return
 
           const deletedResumeId = payload.old.resume_id
-          if (deletedResumeId !== activeResumeId) return
+          if (deletedResumeId !== activeResumeId)
+            return
 
           const resumeName = payload.old.display_name || '简历'
           toast.error(`简历 "${resumeName}" 已在其他窗口被删除`, {
@@ -142,7 +148,8 @@ function Editor() {
             navigate('/resume')
           }, 1500)
         })
-      } catch (error: any) {
+      }
+      catch (error: any) {
         toast.error(`监听简历更新失败, ${error.message || '未知错误'}`)
       }
     }
@@ -155,10 +162,10 @@ function Editor() {
 
   if (loading) {
     return (
-      <div className='flex items-center justify-center h-screen'>
-        <div className='text-center'>
-          <Spinner className='mx-auto' />
-          <p className='mt-4 text-muted-foreground'>加载简历中...</p>
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <Spinner className="mx-auto" />
+          <p className="mt-4 text-muted-foreground">加载简历中...</p>
         </div>
       </div>
     )
@@ -178,35 +185,35 @@ function Editor() {
           <Drawer open={open} onOpenChange={setOpen} handleOnly>
             <DrawerTrigger asChild>
               <RainbowButton
-                variant='outline'
-                className='fixed bottom-6 left-1/2 z-1 -transform -translate-x-1/2'
+                variant="outline"
+                className="fixed bottom-6 left-1/2 z-1 -transform -translate-x-1/2"
                 size={isMobile ? 'icon' : 'default'}
               >
                 <Edit />
                 {!isMobile && '编辑简历'}
               </RainbowButton>
             </DrawerTrigger>
-            <DrawerContent className='h-160'>
+            <DrawerContent className="h-160">
               <CollaborationControls />
-              <div className='p-4 overflow-y-scroll overflow-x-hidden'>
-                <DraggableList items={orderDraggable} onOrderChange={(order) => updateOrder(['basics', ...order])}>
+              <div className="p-4 overflow-y-scroll overflow-x-hidden">
+                <DraggableList items={orderDraggable} onOrderChange={order => updateOrder(['basics', ...order])}>
                   <SideTabsWrapper defaultId={activeTabId}>
                     <SideTabs>
-                      <div className='flex flex-col items-center justify-end gap-2'>
+                      <div className="flex flex-col items-center justify-end gap-2">
                         <Tab
-                          id={'basics'}
+                          id="basics"
                           onClick={() => updateActiveTabId('basics')}
                           disabled={visibilityState['basics' as VisibilityItemsType]}
                         >
-                          {ITEMS.find((item) => item.id === 'basics')?.icon}
-                          {!isMobile && ITEMS.find((item) => item.id === 'basics')?.label}
+                          {ITEMS.find(item => item.id === 'basics')?.icon}
+                          {!isMobile && ITEMS.find(item => item.id === 'basics')?.label}
                         </Tab>
                       </div>
                       {orderDraggable.map((itm, index) => {
-                        const item = ITEMS.find((it) => it.id === itm)!
+                        const item = ITEMS.find(it => it.id === itm)!
                         return (
                           <DraggableItem id={item.id} index={index} key={item.id} disabled={item.id === 'basics'}>
-                            <div key={item.id} className='flex flex-col items-center justify-end gap-2'>
+                            <div key={item.id} className="flex flex-col items-center justify-end gap-2">
                               {item.id !== 'basics' && (
                                 <Tooltip>
                                   <TooltipTrigger asChild>
@@ -239,9 +246,9 @@ function Editor() {
               </div>
             </DrawerContent>
           </Drawer>
-          <div className='flex flex-col md:flex-row min-h-screen overflow-auto'>
+          <div className="flex flex-col md:flex-row min-h-screen overflow-auto">
             <ResumeConfigToolbar />
-            <div className='flex-1 overflow-auto p-4 md:p-8'>
+            <div className="flex-1 overflow-auto p-4 md:p-8">
               <ResumePreview />
             </div>
           </div>
@@ -255,12 +262,15 @@ function Editor() {
 export default Editor
 
 function getUserDisplayName(user: SupabaseUser) {
-  if (!user) return ''
+  if (!user)
+    return ''
 
-  const fullName =
-    (user.user_metadata?.full_name as string | undefined) || (user.user_metadata?.name as string | undefined)
+  const fullName
+    = (user.user_metadata?.full_name as string | undefined) || (user.user_metadata?.name as string | undefined)
 
-  if (fullName) return fullName
-  if (user.email) return user.email
+  if (fullName)
+    return fullName
+  if (user.email)
+    return user.email
   return `用户-${user.id.slice(0, 6)}`
 }

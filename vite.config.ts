@@ -1,7 +1,7 @@
-/*global __dirname*/
+import path from 'node:path'
+/* global __dirname */
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
-import path from 'node:path'
 import { defineConfig } from 'vite'
 import Pages from 'vite-plugin-pages'
 import topLevelAwait from 'vite-plugin-top-level-await'
@@ -78,13 +78,13 @@ export default defineConfig(({ mode }) => {
               '@automerge/automerge-repo-storage-indexeddb',
             ],
             // 动画
-            motion: ['motion'],
+            'motion': ['motion'],
             // 图标库
-            icons: ['@tabler/icons-react', 'lucide-react'],
+            'icons': ['@tabler/icons-react', 'lucide-react'],
             // Supabase
-            supabase: ['@supabase/supabase-js'],
+            'supabase': ['@supabase/supabase-js'],
             // 其他工具库
-            utils: ['clsx', 'tailwind-merge', 'date-fns', 'zod', 'zustand'],
+            'utils': ['clsx', 'tailwind-merge', 'date-fns', 'zod', 'zustand'],
           },
         },
       },

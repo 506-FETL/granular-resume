@@ -48,7 +48,7 @@ interface SideTabsContextValue {
 
 function callAll(...fns: Array<(() => void) | undefined>) {
   return () => {
-    fns.forEach((fn) => fn && fn())
+    fns.forEach(fn => fn && fn())
   }
 }
 
@@ -97,7 +97,8 @@ export function SideTabsWrapper({
     const container = containerRef.current
     const tabs = tabsRef.current
     const contentEl = contentRef.current
-    if (!container || !tabs || !contentEl) return
+    if (!container || !tabs || !contentEl)
+      return
 
     const cRect = container.getBoundingClientRect()
     const tRect = tabs.getBoundingClientRect()
@@ -110,12 +111,12 @@ export function SideTabsWrapper({
       const w = Math.max(0, rawW)
       const totalHeight = Math.max(h, tRect.height)
       const next = { x, y: 0, w, h, totalHeight }
-      setBox((prev) =>
-        prev.x !== next.x ||
-        prev.y !== next.y ||
-        prev.w !== next.w ||
-        prev.h !== next.h ||
-        prev.totalHeight !== next.totalHeight
+      setBox(prev =>
+        prev.x !== next.x
+        || prev.y !== next.y
+        || prev.w !== next.w
+        || prev.h !== next.h
+        || prev.totalHeight !== next.totalHeight
           ? next
           : prev,
       )
@@ -127,12 +128,12 @@ export function SideTabsWrapper({
     const x = 0
     const totalHeight = y + h
     const next = { x, y, w, h, totalHeight }
-    setBox((prev) =>
-      prev.x !== next.x ||
-      prev.y !== next.y ||
-      prev.w !== next.w ||
-      prev.h !== next.h ||
-      prev.totalHeight !== next.totalHeight
+    setBox(prev =>
+      prev.x !== next.x
+      || prev.y !== next.y
+      || prev.w !== next.w
+      || prev.h !== next.h
+      || prev.totalHeight !== next.totalHeight
         ? next
         : prev,
     )
@@ -143,9 +144,11 @@ export function SideTabsWrapper({
     const container = containerRef.current
     const tabs = tabsRef.current
     const btn = btnRefs.current[active]
-    if (!container || !tabs || !btn) return
+    if (!container || !tabs || !btn)
+      return
 
-    if (box.w <= 0 || box.h <= 0) return
+    if (box.w <= 0 || box.h <= 0)
+      return
 
     const cRect = container.getBoundingClientRect()
     const tRect = tabs.getBoundingClientRect()
@@ -173,15 +176,15 @@ export function SideTabsWrapper({
       const yr1 = yt + radius
       const yr2 = yb - radius
 
-      const d =
-        `M ${sx},${sy} ` +
-        `C ${c1x},${sy} ${c2xTop},${yt} ${xIn},${yt} ` +
-        `L ${xt - radius},${yt} ` +
-        `A ${radius},${radius} 0 0 1 ${xt},${yr1} ` +
-        `L ${xt},${yr2} ` +
-        `A ${radius},${radius} 0 0 1 ${xt - radius},${yb} ` +
-        `L ${xIn},${yb} ` +
-        `C ${c2xBot},${yb} ${c1x},${sy} ${sx},${sy} Z`
+      const d
+        = `M ${sx},${sy} `
+          + `C ${c1x},${sy} ${c2xTop},${yt} ${xIn},${yt} `
+          + `L ${xt - radius},${yt} `
+          + `A ${radius},${radius} 0 0 1 ${xt},${yr1} `
+          + `L ${xt},${yr2} `
+          + `A ${radius},${radius} 0 0 1 ${xt - radius},${yb} `
+          + `L ${xIn},${yb} `
+          + `C ${c2xBot},${yb} ${c1x},${sy} ${sx},${sy} Z`
 
       setOutlineD(d)
       return
@@ -222,21 +225,21 @@ export function SideTabsWrapper({
     const yr1 = yTop + radius // 右上圆角切点 y
     const yr2 = yBottom - radius // 右下圆角切点 y
 
-    const d =
-      `M ${sx},${sy} ` +
+    const d
+      = `M ${sx},${sy} `
       // 进入顶部：最后一个控制点与终点同高(yTop)，保证与水平顶边切线连续
-      `C ${sx},${curveMidY} ${rightCtrlX},${yTop} ${entryRight - tailWidth * 0.2},${yTop} ` +
-      `L ${xt},${yTop} ` +
-      `A ${radius},${radius} 0 0 1 ${xr},${yr1} ` +
-      `L ${xr},${yr2} ` +
-      `A ${radius},${radius} 0 0 1 ${xt},${yBottom} ` +
-      `L ${xl + radius},${yBottom} ` +
-      `A ${radius},${radius} 0 0 1 ${xl},${yBottom - radius} ` +
-      `L ${xl},${yTop + radius} ` +
-      `A ${radius},${radius} 0 0 1 ${xl + radius},${yTop} ` +
+        + `C ${sx},${curveMidY} ${rightCtrlX},${yTop} ${entryRight - tailWidth * 0.2},${yTop} `
+        + `L ${xt},${yTop} `
+        + `A ${radius},${radius} 0 0 1 ${xr},${yr1} `
+        + `L ${xr},${yr2} `
+        + `A ${radius},${radius} 0 0 1 ${xt},${yBottom} `
+        + `L ${xl + radius},${yBottom} `
+        + `A ${radius},${radius} 0 0 1 ${xl},${yBottom - radius} `
+        + `L ${xl},${yTop + radius} `
+        + `A ${radius},${radius} 0 0 1 ${xl + radius},${yTop} `
       // 离开顶部：第一个控制点与起点同高(yTop)，保证与水平顶边切线连续
-      `C ${leftCtrlX},${yTop} ${sx},${curveMidY} ${sx},${sy} ` +
-      `Z`
+        + `C ${leftCtrlX},${yTop} ${sx},${curveMidY} ${sx},${sy} `
+        + `Z`
 
     setOutlineD(d)
   }, [active, box, offsetX, orientation, padding, radius, controlDown])
@@ -260,9 +263,12 @@ export function SideTabsWrapper({
     const ro = new ResizeObserver(() => {
       recomputeGeometry()
     })
-    if (containerRef.current) ro.observe(containerRef.current)
-    if (tabsRef.current) ro.observe(tabsRef.current)
-    if (contentRef.current) ro.observe(contentRef.current)
+    if (containerRef.current)
+      ro.observe(containerRef.current)
+    if (tabsRef.current)
+      ro.observe(tabsRef.current)
+    if (contentRef.current)
+      ro.observe(contentRef.current)
 
     const onScrollOrResize = () => {
       recomputeGeometry()
@@ -276,7 +282,7 @@ export function SideTabsWrapper({
     }
   }, [recomputeGeometry])
 
-  const value: SideTabsContextValue = {
+  const value: SideTabsContextValue = useMemo(() => ({
     active,
     setActive,
     box,
@@ -289,7 +295,7 @@ export function SideTabsWrapper({
     computeOutline,
     recomputeGeometry,
     padding,
-  }
+  }), [active, setActive, box, outlineD, containerRef, tabsRef, btnRefs, contentRef, computeBox, computeOutline, recomputeGeometry, padding])
 
   return (
     <SideTabsContext value={value}>
@@ -314,7 +320,7 @@ export function SideTabs({
   orientation = 'vertical',
   className,
   ...props
-}: PropsWithChildren<{ orientation?: 'horizontal' | 'vertical'; className?: string }>) {
+}: PropsWithChildren<{ orientation?: 'horizontal' | 'vertical', className?: string }>) {
   const { tabsRef } = useSideTabsContext()
 
   return (
@@ -353,6 +359,7 @@ export function Tab({
       key={id}
       size={isMobile ? 'icon' : 'sm'}
       ref={(el) => {
+        // eslint-disable-next-line react-hooks/immutability
         btnRefs.current[id] = el
       }}
       variant={active === id ? 'default' : 'secondary'}
@@ -376,22 +383,22 @@ export function ViewPort({
   fill?: string
   stroke?: string
   strokeWidth?: number
-  items: { id: string; content: ReactNode }[]
+  items: { id: string, content: ReactNode }[]
   className?: string
 }) {
   const { box, outlineD, contentRef, active, padding } = useSideTabsContext()
-  const activeItem = useMemo(() => items.find((item) => item.id === active), [items, active])
+  const activeItem = useMemo(() => items.find(item => item.id === active), [items, active])
   return (
     <>
       <svg
-        className='absolute inset-0 block z-1'
-        width='100%'
-        height='100%'
+        className="absolute inset-0 block z-1"
+        width="100%"
+        height="100%"
         style={{ overflow: 'visible', pointerEvents: 'none', zIndex: -1 }}
       >
         <defs>
-          <filter id='soft-shadow' x='-20%' y='-20%' width='140%' height='140%'>
-            <feDropShadow dx='0' dy='1' stdDeviation='1.5' floodOpacity='0.12' />
+          <filter id="soft-shadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="1" stdDeviation="1.5" floodOpacity="0.12" />
           </filter>
         </defs>
 
@@ -404,17 +411,17 @@ export function ViewPort({
             fill={fill}
             stroke={stroke}
             strokeWidth={strokeWidth}
-            strokeLinecap='round'
-            strokeLinejoin='round'
-            vectorEffect='non-scaling-stroke'
-            shapeRendering='geometricPrecision'
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            vectorEffect="non-scaling-stroke"
+            shapeRendering="geometricPrecision"
           />
         )}
       </svg>
       <svg
-        className='absolute inset-0 block z-1'
-        width='100%'
-        height='100%'
+        className="absolute inset-0 block z-1"
+        width="100%"
+        height="100%"
         style={{ overflow: 'visible', pointerEvents: 'none' }}
       >
         {/* 内容：被闭合路径“包裹”的区域（与盒几何一致） */}
@@ -429,7 +436,7 @@ export function ViewPort({
             }}
           >
             <div ref={contentRef}>
-              <AnimatePresence mode='wait'>
+              <AnimatePresence mode="wait">
                 {activeItem && (
                   <motion.div
                     key={activeItem.id}

@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -6,7 +7,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
 
 interface DeleteResumeDialogProps {
   resumeName: string
@@ -22,16 +22,20 @@ export function DeleteResumeDialog({ resumeName, open, onOpenChange, onConfirm }
         <DialogHeader>
           <DialogTitle>确认删除简历?</DialogTitle>
           <DialogDescription>
-            你确定要删除 <span className='font-semibold text-foreground'>{resumeName}</span> 吗？
+            你确定要删除
+            {' '}
+            <span className="font-semibold text-foreground">{resumeName}</span>
+            {' '}
+            吗？
             <br />
             此操作无法撤销，简历的所有数据将被永久删除。
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button variant='outline' onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
             取消
           </Button>
-          <Button variant='destructive' onClick={onConfirm}>
+          <Button variant="destructive" onClick={onConfirm}>
             删除
           </Button>
         </DialogFooter>

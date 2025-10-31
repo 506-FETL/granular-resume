@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import type { ORDERType } from '@/lib/schema'
 import {
   Award,
@@ -13,7 +14,6 @@ import {
   UserCheck,
   UserRound,
 } from 'lucide-react'
-import type { ReactNode } from 'react'
 import ApplicationInfoForm from '../components/forms/ApplicationInfoForm'
 import BasicResumeForm from '../components/forms/BasicResumeForm'
 import CampusExperienceForm from '../components/forms/CampusExperienceForm'

@@ -1,4 +1,5 @@
-import { RealtimeChannel, REALTIME_SUBSCRIBE_STATES } from '@supabase/supabase-js'
+import type { RealtimeChannel } from '@supabase/supabase-js'
+import { REALTIME_SUBSCRIBE_STATES } from '@supabase/supabase-js'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import supabase from '@/lib/supabase/client'
 
@@ -6,10 +7,7 @@ import supabase from '@/lib/supabase/client'
  * Throttle a callback to a certain delay, It will only call the callback if the delay has passed, with the arguments
  * from the last call
  */
-const useThrottleCallback = <Params extends unknown[], Return>(
-  callback: (...args: Params) => Return,
-  delay: number,
-) => {
+function useThrottleCallback<Params extends unknown[], Return>(callback: (...args: Params) => Return, delay: number) {
   const lastCall = useRef(0)
   const timeout = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -25,7 +23,8 @@ const useThrottleCallback = <Params extends unknown[], Return>(
         }
         lastCall.current = now
         callback(...args)
-      } else if (!timeout.current) {
+      }
+      else if (!timeout.current) {
         timeout.current = setTimeout(() => {
           lastCall.current = Date.now()
           timeout.current = null
@@ -43,7 +42,7 @@ const generateRandomNumber = () => Math.floor(Math.random() * 100)
 
 const EVENT_NAME = 'realtime-cursor-move'
 
-type CursorEventPayload = {
+interface CursorEventPayload {
   position: {
     x: number
     y: number
@@ -56,7 +55,7 @@ type CursorEventPayload = {
   timestamp: number
 }
 
-export const useRealtimeCursors = ({
+export function useRealtimeCursors({
   roomName,
   username,
   throttleMs,
@@ -64,7 +63,7 @@ export const useRealtimeCursors = ({
   roomName: string
   username: string
   throttleMs: number
-}) => {
+}) {
   const [color] = useState(generateRandomColor())
   const [userId] = useState(generateRandomNumber())
   const [cursors, setCursors] = useState<Record<string, CursorEventPayload>>({})
@@ -85,7 +84,7 @@ export const useRealtimeCursors = ({
           id: userId,
           name: username,
         },
-        color: color,
+        color,
         timestamp: new Date().getTime(),
       }
 
@@ -94,7 +93,7 @@ export const useRealtimeCursors = ({
       channelRef.current?.send({
         type: 'broadcast',
         event: EVENT_NAME,
-        payload: payload,
+        payload,
       })
     },
     [color, userId, username],
@@ -107,7 +106,7 @@ export const useRealtimeCursors = ({
 
     channel
       .on('presence', { event: 'leave' }, ({ leftPresences }) => {
-        leftPresences.forEach(function (element) {
+        leftPresences.forEach((element) => {
           // Remove cursor when user leaves
           setCursors((prev) => {
             if (prev[element.key]) {
@@ -119,7 +118,8 @@ export const useRealtimeCursors = ({
         })
       })
       .on('presence', { event: 'join' }, () => {
-        if (!cursorPayload.current) return
+        if (!cursorPayload.current)
+          return
 
         // All cursors broadcast their position when a new cursor joins
         channelRef.current?.send({
@@ -131,7 +131,8 @@ export const useRealtimeCursors = ({
       .on('broadcast', { event: EVENT_NAME }, (data: { payload: CursorEventPayload }) => {
         const { user } = data.payload
         // Don't render your own cursor
-        if (user.id === userId) return
+        if (user.id === userId)
+          return
 
         setCursors((prev) => {
           if (prev[userId]) {
@@ -148,7 +149,8 @@ export const useRealtimeCursors = ({
         if (status === REALTIME_SUBSCRIBE_STATES.SUBSCRIBED) {
           await channel.track({ key: userId })
           channelRef.current = channel
-        } else {
+        }
+        else {
           setCursors({})
           channelRef.current = null
         }

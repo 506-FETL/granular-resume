@@ -34,19 +34,19 @@ export function useScrolling(
     const on = (
       el: EventTargetWithScroll,
       event: string,
-      handler: EventListener,
+      handler: (event: Event) => void,
     ) => el.addEventListener(event, handler, { passive: true })
 
     const off = (
       el: EventTargetWithScroll,
       event: string,
-      handler: EventListener,
+      handler: (event: Event) => void,
     ) => el.removeEventListener(event, handler)
 
     let timeout: ReturnType<typeof setTimeout>
     const supportsScrollEnd = element === window && 'onscrollend' in window
 
-    const handleScroll: EventListener = () => {
+    const handleScroll: (event: Event) => void = () => {
       if (!isScrolling)
         setIsScrolling(true)
 
@@ -56,7 +56,7 @@ export function useScrolling(
       }
     }
 
-    const handleScrollEnd: EventListener = () => setIsScrolling(false)
+    const handleScrollEnd: (event: Event) => void = () => setIsScrolling(false)
 
     on(eventTarget, 'scroll', handleScroll)
     if (supportsScrollEnd) {

@@ -1,8 +1,8 @@
 import type { CollaborationCallbacks } from '@/lib/automerge/supabase-network-adapter'
-import { clearStoredSession, rememberSessionRole } from '@/lib/collaboration/session-storage'
-import useResumeStore from '@/store/resume/form'
 import { toast } from 'sonner'
 import { create } from 'zustand'
+import { clearStoredSession, rememberSessionRole } from '@/lib/collaboration/session-storage'
+import useResumeStore from '@/store/resume/form'
 
 type CollaborationRole = 'host' | 'guest'
 
@@ -100,10 +100,11 @@ const useCollaborationStore = create<CollaborationState>()((set, get) => ({
         set({ channelName })
       },
       onPeerJoin: ({ peerId, metadata }) => {
-        if (peerId === adapterPeerId) return
+        if (peerId === adapterPeerId)
+          return
         const displayName = metadata?.userName || metadata?.name || `协作者 ${peerId.slice(-4)}`
         toast.success(`${displayName} 加入协作`, { description: '已同步最新内容' })
-        set((state) => ({
+        set(state => ({
           participants: {
             ...state.participants,
             [peerId]: {
@@ -172,7 +173,8 @@ const useCollaborationStore = create<CollaborationState>()((set, get) => ({
       rememberSessionRole({ sessionId, resumeId, userId, role: 'host' })
 
       toast.success('已开启实时协作', { description: '现在可以将链接分享给他人了' })
-    } catch (error) {
+    }
+    catch (error) {
       const message = error instanceof Error ? error.message : '开启协作失败'
       set({ isConnecting: false, error: message })
       toast.error(message)
@@ -214,10 +216,11 @@ const useCollaborationStore = create<CollaborationState>()((set, get) => ({
         set({ channelName })
       },
       onPeerJoin: ({ peerId, metadata }) => {
-        if (peerId === adapterPeerId) return
+        if (peerId === adapterPeerId)
+          return
         const displayName = metadata?.userName || metadata?.name || `协作者 ${peerId.slice(-4)}`
         toast.success(`${displayName} 加入协作`, { description: '已同步最新内容' })
-        set((state) => ({
+        set(state => ({
           participants: {
             ...state.participants,
             [peerId]: {
@@ -282,7 +285,8 @@ const useCollaborationStore = create<CollaborationState>()((set, get) => ({
       rememberSessionRole({ sessionId, resumeId, userId, role: 'guest' })
 
       toast.info('已加入实时协作', { description: '正在与发起者同步内容' })
-    } catch (error) {
+    }
+    catch (error) {
       const message = error instanceof Error ? error.message : '加入协作失败'
       set({ isConnecting: false, error: message })
       toast.error(message)
@@ -317,10 +321,11 @@ const useCollaborationStore = create<CollaborationState>()((set, get) => ({
         set({ channelName })
       },
       onPeerJoin: ({ peerId, metadata }) => {
-        if (peerId === adapterPeerId) return
+        if (peerId === adapterPeerId)
+          return
         const displayName = metadata?.userName || metadata?.name || `协作者 ${peerId.slice(-4)}`
         toast.success(`${displayName} 加入协作`, { description: '已同步最新内容' })
-        set((state) => ({
+        set(state => ({
           participants: {
             ...state.participants,
             [peerId]: {
@@ -383,7 +388,8 @@ const useCollaborationStore = create<CollaborationState>()((set, get) => ({
       rememberSessionRole({ sessionId, resumeId, userId, role: 'host' })
 
       toast.success('已恢复实时协作', { description: '协作者可以继续编辑' })
-    } catch (error) {
+    }
+    catch (error) {
       const message = error instanceof Error ? error.message : '恢复协作失败'
       set({ isConnecting: false, error: message })
       toast.error(message)
@@ -405,7 +411,8 @@ const useCollaborationStore = create<CollaborationState>()((set, get) => ({
 
     try {
       docManager?.disableCollaboration()
-    } catch (error: any) {
+    }
+    catch (error: any) {
       toast.error('关闭协作时出错，请重试', error.message)
     }
 
@@ -436,7 +443,8 @@ const useCollaborationStore = create<CollaborationState>()((set, get) => ({
 
   handleRemoteShareEnd: () => {
     const { role, sessionId, resumeId, selfUserId } = get()
-    if (!role) return
+    if (!role)
+      return
 
     const docManager = useResumeStore.getState().docManager
     docManager?.disableCollaboration()
@@ -478,18 +486,19 @@ function createSessionId() {
     if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
       const buffer = new Uint8Array(12)
       crypto.getRandomValues(buffer)
-      return Array.from(buffer, (byte) => byte.toString(36)[0])
+      return Array.from(buffer, byte => byte.toString(36)[0])
         .join('')
         .slice(0, 16)
     }
-  } catch {
+  }
+  catch {
     // ignore
   }
   return Math.random().toString(36).slice(2, 18)
 }
 
 function buildShareUrl(resumeId: string, sessionId: string) {
-  const url = new URL(window.location.origin + '/editor')
+  const url = new URL(`${window.location.origin}/editor`)
   url.searchParams.set('resumeId', resumeId)
   url.searchParams.set('collabSession', sessionId)
   // 不再在分享链接中包含本地 documentUrl（automerge handle URL），

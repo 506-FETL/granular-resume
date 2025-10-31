@@ -1,4 +1,5 @@
-import { useEffect, type ReactNode } from 'react'
+import type { ReactNode } from 'react'
+import { useEffect } from 'react'
 import { useDrag } from '@/contexts/DragContext'
 
 interface DraggableListProps<T> {
@@ -12,7 +13,8 @@ export function DraggableList<T>({ items, onOrderChange, children }: DraggableLi
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      if (!draggedItem) return
+      if (!draggedItem)
+        return
       // 实时更新 overIndex，触发子元素重新计算偏移量
       updateOverIndex(e.clientX, e.clientY)
     }
@@ -44,5 +46,5 @@ export function DraggableList<T>({ items, onOrderChange, children }: DraggableLi
     }
   }, [draggedItem, overIndex, items, endDrag, updateOverIndex, onOrderChange])
 
-  return <div className='relative '>{children}</div>
+  return <div className="relative ">{children}</div>
 }

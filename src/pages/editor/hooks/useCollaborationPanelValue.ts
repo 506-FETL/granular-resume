@@ -1,13 +1,13 @@
-import { useIsMobile } from '@/hooks/use-mobile'
-import { getStoredSessionRole } from '@/lib/collaboration/session-storage'
+import type { CollaborationPanelContextValue } from '../components/collaboration-types'
 import type { SupabaseUser } from '@/pages/editor/types'
-import useCollaborationStore from '@/store/collaboration'
-import useResumeStore from '@/store/resume/form'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
+import { useIsMobile } from '@/hooks/use-mobile'
+import { getStoredSessionRole } from '@/lib/collaboration/session-storage'
+import useCollaborationStore from '@/store/collaboration'
 
-import type { CollaborationPanelContextValue } from '../components/collaboration-types'
+import useResumeStore from '@/store/resume/form'
 
 interface UseCollaborationPanelValueParams {
   currentUser: SupabaseUser
@@ -57,9 +57,12 @@ export function useCollaborationPanelValue({
   const participantCount = useMemo(() => Object.keys(participants).length, [participants])
 
   const collabDisabledReason = useMemo(() => {
-    if (mode !== 'online') return '离线简历暂不支持实时协作'
-    if (!currentUser) return '请先登录以启用实时协作'
-    if (!isDocumentInitialized) return '数据加载中，请稍候'
+    if (mode !== 'online')
+      return '离线简历暂不支持实时协作'
+    if (!currentUser)
+      return '请先登录以启用实时协作'
+    if (!isDocumentInitialized)
+      return '数据加载中，请稍候'
     return null
   }, [mode, currentUser, isDocumentInitialized])
 
@@ -69,7 +72,8 @@ export function useCollaborationPanelValue({
   const handleManualSync = useCallback(() => manualSync(), [manualSync])
 
   const handleStartSharing = useCallback(async () => {
-    if (!activeResumeId || !currentUser) return
+    if (!activeResumeId || !currentUser)
+      return
     try {
       await startSharing({
         resumeId: activeResumeId,
@@ -85,7 +89,8 @@ export function useCollaborationPanelValue({
         setJoinedSessionId(newSessionId)
         setLastStoppedSessionId(null)
       }
-    } catch (error: any) {
+    }
+    catch (error: any) {
       toast.error('开启实时协作失败，请稍后重试', error?.message)
     }
   }, [activeResumeId, currentUser, setSearchParams, startSharing, userDisplayName])
@@ -110,7 +115,8 @@ export function useCollaborationPanelValue({
   }, [collaborationRole, navigate, sessionId, setSearchParams, stopSharing])
 
   const handleCopyShareLink = useCallback(() => {
-    if (!shareUrl) return
+    if (!shareUrl)
+      return
     if (!canCopyLink) {
       toast.info('请手动复制链接')
       return
@@ -124,7 +130,8 @@ export function useCollaborationPanelValue({
   const canStartSharing = Boolean(activeResumeId && currentUser && !collabDisabledReason && !isCollabConnecting)
 
   const sessionRoleHint = useMemo(() => {
-    if (!collabSessionParam || !activeResumeId || !currentUser) return null
+    if (!collabSessionParam || !activeResumeId || !currentUser)
+      return null
     return getStoredSessionRole(collabSessionParam, activeResumeId, currentUser.id)
   }, [collabSessionParam, activeResumeId, currentUser])
 
@@ -135,11 +142,16 @@ export function useCollaborationPanelValue({
   }, [collabSessionParam, joinedSessionId])
 
   useEffect(() => {
-    if (!collabSessionParam || !activeResumeId) return
-    if (isSharing) return
-    if (lastStoppedSessionId && collabSessionParam === lastStoppedSessionId) return
-    if (joinedSessionId === collabSessionParam) return
-    if (!isDocumentInitialized || mode !== 'online' || !currentUser) return
+    if (!collabSessionParam || !activeResumeId)
+      return
+    if (isSharing)
+      return
+    if (lastStoppedSessionId && collabSessionParam === lastStoppedSessionId)
+      return
+    if (joinedSessionId === collabSessionParam)
+      return
+    if (!isDocumentInitialized || mode !== 'online' || !currentUser)
+      return
 
     const payload = {
       sessionId: collabSessionParam,
@@ -168,7 +180,8 @@ export function useCollaborationPanelValue({
   ])
 
   useEffect(() => {
-    if (!shareEndedByRemote) return
+    if (!shareEndedByRemote)
+      return
     acknowledgeRemoteShareEnd()
     navigate('/resume')
   }, [acknowledgeRemoteShareEnd, navigate, shareEndedByRemote])

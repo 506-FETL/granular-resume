@@ -47,6 +47,6 @@ export const DEFAULT_ORDER: ORDERType[] = [
   'hobbies',
 ]
 
+export * from './config'
 export * from './form'
 export * from './visibility'
-export * from './config'

@@ -1,13 +1,13 @@
-import { createContext, useContext } from 'react'
-
 import type { CollaborationPanelContextValue, CollaborationPanelProviderProps } from './collaboration-types'
+
+import { createContext, use } from 'react'
 import { useCollaborationPanelValue } from '../hooks/useCollaborationPanelValue'
 
 const CollaborationPanelContext = createContext<CollaborationPanelContextValue | undefined>(undefined)
 
 // eslint-disable-next-line react-refresh/only-export-components
 export function useCollaborationPanel() {
-  const context = useContext(CollaborationPanelContext)
+  const context = use(CollaborationPanelContext)
 
   if (!context) {
     throw new Error('useCollaborationPanel must be used within CollaborationPanelProvider')

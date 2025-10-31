@@ -1,7 +1,10 @@
-import { DocumentManager } from '@/lib/automerge/document-manager'
-import type { AutomergeResumeDocument } from '@/lib/automerge/schema'
 import type { DocHandle } from '@automerge/automerge-repo'
+import type { AutomergeResumeDocument } from '@/lib/automerge/schema'
+import type { ApplicationInfoFormType, BasicFormType, CampusExperienceFormType, EduBackgroundFormType, HobbiesFormType, HonorsCertificatesFormType, InternshipExperienceFormType, JobIntentFormType, ORDERType, ProjectExperienceFormType, SelfEvaluationFormType, SkillSpecialtyFormType, VisibilityItemsType, WorkExperienceFormType } from '@/lib/schema'
+import { create } from 'zustand'
+import { DocumentManager } from '@/lib/automerge/document-manager'
 import {
+
   DEFAULT_APPLICATION_INFO,
   DEFAULT_BASICS,
   DEFAULT_CAMPUS_EXPERIENCE,
@@ -16,22 +19,8 @@ import {
   DEFAULT_SKILL_SPECIALTY,
   DEFAULT_VISIBILITY,
   DEFAULT_WORK_EXPERIENCE,
-  type ApplicationInfoFormType,
-  type BasicFormType,
-  type CampusExperienceFormType,
-  type EduBackgroundFormType,
-  type HobbiesFormType,
-  type HonorsCertificatesFormType,
-  type InternshipExperienceFormType,
-  type JobIntentFormType,
-  type ORDERType,
-  type ProjectExperienceFormType,
-  type SelfEvaluationFormType,
-  type SkillSpecialtyFormType,
-  type VisibilityItemsType,
-  type WorkExperienceFormType,
+
 } from '@/lib/schema'
-import { create } from 'zustand'
 
 // 表单数据映射
 interface FormDataMap {
@@ -136,7 +125,6 @@ const useAutomergeResumeStore = create<AutomergeResumeState>()((set, get) => ({
 
       // 监听 handle 的删除事件（调试用）
       handle.on('delete', () => {
-        // eslint-disable-next-line no-console
         console.warn('⚠️ 文档被删除')
       })
 
@@ -149,7 +137,6 @@ const useAutomergeResumeStore = create<AutomergeResumeState>()((set, get) => ({
 
       const changeHandler = ({ doc, patches, patchInfo }: any) => {
         if (!doc) {
-          // eslint-disable-next-line no-console
           console.warn('⚠️ 收到空的文档更新')
           return
         }
@@ -226,8 +213,8 @@ const useAutomergeResumeStore = create<AutomergeResumeState>()((set, get) => ({
 
       // eslint-disable-next-line no-console
       console.log('🎉 Store 初始化完成')
-    } catch (error) {
-      // eslint-disable-next-line no-console
+    }
+    catch (error) {
       console.error('❌ 初始化失败', error)
 
       const errorMessage = error instanceof Error ? error.message : '初始化失败'
@@ -242,7 +229,7 @@ const useAutomergeResumeStore = create<AutomergeResumeState>()((set, get) => ({
   /**
    * 更新活动标签页 (仅 UI 状态)
    */
-  updateActiveTabId: (newActiveTab) => set({ activeTabId: newActiveTab }),
+  updateActiveTabId: newActiveTab => set({ activeTabId: newActiveTab }),
 
   /**
    * 更新表单数据
@@ -250,7 +237,6 @@ const useAutomergeResumeStore = create<AutomergeResumeState>()((set, get) => ({
   updateForm: (key, data) => {
     const { docManager } = get()
     if (!docManager) {
-      // eslint-disable-next-line no-console
       console.error('❌ docManager 未初始化，无法更新')
       return
     }
@@ -274,7 +260,8 @@ const useAutomergeResumeStore = create<AutomergeResumeState>()((set, get) => ({
    */
   updateOrder: (newOrder) => {
     const { docManager } = get()
-    if (!docManager) return
+    if (!docManager)
+      return
 
     docManager.change((doc) => {
       doc.order = newOrder
@@ -286,7 +273,8 @@ const useAutomergeResumeStore = create<AutomergeResumeState>()((set, get) => ({
    */
   toggleVisibility: (id) => {
     const { docManager, visibility } = get()
-    if (!docManager) return
+    if (!docManager)
+      return
 
     docManager.change((doc) => {
       if (!doc.visibility) {
@@ -301,7 +289,8 @@ const useAutomergeResumeStore = create<AutomergeResumeState>()((set, get) => ({
    */
   setVisibility: (id, isHidden) => {
     const { docManager } = get()
-    if (!docManager) return
+    if (!docManager)
+      return
 
     docManager.change((doc) => {
       if (!doc.visibility) {
@@ -316,7 +305,8 @@ const useAutomergeResumeStore = create<AutomergeResumeState>()((set, get) => ({
    */
   manualSync: async () => {
     const { docManager, docHandle } = get()
-    if (!docManager || !docHandle) return
+    if (!docManager || !docHandle)
+      return
 
     set({ isSyncing: true })
 
@@ -327,7 +317,8 @@ const useAutomergeResumeStore = create<AutomergeResumeState>()((set, get) => ({
         lastSyncTime: Date.now(),
         syncError: null,
       })
-    } catch (error) {
+    }
+    catch (error) {
       set({
         isSyncing: false,
         syncError: error instanceof Error ? error.message : '同步失败',

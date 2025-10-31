@@ -4,8 +4,9 @@
  * 使用 IndexedDB 存储本地简历
  */
 
+import type { DBSchema, IDBPDatabase } from 'idb'
 import type { ResumeSchema } from '@/lib/schema'
-import { openDB, type DBSchema, type IDBPDatabase } from 'idb'
+import { openDB } from 'idb'
 
 interface ResumeDB extends DBSchema {
   resumes: {
@@ -35,7 +36,8 @@ let dbInstance: IDBPDatabase<ResumeDB> | null = null
  * 获取或创建数据库实例
  */
 async function getDB(): Promise<IDBPDatabase<ResumeDB>> {
-  if (dbInstance) return dbInstance
+  if (dbInstance)
+    return dbInstance
 
   dbInstance = await openDB<ResumeDB>(DB_NAME, DB_VERSION, {
     upgrade(db) {
@@ -110,7 +112,7 @@ export async function getOfflineResumeById(resumeId: string) {
  */
 export async function updateOfflineResume(
   resumeId: string,
-  data: Partial<ResumeSchema> & { order?: any; visibility?: any },
+  data: Partial<ResumeSchema> & { order?: any, visibility?: any },
 ) {
   const db = await getDB()
   const resume = await db.get('resumes', resumeId)
@@ -130,7 +132,7 @@ export async function updateOfflineResume(
 /**
  * 更新简历元信息
  */
-export async function updateOfflineResumeMeta(resumeId: string, meta: { display_name?: string; description?: string }) {
+export async function updateOfflineResumeMeta(resumeId: string, meta: { display_name?: string, description?: string }) {
   const db = await getDB()
   const resume = await db.get('resumes', resumeId)
 
@@ -138,8 +140,10 @@ export async function updateOfflineResumeMeta(resumeId: string, meta: { display_
     throw new Error('简历不存在')
   }
 
-  if (meta.display_name !== undefined) resume.display_name = meta.display_name
-  if (meta.description !== undefined) resume.description = meta.description
+  if (meta.display_name !== undefined)
+    resume.display_name = meta.display_name
+  if (meta.description !== undefined)
+    resume.description = meta.description
   resume.updated_at = new Date().toISOString()
 
   await db.put('resumes', resume)
@@ -179,14 +183,14 @@ export async function clearAllOfflineResumes() {
  * 用于登录后同步本地数据
  */
 export async function migrateOfflineResumesToCloud(
-  uploadFn: (resume: { display_name: string; description?: string; type: string; data: any }) => Promise<string>,
+  uploadFn: (resume: { display_name: string, description?: string, type: string, data: any }) => Promise<string>,
   selectedIds?: string[],
-): Promise<{ success: number; failed: number; errors: string[] }> {
+): Promise<{ success: number, failed: number, errors: string[] }> {
   let offlineResumes = await getAllOfflineResumes()
 
   // 如果指定了选择的ID，只迁移这些简历
   if (selectedIds && selectedIds.length > 0) {
-    offlineResumes = offlineResumes.filter((r) => selectedIds.includes(r.resume_id))
+    offlineResumes = offlineResumes.filter(r => selectedIds.includes(r.resume_id))
   }
 
   if (offlineResumes.length === 0) {
@@ -214,7 +218,8 @@ export async function migrateOfflineResumesToCloud(
       await deleteOfflineResume(resume.resume_id)
       success++
       console.log(`✅ 成功迁移简历: ${resume.display_name}`)
-    } catch (error) {
+    }
+    catch (error) {
       failed++
       const errorMsg = error instanceof Error ? error.message : '未知错误'
       errors.push(`${resume.display_name}: ${errorMsg}`)

@@ -1,3 +1,11 @@
+import type { Degree, EduBackgroundFormType } from '@/lib/schema'
+import type { ShallowPartial } from '@/lib/utils'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { IconMichelinBibGourmand } from '@tabler/icons-react'
+import { Baby, Plus, Trash2 } from 'lucide-react'
+import { motion } from 'motion/react'
+import { useEffect } from 'react'
+import { useFieldArray, useForm } from 'react-hook-form'
 import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
@@ -7,17 +15,9 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { useIsMobile } from '@/hooks/use-mobile'
-import type { Degree, EduBackgroundFormType } from '@/lib/schema'
 import { DEFAULT_EDU_BACKGROUND, eduBackgroundFormSchema } from '@/lib/schema'
-import type { ShallowPartial } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 import useResumeStore from '@/store/resume/form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { IconMichelinBibGourmand } from '@tabler/icons-react'
-import { Baby, Plus, Trash2 } from 'lucide-react'
-import { motion } from 'motion/react'
-import { useEffect } from 'react'
-import { useFieldArray, useForm } from 'react-hook-form'
 
 const degreeOptions: Degree[] = [
   '不填',
@@ -35,8 +35,8 @@ const degreeOptions: Degree[] = [
 ]
 
 function EduBackgroundForm({ className }: { className?: string }) {
-  const eduBackground = useResumeStore((state) => state.eduBackground)
-  const updateForm = useResumeStore((state) => state.updateForm)
+  const eduBackground = useResumeStore(state => state.eduBackground)
+  const updateForm = useResumeStore(state => state.updateForm)
   const isMobile = useIsMobile()
 
   const form = useForm({
@@ -66,32 +66,32 @@ function EduBackgroundForm({ className }: { className?: string }) {
 
   return (
     <Form {...form}>
-      <form id='edu-background-form' className={cn('space-y-6', className)}>
+      <form id="edu-background-form" className={cn('space-y-6', className)}>
         {fields.map((item, index) => (
           <motion.div key={item.id} layout>
-            {index > 0 && <Separator className='my-6' />}
+            {index > 0 && <Separator className="my-6" />}
 
-            <div className='space-y-4'>
-              <div className='flex items-center justify-between'>
-                <h3 className='text-sm font-medium text-muted-foreground'>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-medium text-muted-foreground">
                   教育背景
                   {fields.length > 1 ? `#${index + 1}` : ''}
                 </h3>
                 {fields.length > 1 && (
                   <Button
-                    type='button'
-                    variant='ghost'
-                    size='sm'
+                    type="button"
+                    variant="ghost"
+                    size="sm"
                     onClick={() => remove(index)}
-                    className='h-8 text-destructive hover:text-destructive'
+                    className="h-8 text-destructive hover:text-destructive"
                   >
-                    <Trash2 className='h-4 w-4' />
-                    {!isMobile && <span className='ml-1'>删除</span>}
+                    <Trash2 className="h-4 w-4" />
+                    {!isMobile && <span className="ml-1">删除</span>}
                   </Button>
                 )}
               </div>
 
-              <section className='grid gap-4 justify-items-start sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4'>
+              <section className="grid gap-4 justify-items-start sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
                 <FormField
                   name={`items.${index}.schoolName`}
                   control={form.control}
@@ -99,7 +99,7 @@ function EduBackgroundForm({ className }: { className?: string }) {
                     <FormItem>
                       <FormLabel>学校</FormLabel>
                       <FormControl>
-                        <Input placeholder='请输入学校名称' {...field} />
+                        <Input placeholder="请输入学校名称" {...field} />
                       </FormControl>
                     </FormItem>
                   )}
@@ -112,7 +112,7 @@ function EduBackgroundForm({ className }: { className?: string }) {
                     <FormItem>
                       <FormLabel>专业</FormLabel>
                       <FormControl>
-                        <Input placeholder='请输入所学专业' {...field} />
+                        <Input placeholder="请输入所学专业" {...field} />
                       </FormControl>
                     </FormItem>
                   )}
@@ -124,20 +124,20 @@ function EduBackgroundForm({ className }: { className?: string }) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>就读时间</FormLabel>
-                      <div className='flex items-center gap-2 flex-wrap sm:flex-nowrap'>
+                      <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
                         <Popover>
                           <PopoverTrigger asChild>
-                            <Button variant='outline' className='w-full sm:w-auto justify-start text-left font-normal'>
+                            <Button variant="outline" className="w-full sm:w-auto justify-start text-left font-normal">
                               {field.value?.[0] || '入学年月'}
-                              <Baby className='ml-auto h-4 w-4 opacity-50' />
+                              <Baby className="ml-auto h-4 w-4 opacity-50" />
                             </Button>
                           </PopoverTrigger>
-                          <PopoverContent align='start' className='w-auto p-0'>
+                          <PopoverContent align="start" className="w-auto p-0">
                             <Calendar
-                              mode='single'
-                              captionLayout='dropdown'
+                              mode="single"
+                              captionLayout="dropdown"
                               defaultMonth={new Date(field.value?.[0] || '2002-1-1')}
-                              disabled={(date) => date > new Date()}
+                              disabled={date => date > new Date()}
                               selected={field.value?.[0] ? new Date(field.value[0]) : undefined}
                               onSelect={(date) => {
                                 field.onChange([date?.toLocaleDateString(), field.value?.[1]])
@@ -146,22 +146,22 @@ function EduBackgroundForm({ className }: { className?: string }) {
                           </PopoverContent>
                         </Popover>
 
-                        <span className='text-muted-foreground hidden sm:inline'>-</span>
+                        <span className="text-muted-foreground hidden sm:inline">-</span>
 
                         <Popover>
                           <PopoverTrigger asChild>
-                            <Button variant='outline' className='w-full sm:w-auto justify-start text-left font-normal'>
+                            <Button variant="outline" className="w-full sm:w-auto justify-start text-left font-normal">
                               {field.value?.[1] || '毕业年月'}
-                              <IconMichelinBibGourmand className='ml-auto h-4 w-4 opacity-50' />
+                              <IconMichelinBibGourmand className="ml-auto h-4 w-4 opacity-50" />
                             </Button>
                           </PopoverTrigger>
-                          <PopoverContent align='start' className='w-auto p-0'>
+                          <PopoverContent align="start" className="w-auto p-0">
                             <Calendar
-                              mode='single'
-                              captionLayout='dropdown'
+                              mode="single"
+                              captionLayout="dropdown"
                               defaultMonth={new Date(field.value?.[1] || '2002-1-1')}
                               selected={field.value?.[1] ? new Date(field.value[1]) : undefined}
-                              disabled={(date) => date > new Date()}
+                              disabled={date => date > new Date()}
                               onSelect={(date) => {
                                 field.onChange([field.value?.[0], date?.toLocaleDateString()])
                               }}
@@ -177,15 +177,15 @@ function EduBackgroundForm({ className }: { className?: string }) {
                   name={`items.${index}.degree`}
                   control={form.control}
                   render={({ field }) => (
-                    <FormItem className='w-full'>
+                    <FormItem className="w-full">
                       <FormLabel>学历</FormLabel>
                       <FormControl>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <SelectTrigger>
-                            <SelectValue placeholder='请选择学历' />
+                            <SelectValue placeholder="请选择学历" />
                           </SelectTrigger>
                           <SelectContent>
-                            {degreeOptions.map((option) => (
+                            {degreeOptions.map(option => (
                               <SelectItem key={option} value={option}>
                                 {option}
                               </SelectItem>
@@ -220,14 +220,14 @@ function EduBackgroundForm({ className }: { className?: string }) {
         ))}
 
         <Button
-          type='button'
-          variant='outline'
+          type="button"
+          variant="outline"
           size={isMobile ? 'sm' : 'default'}
           onClick={onAddItem}
-          className='w-full sm:w-auto'
+          className="w-full sm:w-auto"
         >
-          <Plus className='h-4 w-4' />
-          {!isMobile && <span className='ml-2'>添加教育背景</span>}
+          <Plus className="h-4 w-4" />
+          {!isMobile && <span className="ml-2">添加教育背景</span>}
         </Button>
       </form>
     </Form>

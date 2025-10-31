@@ -16,7 +16,8 @@ export async function hasOfflineResumesToSync() {
   try {
     const offlineResumes = await getAllOfflineResumes()
     return offlineResumes.length > 0
-  } catch {
+  }
+  catch {
     toast.error('检查本地简历失败，请稍后重试')
     return false
   }
@@ -91,7 +92,8 @@ export async function autoSyncOnLogin(): Promise<void> {
       console.error('同步失败的简历:', result.errors)
       toast.error(`部分简历同步失败，详情请查看控制台`)
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('自动同步失败:', error)
     toast.error('同步本地简历失败，请稍后重试')
   }

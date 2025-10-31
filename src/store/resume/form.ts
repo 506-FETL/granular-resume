@@ -1,7 +1,15 @@
-import { DocumentManager } from '@/lib/automerge/document-manager'
-import type { AutomergeResumeDocument } from '@/lib/automerge/schema'
 import type { DocHandle } from '@automerge/automerge-repo'
+import type { AutomergeResumeDocument } from '@/lib/automerge/schema'
+import type { ApplicationInfoFormType, BasicFormType, CampusExperienceFormType, EduBackgroundFormType, HobbiesFormType, HonorsCertificatesFormType, InternshipExperienceFormType, JobIntentFormType, ORDERType, ProjectExperienceFormType, SelfEvaluationFormType, SkillSpecialtyFormType, VisibilityItemsType, WorkExperienceFormType } from '@/lib/schema'
+import { create } from 'zustand'
+import { DocumentManager } from '@/lib/automerge/document-manager'
 import {
+  getOfflineResumeById,
+  isOfflineResumeId,
+  updateOfflineResume,
+} from '@/lib/offline-resume-manager'
+import {
+
   DEFAULT_APPLICATION_INFO,
   DEFAULT_BASICS,
   DEFAULT_CAMPUS_EXPERIENCE,
@@ -16,28 +24,9 @@ import {
   DEFAULT_SKILL_SPECIALTY,
   DEFAULT_VISIBILITY,
   DEFAULT_WORK_EXPERIENCE,
-  type ApplicationInfoFormType,
-  type BasicFormType,
-  type CampusExperienceFormType,
-  type EduBackgroundFormType,
-  type HobbiesFormType,
-  type HonorsCertificatesFormType,
-  type InternshipExperienceFormType,
-  type JobIntentFormType,
-  type ORDERType,
-  type ProjectExperienceFormType,
-  type SelfEvaluationFormType,
-  type SkillSpecialtyFormType,
-  type VisibilityItemsType,
-  type WorkExperienceFormType,
+
 } from '@/lib/schema'
 import { getCurrentUser } from '@/lib/supabase/user'
-import {
-  getOfflineResumeById,
-  updateOfflineResume,
-  isOfflineResumeId,
-} from '@/lib/offline-resume-manager'
-import { create } from 'zustand'
 import useCurrentResumeStore from './current'
 
 // 表单数据映射
@@ -92,7 +81,7 @@ interface ResumeState extends FormDataMap {
 let syncTimer: ReturnType<typeof setTimeout> | null = null
 const SYNC_DELAY = 3000
 
-const scheduleOfflinePersist = (flushFn: () => Promise<void>) => {
+function scheduleOfflinePersist(flushFn: () => Promise<void>) {
   if (syncTimer) {
     clearTimeout(syncTimer)
   }
@@ -130,7 +119,7 @@ const useResumeStore = create<ResumeState>()((set, get) => ({
   cleanupFns: [],
   isInitialized: false,
 
-  updateActiveTabId: (newActiveTab) => set({ activeTabId: newActiveTab }),
+  updateActiveTabId: newActiveTab => set({ activeTabId: newActiveTab }),
 
   updateForm: (key, data) => {
     const state = get()
@@ -138,7 +127,7 @@ const useResumeStore = create<ResumeState>()((set, get) => ({
     const resumeId = state.currentResumeId ?? useCurrentResumeStore.getState().resumeId
 
     if (!resumeId || state.mode === 'offline' || isOfflineResumeId(resumeId)) {
-      set((prev) => ({
+      set(prev => ({
         [key]: { ...prev[key], ...sanitized },
         pendingChanges: true,
       }))
@@ -146,7 +135,7 @@ const useResumeStore = create<ResumeState>()((set, get) => ({
       return
     }
 
-    set((prev) => ({
+    set(prev => ({
       [key]: { ...prev[key], ...sanitized },
       pendingChanges: true,
     }))
@@ -181,7 +170,7 @@ const useResumeStore = create<ResumeState>()((set, get) => ({
     const nextValue = !state.visibility[id]
 
     if (!resumeId || state.mode === 'offline' || isOfflineResumeId(resumeId)) {
-      set((prev) => ({
+      set(prev => ({
         visibility: { ...prev.visibility, [id]: nextValue },
         pendingChanges: true,
       }))
@@ -189,7 +178,7 @@ const useResumeStore = create<ResumeState>()((set, get) => ({
       return
     }
 
-    set((prev) => ({
+    set(prev => ({
       visibility: { ...prev.visibility, [id]: nextValue },
       pendingChanges: true,
     }))
@@ -202,14 +191,14 @@ const useResumeStore = create<ResumeState>()((set, get) => ({
     })
   },
 
-  getVisibility: (id) => get().visibility[id],
+  getVisibility: id => get().visibility[id],
 
   setVisibility: (id, isHidden) => {
     const state = get()
     const resumeId = state.currentResumeId ?? useCurrentResumeStore.getState().resumeId
 
     if (!resumeId || state.mode === 'offline' || isOfflineResumeId(resumeId)) {
-      set((prev) => ({
+      set(prev => ({
         visibility: { ...prev.visibility, [id]: isHidden },
         pendingChanges: true,
       }))
@@ -217,7 +206,7 @@ const useResumeStore = create<ResumeState>()((set, get) => ({
       return
     }
 
-    set((prev) => ({
+    set(prev => ({
       visibility: { ...prev.visibility, [id]: isHidden },
       pendingChanges: true,
     }))
@@ -249,7 +238,8 @@ const useResumeStore = create<ResumeState>()((set, get) => ({
           syncError: null,
           lastSyncTime: Date.now(),
         })
-      } catch (error) {
+      }
+      catch (error) {
         set({
           isSyncing: false,
           syncError: error instanceof Error ? error.message : '同步失败',
@@ -265,7 +255,8 @@ const useResumeStore = create<ResumeState>()((set, get) => ({
     set({ isSyncing: true })
     try {
       await state.docManager.saveToSupabase(state.docHandle)
-    } catch (error) {
+    }
+    catch (error) {
       set({
         isSyncing: false,
         syncError: error instanceof Error ? error.message : '同步失败',
@@ -285,7 +276,7 @@ const useResumeStore = create<ResumeState>()((set, get) => ({
     const { docManager, cleanupFns } = get()
 
     if (cleanupFns.length > 0) {
-      cleanupFns.forEach((fn) => fn())
+      cleanupFns.forEach(fn => fn())
     }
     if (docManager) {
       docManager.destroy()
@@ -336,9 +327,10 @@ const useResumeStore = create<ResumeState>()((set, get) => ({
       const doc = handle.doc()
 
       const changeHandler = ({ doc }: { doc: AutomergeResumeDocument | null }) => {
-        if (!doc) return
+        if (!doc)
+          return
 
-        set((prev) => ({
+        set(prev => ({
           ...prev,
           ...mapDocToState(doc),
           isInitialized: true,
@@ -360,7 +352,8 @@ const useResumeStore = create<ResumeState>()((set, get) => ({
             syncError: null,
             lastSyncTime: Date.now(),
           })
-        } else {
+        }
+        else {
           set({
             isSyncing: false,
             syncError: error instanceof Error ? error.message : '同步失败',
@@ -379,7 +372,8 @@ const useResumeStore = create<ResumeState>()((set, get) => ({
         mode: 'online',
         isInitialized: true,
       })
-    } catch (error) {
+    }
+    catch (error) {
       set({
         isSyncing: false,
         syncError: error instanceof Error ? error.message : '初始化失败',
@@ -411,7 +405,8 @@ const useResumeStore = create<ResumeState>()((set, get) => ({
     const state = get()
     if (state.mode === 'offline' || (state.currentResumeId && isOfflineResumeId(state.currentResumeId))) {
       scheduleOfflinePersist(() => get().syncToSupabase())
-    } else {
+    }
+    else {
       state.docManager?.change((doc) => {
         Object.assign(doc, mapDocToState(null))
       })
@@ -420,7 +415,7 @@ const useResumeStore = create<ResumeState>()((set, get) => ({
 
   cleanup: () => {
     const { cleanupFns, docManager } = get()
-    cleanupFns.forEach((fn) => fn())
+    cleanupFns.forEach(fn => fn())
     docManager?.destroy()
     if (syncTimer) {
       clearTimeout(syncTimer)
@@ -439,12 +434,13 @@ const useResumeStore = create<ResumeState>()((set, get) => ({
 
 function sanitizeDeep<T>(value: T): T {
   if (Array.isArray(value)) {
-    return value.map((item) => sanitizeDeep(item)) as unknown as T
+    return value.map(item => sanitizeDeep(item)) as unknown as T
   }
   if (value && typeof value === 'object') {
     const result: Record<string, unknown> = {}
     Object.entries(value as Record<string, unknown>).forEach(([key, val]) => {
-      if (val === undefined) return
+      if (val === undefined)
+        return
       result[key] = sanitizeDeep(val)
     })
     return result as T
@@ -454,7 +450,8 @@ function sanitizeDeep<T>(value: T): T {
 
 function applyPatch(target: Record<string, any>, patch: Partial<Record<string, any>>) {
   Object.entries(patch).forEach(([field, value]) => {
-    if (value === undefined) return
+    if (value === undefined)
+      return
     target[field] = value
   })
 }
@@ -476,34 +473,34 @@ function mapDocToState(doc: Partial<AutomergeResumeDocument> | null | undefined)
       (source?.workExperience as WorkExperienceFormType | undefined) || source?.work_experience || DEFAULT_WORK_EXPERIENCE,
     ),
     internshipExperience: sanitizeDeep(
-      (source?.internshipExperience as InternshipExperienceFormType | undefined) ||
-        source?.internship_experience ||
-        DEFAULT_INTERNSHIP_EXPERIENCE,
+      (source?.internshipExperience as InternshipExperienceFormType | undefined)
+      || source?.internship_experience
+      || DEFAULT_INTERNSHIP_EXPERIENCE,
     ),
     campusExperience: sanitizeDeep(
-      (source?.campusExperience as CampusExperienceFormType | undefined) ||
-        source?.campus_experience ||
-        DEFAULT_CAMPUS_EXPERIENCE,
+      (source?.campusExperience as CampusExperienceFormType | undefined)
+      || source?.campus_experience
+      || DEFAULT_CAMPUS_EXPERIENCE,
     ),
     projectExperience: sanitizeDeep(
-      (source?.projectExperience as ProjectExperienceFormType | undefined) ||
-        source?.project_experience ||
-        DEFAULT_PROJECT_EXPERIENCE,
+      (source?.projectExperience as ProjectExperienceFormType | undefined)
+      || source?.project_experience
+      || DEFAULT_PROJECT_EXPERIENCE,
     ),
     skillSpecialty: sanitizeDeep(
-      (source?.skillSpecialty as SkillSpecialtyFormType | undefined) ||
-        source?.skill_specialty ||
-        DEFAULT_SKILL_SPECIALTY,
+      (source?.skillSpecialty as SkillSpecialtyFormType | undefined)
+      || source?.skill_specialty
+      || DEFAULT_SKILL_SPECIALTY,
     ),
     honorsCertificates: sanitizeDeep(
-      (source?.honorsCertificates as HonorsCertificatesFormType | undefined) ||
-        source?.honors_certificates ||
-        DEFAULT_HONORS_CERTIFICATES,
+      (source?.honorsCertificates as HonorsCertificatesFormType | undefined)
+      || source?.honors_certificates
+      || DEFAULT_HONORS_CERTIFICATES,
     ),
     selfEvaluation: sanitizeDeep(
-      (source?.selfEvaluation as SelfEvaluationFormType | undefined) ||
-        source?.self_evaluation ||
-        DEFAULT_SELF_EVALUATION,
+      (source?.selfEvaluation as SelfEvaluationFormType | undefined)
+      || source?.self_evaluation
+      || DEFAULT_SELF_EVALUATION,
     ),
     hobbies: sanitizeDeep((source?.hobbies as HobbiesFormType | undefined) || DEFAULT_HOBBIES),
     order: sanitizeDeep((source?.order as ORDERType[] | undefined) || source?.order || DEFAULT_ORDER),

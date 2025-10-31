@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, type PropsWithChildren } from 'react'
+import type { PropsWithChildren } from 'react'
+import { createContext, use } from 'react'
 
 /**
  * 简历主题配置
@@ -60,7 +61,7 @@ const ResumeContext = createContext<ResumeContextType | null>(null)
  * 使用简历上下文的 Hook
  */
 export function useResumeContext() {
-  const context = useContext(ResumeContext)
+  const context = use(ResumeContext)
   if (!context) {
     throw new Error('useResumeContext 必须在 ResumeWrapper 内部使用')
   }
@@ -81,7 +82,7 @@ export function ResumeWrapper({ children, theme, spacing, font }: PropsWithChild
 
   return (
     <ResumeContext value={contextValue}>
-      <div className='mx-auto p-2 bg-white border rounded-md shadow-md' style={{ width: '210mm', minHeight: '297mm' }}>
+      <div className="mx-auto p-2 bg-white border rounded-md shadow-md" style={{ width: '210mm', minHeight: '297mm' }}>
         <div style={{ padding: spacing.pagePadding }}>{children}</div>
       </div>
     </ResumeContext>

@@ -1,4 +1,4 @@
-import type { ResumeSchema, ORDERType, VisibilityItemsType } from '@/lib/schema'
+import type { ORDERType, ResumeSchema, VisibilityItemsType } from '@/lib/schema'
 
 /**
  * Automerge 文档结构

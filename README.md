@@ -203,13 +203,13 @@ create policy "owner can update document"
 
 ## 🛠️ 常见问题
 
-**Q: 协作者如何加入？**  
+**Q: 协作者如何加入？**
 A: 发起者点击「开启协作」后复制链接，访问者需登录 Supabase 后自动加入；链接携带 `resumeId` 与 `collabSession`，对等端会导入最新快照。
 
-**Q: 忘记密码的重置链接跳转失败？**  
+**Q: 忘记密码的重置链接跳转失败？**
 A: 请在环境变量中配置 `VITE_BASE_URL`，Supabase 将把重置链接重定向至 `<BASE_URL>/editor`。
 
-**Q: 没有 Supabase 权限时还能协作吗？**  
+**Q: 没有 Supabase 权限时还能协作吗？**
 A: 若命中 RLS 拒绝，`DocumentManager` 会进入只读协作模式：继续接收他人广播的 Automerge diff，但本地不会再尝试持久化至云端。
 
 ## 🗺️ Roadmap

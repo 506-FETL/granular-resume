@@ -1,12 +1,13 @@
-import supabase from '@/lib/supabase/client'
-import { NetworkAdapter, type Message, type PeerId, type PeerMetadata } from '@automerge/automerge-repo'
+import type { Message, PeerId, PeerMetadata } from '@automerge/automerge-repo'
 import type { RealtimeChannel } from '@supabase/supabase-js'
+import { NetworkAdapter } from '@automerge/automerge-repo'
+import supabase from '@/lib/supabase/client'
 
 export interface CollaborationCallbacks {
-  onPeerJoin?: (payload: { peerId: string; metadata?: Record<string, any> }) => void
+  onPeerJoin?: (payload: { peerId: string, metadata?: Record<string, any> }) => void
   onPeerLeave?: (payload: { peerId: string }) => void
   onChannelReady?: (channelName: string) => void
-  onControlMessage?: (payload: { type: string; data?: Record<string, any> }) => void
+  onControlMessage?: (payload: { type: string, data?: Record<string, any> }) => void
   presenceMetadata?: Record<string, any>
 }
 
@@ -28,8 +29,8 @@ export class SupabaseNetworkAdapter extends NetworkAdapter {
   private localDocumentUrl: string | null = null
   private localDocumentId: string | null = null
   // 收到但尚未分派到本地文档的消息缓存（当本地文档信息未知时使用）
-  private pendingMessages: Array<{ senderId: any; targetId: any; messageType: any; documentId: any; message: string }> =
-    []
+  private pendingMessages: Array<{ senderId: any, targetId: any, messageType: any, documentId: any, message: string }>
+    = []
 
   /**
    * note: 使用 resumeId 而不是文档本地 URL 来生成频道名，resumeId 在不同浏览器/设备上是稳定的
@@ -47,7 +48,7 @@ export class SupabaseNetworkAdapter extends NetworkAdapter {
   /**
    * 设置本地文档信息（Automerge handle.url + documentId），用于将远端消息映射到本地文档
    */
-  setLocalDocumentInfo({ documentUrl, documentId }: { documentUrl: string | null; documentId: string | null }) {
+  setLocalDocumentInfo({ documentUrl, documentId }: { documentUrl: string | null, documentId: string | null }) {
     this.localDocumentUrl = documentUrl
     this.localDocumentId = documentId
     if (this.localDocumentId) {
@@ -77,7 +78,8 @@ export class SupabaseNetworkAdapter extends NetworkAdapter {
 
           // 发给 repo
           this.emit('message', messageObj)
-        } catch {
+        }
+        catch {
           // ignore individual message errors
         }
       })
@@ -106,11 +108,12 @@ export class SupabaseNetworkAdapter extends NetworkAdapter {
         resolve()
       }
 
-      const handlePeerCandidate = () => {
+      this.once('peer-candidate', handlePeerCandidate)
+
+      function handlePeerCandidate() {
         off()
       }
 
-      this.once('peer-candidate', handlePeerCandidate)
       this.once('close', off)
     })
   }
@@ -309,7 +312,6 @@ export class SupabaseNetworkAdapter extends NetworkAdapter {
    */
   send(message: Message): void {
     if (!this.channel || !this.ready) {
-      // eslint-disable-next-line no-console
       console.warn('⚠️ 网络适配器未就绪，无法发送消息')
       return
     }
@@ -352,7 +354,8 @@ export class SupabaseNetworkAdapter extends NetworkAdapter {
   }
 
   broadcastControlMessage(type: string, data: Record<string, any> = {}) {
-    if (!this.channel) return
+    if (!this.channel)
+      return
 
     this.channel.send({
       type: 'broadcast',

@@ -1,6 +1,7 @@
+import type React from 'react'
 import { useEffect, useRef, useState } from 'react'
 import { useDrag } from '@/contexts/DragContext'
-import type React from 'react'
+
 export function useDraggableItem(id: string, index: number, disabled = false) {
   const elementRef = useRef<HTMLDivElement>(null)
   const [isHovered, setIsHovered] = useState(false)
@@ -17,7 +18,8 @@ export function useDraggableItem(id: string, index: number, disabled = false) {
   }, [id, index, disabled, registerItem, unregisterItem, elementRef])
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (disabled) return
+    if (disabled)
+      return
 
     // 检查是否点击了 Switch 或 Tab 等交互元素
     const target = e.target as HTMLElement

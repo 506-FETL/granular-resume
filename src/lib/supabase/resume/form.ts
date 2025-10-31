@@ -4,7 +4,8 @@ import { getCurrentUser } from '../user'
 export async function getAllResumesFromUser() {
   const user = await getCurrentUser()
 
-  if (!user) throw new Error('用户未登陆')
+  if (!user)
+    throw new Error('用户未登陆')
 
   const { data, error } = await supabase
     .from('resume_config')
@@ -23,7 +24,8 @@ export async function getAllResumesFromUser() {
 export async function getResumeById(id: string) {
   const user = await getCurrentUser()
 
-  if (!user) throw new Error('用户未登陆')
+  if (!user)
+    throw new Error('用户未登陆')
 
   const { data, error } = await supabase
     .from('resume_config')
@@ -40,7 +42,7 @@ export async function getResumeById(id: string) {
 }
 
 export async function createNewResume(
-  info: { display_name?: string; description?: string } = {
+  info: { display_name?: string, description?: string } = {
     display_name: '简历',
     description: new Date().toLocaleDateString(),
   },
@@ -48,7 +50,8 @@ export async function createNewResume(
 ) {
   const user = await getCurrentUser()
 
-  if (!user) throw new Error('用户未登陆')
+  if (!user)
+    throw new Error('用户未登陆')
 
   const { data, error } = await supabase
     .from('resume_config')
@@ -70,7 +73,8 @@ export async function createNewResume(
 export async function deleteResume(id: string) {
   const user = await getCurrentUser()
 
-  if (!user) throw new Error('用户未登陆')
+  if (!user)
+    throw new Error('用户未登陆')
 
   const { error } = await supabase.from('resume_config').delete().eq('resume_id', id).eq('user_id', user.id)
 
@@ -84,7 +88,8 @@ export async function deleteResume(id: string) {
 export async function deleteResumeFromId(id: string) {
   const user = await getCurrentUser()
 
-  if (!user) throw new Error('用户未登陆')
+  if (!user)
+    throw new Error('用户未登陆')
 
   const { error } = await supabase.from('resume_config').delete().eq('id', id).eq('user_id', user.id)
 

@@ -1,4 +1,5 @@
-import { Repo, type RepoConfig } from '@automerge/automerge-repo'
+import type { RepoConfig } from '@automerge/automerge-repo'
+import { Repo } from '@automerge/automerge-repo'
 import { IndexedDBStorageAdapter } from '@automerge/automerge-repo-storage-indexeddb'
 
 let repoInstance: Repo | null = null
@@ -87,8 +88,8 @@ export function destroyAutomergeRepo() {
   if (repoInstance) {
     try {
       repoInstance.networkSubsystem.disconnect()
-    } catch (error) {
-      // eslint-disable-next-line no-console
+    }
+    catch (error) {
       console.warn('⚠️ 断开 Automerge 网络适配器时出错', error)
     }
 

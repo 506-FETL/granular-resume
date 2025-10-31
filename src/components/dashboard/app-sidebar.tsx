@@ -1,3 +1,7 @@
+import type React from 'react'
+import { IconHelp, IconInnerShadowTop, IconSearch, IconSettings } from '@tabler/icons-react'
+import { FileUser, LayoutTemplate } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import {
   Sidebar,
   SidebarContent,
@@ -7,10 +11,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
-import { IconHelp, IconInnerShadowTop, IconSearch, IconSettings } from '@tabler/icons-react'
-import { FileUser, LayoutTemplate } from 'lucide-react'
-import type React from 'react'
-import { Link } from 'react-router-dom'
 import { NavOptions } from './nav-options'
 import { NavSecondary } from './nav-secondary'
 import { NavUser } from './nav-user'
@@ -49,14 +49,14 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
-    <Sidebar collapsible='icon' {...props}>
+    <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild className='data-[slot=sidebar-menu-button]:!p-1.5'>
-              <Link to='/'>
-                <IconInnerShadowTop className='!size-5' />
-                <span className='text-base font-semibold'>Resume</span>
+            <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:!p-1.5">
+              <Link to="/">
+                <IconInnerShadowTop className="!size-5" />
+                <span className="text-base font-semibold">Resume</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -64,7 +64,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavOptions options={data.options} />
-        <NavSecondary items={data.navSecondary} className='mt-auto' />
+        <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
         <NavUser />

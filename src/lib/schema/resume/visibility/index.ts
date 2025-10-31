@@ -1,5 +1,6 @@
-import { z, ZodBoolean } from 'zod'
+import type { ZodBoolean } from 'zod'
 import type { ORDERType } from '../form'
+import { z } from 'zod'
 
 type VisibilityForms = Omit<
   {

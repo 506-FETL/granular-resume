@@ -32,7 +32,8 @@ function normalizeResumePayload(data: Record<string, any>) {
 export async function updateResumeConfig(resumeId: string, data: Record<string, any>) {
   const user = await getCurrentUser()
 
-  if (!user) throw new Error('用户未登陆')
+  if (!user)
+    throw new Error('用户未登陆')
 
   const payload = normalizeResumePayload(data)
 
@@ -42,7 +43,8 @@ export async function updateResumeConfig(resumeId: string, data: Record<string, 
     .eq('resume_id', resumeId)
     .eq('user_id', user.id)
 
-  if (error) throw error
+  if (error)
+    throw error
 }
 
 export async function subscribeToResumeConfigUpdates(
@@ -50,7 +52,8 @@ export async function subscribeToResumeConfigUpdates(
 ) {
   const user = await getCurrentUser()
 
-  if (!user) throw new Error('用户未登陆')
+  if (!user)
+    throw new Error('用户未登陆')
 
   const channel = supabase
     .channel(`resume_config_changes`)

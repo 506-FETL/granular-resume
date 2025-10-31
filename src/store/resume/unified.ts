@@ -9,10 +9,14 @@
  * 4. 监听远程变更并提示用户
  */
 
-import { DocumentManager } from '@/lib/automerge/document-manager'
-import type { AutomergeResumeDocument } from '@/lib/automerge/schema'
 import type { DocHandle } from '@automerge/automerge-repo'
+import type { AutomergeResumeDocument } from '@/lib/automerge/schema'
+import type { ApplicationInfoFormType, BasicFormType, CampusExperienceFormType, EduBackgroundFormType, HobbiesFormType, HonorsCertificatesFormType, InternshipExperienceFormType, JobIntentFormType, ORDERType, ProjectExperienceFormType, SelfEvaluationFormType, SkillSpecialtyFormType, VisibilityItemsType, WorkExperienceFormType } from '@/lib/schema'
+import { create } from 'zustand'
+import { createJSONStorage, persist } from 'zustand/middleware'
+import { DocumentManager } from '@/lib/automerge/document-manager'
 import {
+
   DEFAULT_APPLICATION_INFO,
   DEFAULT_BASICS,
   DEFAULT_CAMPUS_EXPERIENCE,
@@ -27,24 +31,9 @@ import {
   DEFAULT_SKILL_SPECIALTY,
   DEFAULT_VISIBILITY,
   DEFAULT_WORK_EXPERIENCE,
-  type ApplicationInfoFormType,
-  type BasicFormType,
-  type CampusExperienceFormType,
-  type EduBackgroundFormType,
-  type HobbiesFormType,
-  type HonorsCertificatesFormType,
-  type InternshipExperienceFormType,
-  type JobIntentFormType,
-  type ORDERType,
-  type ProjectExperienceFormType,
-  type SelfEvaluationFormType,
-  type SkillSpecialtyFormType,
-  type VisibilityItemsType,
-  type WorkExperienceFormType,
+
 } from '@/lib/schema'
 import { getCurrentUser } from '@/lib/supabase/user'
-import { create } from 'zustand'
-import { persist, createJSONStorage } from 'zustand/middleware'
 
 // 表单数据映射
 interface FormDataMap {
@@ -156,11 +145,13 @@ const useUnifiedResumeStore = create<UnifiedResumeState>()(
           if (user) {
             console.log('👤 用户已登录，启用 Automerge 同步模式')
             await initializeAutomerge(resumeId, user.id, set)
-          } else {
+          }
+          else {
             console.log('📴 离线模式，使用本地存储')
             set({ isOnlineMode: false })
           }
-        } catch (error) {
+        }
+        catch (error) {
           console.error('❌ 初始化失败', error)
           set({
             syncError: error instanceof Error ? error.message : '初始化失败',
@@ -172,7 +163,7 @@ const useUnifiedResumeStore = create<UnifiedResumeState>()(
       /**
        * 更新活动标签页
        */
-      updateActiveTabId: (newActiveTab) => set({ activeTabId: newActiveTab }),
+      updateActiveTabId: newActiveTab => set({ activeTabId: newActiveTab }),
 
       /**
        * 更新表单数据
@@ -181,7 +172,7 @@ const useUnifiedResumeStore = create<UnifiedResumeState>()(
         const state = get()
 
         // 更新本地状态
-        set((prev) => ({
+        set(prev => ({
           [key]: { ...prev[key], ...data },
           pendingChanges: true,
         }))
@@ -221,7 +212,7 @@ const useUnifiedResumeStore = create<UnifiedResumeState>()(
         const state = get()
         const newVisibility = !state.visibility[id]
 
-        set((prev) => ({
+        set(prev => ({
           visibility: { ...prev.visibility, [id]: newVisibility },
           pendingChanges: true,
         }))
@@ -242,7 +233,7 @@ const useUnifiedResumeStore = create<UnifiedResumeState>()(
       setVisibility: (id, isHidden) => {
         const state = get()
 
-        set((prev) => ({
+        set(prev => ({
           visibility: { ...prev.visibility, [id]: isHidden },
           pendingChanges: true,
         }))
@@ -279,7 +270,8 @@ const useUnifiedResumeStore = create<UnifiedResumeState>()(
             pendingChanges: false,
           })
           console.log('✅ 手动同步成功')
-        } catch (error) {
+        }
+        catch (error) {
           set({
             isSyncing: false,
             syncError: error instanceof Error ? error.message : '同步失败',
@@ -332,7 +324,7 @@ const useUnifiedResumeStore = create<UnifiedResumeState>()(
     {
       name: 'unified-resume-storage', // localStorage key
       storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({
+      partialize: state => ({
         // 只持久化必要的数据，排除运行时状态
         basics: state.basics,
         jobIntent: state.jobIntent,
@@ -369,7 +361,8 @@ async function initializeAutomerge(resumeId: string, userId: string, set: any) {
 
     // 监听远程变更
     handle.on('change', ({ doc, patches, patchInfo }) => {
-      if (!doc) return
+      if (!doc)
+        return
 
       // 判断是否为远程变更（通过检查 patchInfo）
       const isRemoteChange = patchInfo && typeof patchInfo === 'object' && 'source' in patchInfo
@@ -442,7 +435,8 @@ async function initializeAutomerge(resumeId: string, userId: string, set: any) {
     })
 
     console.log('🎉 Automerge 初始化完成')
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ Automerge 初始化失败', error)
     throw error
   }
