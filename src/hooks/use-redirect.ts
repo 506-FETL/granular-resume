@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import supabase from '@/lib/supabase/client'
 
-export function useAlreadyLoggedRedirect(redirect: string = '/') {
+export default function useAlreadyLoggedRedirect(redirect: string = '/') {
   const navigate = useNavigate()
 
   useEffect(() => {

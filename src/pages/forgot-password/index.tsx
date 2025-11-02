@@ -1,6 +1,6 @@
 import { ForgotPasswordForm } from '@/components/forgot-password-form'
 import { LightRays } from '@/components/ui/light-rays'
-import { useAlreadyLoggedRedirect } from '@/hooks/use-redirect'
+import useAlreadyLoggedRedirect from '@/hooks/use-redirect'
 
 function ForgotPassword() {
   useAlreadyLoggedRedirect('/')

@@ -1,32 +1,39 @@
-import type { ProjectExperienceFormType } from '@/lib/schema'
+import type { InternshipExperienceFormType } from '@/lib/schema'
 import type { ShallowPartial } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { IconDoorExit } from '@tabler/icons-react'
 import { Laptop, Plus, Trash2 } from 'lucide-react'
 import { motion } from 'motion/react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Separator } from '@/components/ui/separator'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { DEFAULT_PROJECT_EXPERIENCE, projectExperienceFormSchema } from '@/lib/schema'
+import {
+  DEFAULT_INTERNSHIP_EXPERIENCE,
+  internshipExperienceFormSchema,
+
+} from '@/lib/schema'
 import { cn } from '@/lib/utils'
 import useResumeStore from '@/store/resume/form'
 
-function ProjectExperienceForm({ className }: { className?: string }) {
-  const projectExperience = useResumeStore(state => state.projectExperience)
+function InternshipExperienceForm({ className }: { className?: string }) {
+  const internshipExperience = useResumeStore(state => state.internshipExperience)
+  const [isUptoNow, setIsUptoNow] = useState(() => internshipExperience.items?.some(item => item.internshipDuration?.[1] === '至今') || false)
   const updateForm = useResumeStore(state => state.updateForm)
   const isMobile = useIsMobile()
 
   const form = useForm({
-    resolver: zodResolver(projectExperienceFormSchema),
+    resolver: zodResolver(internshipExperienceFormSchema),
     defaultValues: {
-      items: projectExperience.items || DEFAULT_PROJECT_EXPERIENCE.items,
+      items: internshipExperience.items || DEFAULT_INTERNSHIP_EXPERIENCE.items,
     },
     mode: 'onChange',
     reValidateMode: 'onChange',
@@ -39,18 +46,18 @@ function ProjectExperienceForm({ className }: { className?: string }) {
 
   useEffect(() => {
     const subscription = form.watch((value) => {
-      updateForm('projectExperience', value as ShallowPartial<ProjectExperienceFormType>)
+      updateForm('internshipExperience', value as ShallowPartial<InternshipExperienceFormType>)
     })
     return () => subscription.unsubscribe()
   }, [form, updateForm])
 
   function onAddItem() {
-    append(DEFAULT_PROJECT_EXPERIENCE.items![0])
+    append(DEFAULT_INTERNSHIP_EXPERIENCE.items![0])
   }
 
   return (
     <Form {...form}>
-      <form id="project-experience-form" className={cn('space-y-6', className)}>
+      <form id="internship-experience-form" className={cn('space-y-6', className)}>
         {fields.map((item, index) => (
           <motion.div key={item.id} layout>
             {index > 0 && <Separator className="my-6" />}
@@ -58,7 +65,8 @@ function ProjectExperienceForm({ className }: { className?: string }) {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-medium text-muted-foreground">
-                  项目经验
+                  实习经验
+                  {' '}
                   {fields.length > 1 ? `#${index + 1}` : ''}
                 </h3>
                 {fields.length > 1 && (
@@ -77,37 +85,37 @@ function ProjectExperienceForm({ className }: { className?: string }) {
 
               <section className="grid gap-4 justify-items-start sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                 <FormField
-                  name={`items.${index}.projectName`}
+                  name={`items.${index}.companyName`}
                   control={form.control}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>项目名称</FormLabel>
+                      <FormLabel>公司名称</FormLabel>
                       <FormControl>
-                        <Input placeholder="请输入项目名称" {...field} />
+                        <Input placeholder="请输入公司名称" {...field} />
                       </FormControl>
                     </FormItem>
                   )}
                 />
 
                 <FormField
-                  name={`items.${index}.participantRole`}
+                  name={`items.${index}.position`}
                   control={form.control}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>参与角色</FormLabel>
+                      <FormLabel>职位</FormLabel>
                       <FormControl>
-                        <Input placeholder="请输入参与角色" {...field} />
+                        <Input placeholder="请输入职位" {...field} />
                       </FormControl>
                     </FormItem>
                   )}
                 />
 
                 <FormField
-                  name={`items.${index}.projectDuration`}
+                  name={`items.${index}.internshipDuration`}
                   control={form.control}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>项目时间</FormLabel>
+                      <FormLabel>实习时间</FormLabel>
                       <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
                         <Popover>
                           <PopoverTrigger asChild>
@@ -134,7 +142,7 @@ function ProjectExperienceForm({ className }: { className?: string }) {
 
                         <Popover>
                           <PopoverTrigger asChild>
-                            <Button variant="outline" className="w-full sm:w-auto justify-start text-left font-normal">
+                            <Button disabled={isUptoNow} variant="outline" className="w-full sm:w-auto justify-start text-left font-normal">
                               {field.value?.[1] || '结束时间'}
                               <IconDoorExit className="ml-auto h-4 w-4 opacity-50" />
                             </Button>
@@ -144,14 +152,30 @@ function ProjectExperienceForm({ className }: { className?: string }) {
                               mode="single"
                               captionLayout="dropdown"
                               defaultMonth={new Date(field.value?.[1] || '2002-1-1')}
+                              endMonth={new Date(2035, 11)}
                               selected={field.value?.[1] ? new Date(field.value[1]) : undefined}
-                              disabled={date => date > new Date()}
                               onSelect={(date) => {
                                 field.onChange([field.value?.[0], date?.toLocaleDateString()])
                               }}
                             />
                           </PopoverContent>
                         </Popover>
+                        <div className="flex items-center space-x-2">
+                          <Label htmlFor="up-to-now">至今</Label>
+                          <Checkbox
+                            id="up-to-now"
+                            checked={isUptoNow}
+                            onCheckedChange={(checked) => {
+                              setIsUptoNow(!!checked)
+                              if (checked) {
+                                field.onChange([field.value?.[0], '至今'])
+                              }
+                              else {
+                                field.onChange([field.value?.[0], ''])
+                              }
+                            }}
+                          />
+                        </div>
                       </div>
                     </FormItem>
                   )}
@@ -159,11 +183,11 @@ function ProjectExperienceForm({ className }: { className?: string }) {
               </section>
 
               <FormField
-                name={`items.${index}.projectInfo`}
+                name={`items.${index}.internshipInfo`}
                 control={form.control}
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>项目经验描述</FormLabel>
+                    <FormLabel>实习描述</FormLabel>
                     <FormControl>
                       <SimpleEditor
                         content={field.value || ''}
@@ -187,11 +211,11 @@ function ProjectExperienceForm({ className }: { className?: string }) {
           className="w-full sm:w-auto"
         >
           <Plus className="h-4 w-4" />
-          {!isMobile && <span className="ml-2">添加项目经验</span>}
+          {!isMobile && <span className="ml-2">添加实习经验</span>}
         </Button>
       </form>
     </Form>
   )
 }
 
-export default ProjectExperienceForm
+export default InternshipExperienceForm

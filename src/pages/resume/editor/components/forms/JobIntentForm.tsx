@@ -12,15 +12,7 @@ import { jobIntentFormSchema } from '@/lib/schema'
 import { cn } from '@/lib/utils'
 import useResumeStore from '@/store/resume/form'
 
-const dateEntryOptions: DateEntry[] = [
-  '不填',
-  '随时到岗',
-  '15天内',
-  '1个月内',
-  '2个月内',
-  '3个月内',
-  '到岗时间另行商议',
-]
+const dateEntryOptions: DateEntry[] = ['不填', '随时到岗', '15天内', '1个月内', '2个月内', '3个月内', '到岗时间另行商议']
 
 function JobIntentForm({ className }: { className?: string }) {
   const jobIntent = useResumeStore(state => state.jobIntent)

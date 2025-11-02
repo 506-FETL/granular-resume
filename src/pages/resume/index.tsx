@@ -33,8 +33,8 @@ export default function ResumePage() {
   const [showSyncDialog, setShowSyncDialog] = useState(false)
   const [offlineResumes, setOfflineResumes] = useState<Resume[]>([])
   const [isSyncing, setIsSyncing] = useState(false)
-  const [syncingIds, setSyncingIds] = useState<Set<string>>(new Set())
-  const [localDeletingIds, setLocalDeletingIds] = useState<Set<string>>(new Set()) // 本地正在删除的简历ID
+  const [syncingIds, setSyncingIds] = useState<Set<string>>(() => new Set())
+  const [localDeletingIds, setLocalDeletingIds] = useState<Set<string>>(() => new Set()) // 本地正在删除的简历ID
   const navigate = useNavigate()
   const { setCurrentResume } = useCurrentResumeStore()
 
@@ -85,12 +85,9 @@ export default function ResumePage() {
         // 如果已登录且有本地简历，只提示用户（不自动弹出对话框）
         if (user && formattedOfflineResumes.length > 0) {
           setOfflineResumes(formattedOfflineResumes)
-          // 延迟显示提示，让用户先看到页面
-          setTimeout(() => {
-            toast.info(`检测到 ${formattedOfflineResumes.length} 个本地简历，点击右上角按钮可同步到云端`, {
-              duration: 5000,
-            })
-          }, 1000)
+          toast.info(`检测到 ${formattedOfflineResumes.length} 个本地简历，点击右上角按钮可同步到云端`, {
+            duration: 5000,
+          })
         }
       }
       catch {
@@ -195,7 +192,7 @@ export default function ResumePage() {
 
   function handleEditResume(resume: Resume) {
     setCurrentResume(resume.resume_id, resume.type)
-    navigate('/editor')
+    navigate('/resume/editor')
   }
 
   async function handleDeleteResume(id: string) {

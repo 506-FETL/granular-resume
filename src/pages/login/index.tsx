@@ -1,9 +1,9 @@
 import { LoginForm } from '@/components/login-form'
 import { LightRays } from '@/components/ui/light-rays'
-import { alreadyLoggedRedirect } from '@/hooks/use-redirect'
+import useAlreadyLoggedRedirect from '@/hooks/use-redirect'
 
 function Login() {
-  alreadyLoggedRedirect()
+  useAlreadyLoggedRedirect()
 
   return (
     <>

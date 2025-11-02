@@ -11,5 +11,6 @@ export default antfu({
     'no-unused-vars': 'warn',
     'no-console': 'warn',
     'no-undef': 'error',
+    'react-hooks/incompatible-library': 'off',
   },
 })

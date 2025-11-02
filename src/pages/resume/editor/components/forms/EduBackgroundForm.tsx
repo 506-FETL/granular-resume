@@ -1,36 +1,38 @@
-import type { InternshipExperienceFormType } from '@/lib/schema'
+import type { Degree, EduBackgroundFormType } from '@/lib/schema'
 import type { ShallowPartial } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { IconDoorExit } from '@tabler/icons-react'
-import { Laptop, Plus, Trash2 } from 'lucide-react'
+import { IconMichelinBibGourmand } from '@tabler/icons-react'
+import { Baby, Plus, Trash2 } from 'lucide-react'
 import { motion } from 'motion/react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { useIsMobile } from '@/hooks/use-mobile'
-import {
-  DEFAULT_INTERNSHIP_EXPERIENCE,
-  internshipExperienceFormSchema,
-
-} from '@/lib/schema'
+import { DEFAULT_EDU_BACKGROUND, eduBackgroundFormSchema } from '@/lib/schema'
 import { cn } from '@/lib/utils'
 import useResumeStore from '@/store/resume/form'
 
-function InternshipExperienceForm({ className }: { className?: string }) {
-  const internshipExperience = useResumeStore(state => state.internshipExperience)
+const degreeOptions: Degree[] = ['不填', '初中', '高中', '中专', '大专', '本科', '学士', '硕士', '博士', 'MBA', 'EMBA', '其他']
+
+function EduBackgroundForm({ className }: { className?: string }) {
+  const eduBackground = useResumeStore(state => state.eduBackground)
+  const [isUptoNow, setIsUptoNow] = useState(() => eduBackground.items?.some(item => item.duration?.[1] === '至今') || false)
   const updateForm = useResumeStore(state => state.updateForm)
   const isMobile = useIsMobile()
 
   const form = useForm({
-    resolver: zodResolver(internshipExperienceFormSchema),
+    resolver: zodResolver(eduBackgroundFormSchema),
     defaultValues: {
-      items: internshipExperience.items || DEFAULT_INTERNSHIP_EXPERIENCE.items,
+      items: eduBackground.items || DEFAULT_EDU_BACKGROUND.items,
     },
     mode: 'onChange',
     reValidateMode: 'onChange',
@@ -43,18 +45,18 @@ function InternshipExperienceForm({ className }: { className?: string }) {
 
   useEffect(() => {
     const subscription = form.watch((value) => {
-      updateForm('internshipExperience', value as ShallowPartial<InternshipExperienceFormType>)
+      updateForm('eduBackground', value as ShallowPartial<EduBackgroundFormType>)
     })
     return () => subscription.unsubscribe()
   }, [form, updateForm])
 
   function onAddItem() {
-    append(DEFAULT_INTERNSHIP_EXPERIENCE.items![0])
+    append(DEFAULT_EDU_BACKGROUND.items![0])
   }
 
   return (
     <Form {...form}>
-      <form id="internship-experience-form" className={cn('space-y-6', className)}>
+      <form id="edu-background-form" className={cn('space-y-6', className)}>
         {fields.map((item, index) => (
           <motion.div key={item.id} layout>
             {index > 0 && <Separator className="my-6" />}
@@ -62,8 +64,7 @@ function InternshipExperienceForm({ className }: { className?: string }) {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-medium text-muted-foreground">
-                  实习经验
-                  {' '}
+                  教育背景
                   {fields.length > 1 ? `#${index + 1}` : ''}
                 </h3>
                 {fields.length > 1 && (
@@ -80,45 +81,45 @@ function InternshipExperienceForm({ className }: { className?: string }) {
                 )}
               </div>
 
-              <section className="grid gap-4 justify-items-start sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+              <section className="grid gap-4 justify-items-start sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
                 <FormField
-                  name={`items.${index}.companyName`}
+                  name={`items.${index}.schoolName`}
                   control={form.control}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>公司名称</FormLabel>
+                      <FormLabel>学校</FormLabel>
                       <FormControl>
-                        <Input placeholder="请输入公司名称" {...field} />
+                        <Input placeholder="请输入学校名称" {...field} />
                       </FormControl>
                     </FormItem>
                   )}
                 />
 
                 <FormField
-                  name={`items.${index}.position`}
+                  name={`items.${index}.professional`}
                   control={form.control}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>职位</FormLabel>
+                      <FormLabel>专业</FormLabel>
                       <FormControl>
-                        <Input placeholder="请输入职位" {...field} />
+                        <Input placeholder="请输入所学专业" {...field} />
                       </FormControl>
                     </FormItem>
                   )}
                 />
 
                 <FormField
-                  name={`items.${index}.internshipDuration`}
+                  name={`items.${index}.duration`}
                   control={form.control}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>实习时间</FormLabel>
+                      <FormLabel>就读时间</FormLabel>
                       <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
                         <Popover>
                           <PopoverTrigger asChild>
                             <Button variant="outline" className="w-full sm:w-auto justify-start text-left font-normal">
-                              {field.value?.[0] || '开始时间'}
-                              <Laptop className="ml-auto h-4 w-4 opacity-50" />
+                              {field.value?.[0] || '入学年月'}
+                              <Baby className="ml-auto h-4 w-4 opacity-50" />
                             </Button>
                           </PopoverTrigger>
                           <PopoverContent align="start" className="w-auto p-0">
@@ -126,7 +127,6 @@ function InternshipExperienceForm({ className }: { className?: string }) {
                               mode="single"
                               captionLayout="dropdown"
                               defaultMonth={new Date(field.value?.[0] || '2002-1-1')}
-                              disabled={date => date > new Date()}
                               selected={field.value?.[0] ? new Date(field.value[0]) : undefined}
                               onSelect={(date) => {
                                 field.onChange([date?.toLocaleDateString(), field.value?.[1]])
@@ -139,9 +139,9 @@ function InternshipExperienceForm({ className }: { className?: string }) {
 
                         <Popover>
                           <PopoverTrigger asChild>
-                            <Button variant="outline" className="w-full sm:w-auto justify-start text-left font-normal">
-                              {field.value?.[1] || '结束时间'}
-                              <IconDoorExit className="ml-auto h-4 w-4 opacity-50" />
+                            <Button disabled={isUptoNow} variant="outline" className="w-full sm:w-auto justify-start text-left font-normal">
+                              {field.value?.[1] || '毕业年月'}
+                              <IconMichelinBibGourmand className="ml-auto h-4 w-4 opacity-50" />
                             </Button>
                           </PopoverTrigger>
                           <PopoverContent align="start" className="w-auto p-0">
@@ -149,26 +149,66 @@ function InternshipExperienceForm({ className }: { className?: string }) {
                               mode="single"
                               captionLayout="dropdown"
                               defaultMonth={new Date(field.value?.[1] || '2002-1-1')}
+                              endMonth={new Date(2035, 11)}
                               selected={field.value?.[1] ? new Date(field.value[1]) : undefined}
-                              disabled={date => date > new Date()}
                               onSelect={(date) => {
                                 field.onChange([field.value?.[0], date?.toLocaleDateString()])
                               }}
                             />
                           </PopoverContent>
                         </Popover>
+                        <div className="flex items-center space-x-2">
+                          <Label htmlFor="up-to-now">至今</Label>
+                          <Checkbox
+                            id="up-to-now"
+                            checked={isUptoNow}
+                            onCheckedChange={(checked) => {
+                              setIsUptoNow(!!checked)
+                              if (checked) {
+                                field.onChange([field.value?.[0], '至今'])
+                              }
+                              else {
+                                field.onChange([field.value?.[0], ''])
+                              }
+                            }}
+                          />
+                        </div>
                       </div>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  name={`items.${index}.degree`}
+                  control={form.control}
+                  render={({ field }) => (
+                    <FormItem className="w-full">
+                      <FormLabel>学历</FormLabel>
+                      <FormControl>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="请选择学历" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {degreeOptions.map(option => (
+                              <SelectItem key={option} value={option}>
+                                {option}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
                     </FormItem>
                   )}
                 />
               </section>
 
               <FormField
-                name={`items.${index}.internshipInfo`}
+                name={`items.${index}.eduInfo`}
                 control={form.control}
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>实习描述</FormLabel>
+                    <FormLabel>教育背景描述</FormLabel>
                     <FormControl>
                       <SimpleEditor
                         content={field.value || ''}
@@ -192,11 +232,11 @@ function InternshipExperienceForm({ className }: { className?: string }) {
           className="w-full sm:w-auto"
         >
           <Plus className="h-4 w-4" />
-          {!isMobile && <span className="ml-2">添加实习经验</span>}
+          {!isMobile && <span className="ml-2">添加教育背景</span>}
         </Button>
       </form>
     </Form>
   )
 }
 
-export default InternshipExperienceForm
+export default EduBackgroundForm

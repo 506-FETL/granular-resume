@@ -4,13 +4,15 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { IconDoorExit } from '@tabler/icons-react'
 import { Laptop, Plus, Trash2 } from 'lucide-react'
 import { motion } from 'motion/react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Separator } from '@/components/ui/separator'
 import { useIsMobile } from '@/hooks/use-mobile'
@@ -20,6 +22,7 @@ import useResumeStore from '@/store/resume/form'
 
 function WorkExperienceForm({ className }: { className?: string }) {
   const workExperience = useResumeStore(state => state.workExperience)
+  const [isUptoNow, setIsUptoNow] = useState(() => workExperience.items?.some(item => item.workDuration?.[1] === '至今') || false)
   const updateForm = useResumeStore(state => state.updateForm)
   const isMobile = useIsMobile()
 
@@ -134,7 +137,7 @@ function WorkExperienceForm({ className }: { className?: string }) {
 
                         <Popover>
                           <PopoverTrigger asChild>
-                            <Button variant="outline" className="w-full sm:w-auto justify-start text-left font-normal">
+                            <Button disabled={isUptoNow} variant="outline" className="w-full sm:w-auto justify-start text-left font-normal">
                               {field.value?.[1] || '离职时间'}
                               <IconDoorExit className="ml-auto h-4 w-4 opacity-50" />
                             </Button>
@@ -144,14 +147,30 @@ function WorkExperienceForm({ className }: { className?: string }) {
                               mode="single"
                               captionLayout="dropdown"
                               defaultMonth={new Date(field.value?.[1] || '2002-1-1')}
+                              endMonth={new Date(2035, 11)}
                               selected={field.value?.[1] ? new Date(field.value[1]) : undefined}
-                              disabled={date => date > new Date()}
                               onSelect={(date) => {
                                 field.onChange([field.value?.[0], date?.toLocaleDateString()])
                               }}
                             />
                           </PopoverContent>
                         </Popover>
+                        <div className="flex items-center space-x-2">
+                          <Label htmlFor="up-to-now">至今</Label>
+                          <Checkbox
+                            id="up-to-now"
+                            checked={isUptoNow}
+                            onCheckedChange={(checked) => {
+                              setIsUptoNow(!!checked)
+                              if (checked) {
+                                field.onChange([field.value?.[0], '至今'])
+                              }
+                              else {
+                                field.onChange([field.value?.[0], ''])
+                              }
+                            }}
+                          />
+                        </div>
                       </div>
                     </FormItem>
                   )}
