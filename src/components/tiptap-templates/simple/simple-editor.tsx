@@ -1,7 +1,7 @@
 'use client'
 
-import type { Editor } from '@tiptap/react'
 import { Highlight } from '@tiptap/extension-highlight'
+import type { Editor } from '@tiptap/react'
 
 import { Image } from '@tiptap/extension-image'
 import { TaskItem, TaskList } from '@tiptap/extension-list'
