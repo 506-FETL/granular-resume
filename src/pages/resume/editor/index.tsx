@@ -25,7 +25,7 @@ import { CollaborationControls } from './components/CollaborationControls'
 import { CollaborationDialog } from './components/CollaborationDialog'
 import { CollaborationPanelProvider } from './components/CollaborationPanelProvider'
 import { DraggableItem } from './components/DraggableItem'
-import ResumePreview from './components/preview/BasicResumePreview'
+import ResumePreview from './components/preview/ResumeWrapper'
 import { ResumeConfigToolbar } from './components/ResumeConfigToolbar'
 import { ITEMS } from './data'
 
@@ -144,9 +144,7 @@ function Editor() {
             duration: 5000,
           })
 
-          setTimeout(() => {
-            navigate('/resume')
-          }, 1500)
+          navigate('/resume')
         })
       }
       catch (error: any) {

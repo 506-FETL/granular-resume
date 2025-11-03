@@ -1,4 +1,3 @@
-/* eslint-disable react-refresh/only-export-components */
 import type { PropsWithChildren } from 'react'
 import { createContext, use } from 'react'
 
@@ -66,27 +65,6 @@ export function useResumeContext() {
     throw new Error('useResumeContext 必须在 ResumeWrapper 内部使用')
   }
   return context
-}
-
-/**
- * ResumeWrapper - 最外层容器
- */
-interface ResumeWrapperProps {
-  theme: ResumeTheme
-  spacing: ResumeSpacing
-  font: ResumeFont
-}
-
-export function ResumeWrapper({ children, theme, spacing, font }: PropsWithChildren<ResumeWrapperProps>) {
-  const contextValue = { theme, spacing, font }
-
-  return (
-    <ResumeContext value={contextValue}>
-      <div className="mx-auto p-2 bg-white border rounded-md shadow-md" style={{ width: '210mm', minHeight: '297mm' }}>
-        <div style={{ padding: spacing.pagePadding }}>{children}</div>
-      </div>
-    </ResumeContext>
-  )
 }
 
 /**
