@@ -498,7 +498,7 @@ function createSessionId() {
 }
 
 function buildShareUrl(resumeId: string, sessionId: string) {
-  const url = new URL(`${window.location.origin}/editor`)
+  const url = new URL(`${window.location.origin}/resume/editor`)
   url.searchParams.set('resumeId', resumeId)
   url.searchParams.set('collabSession', sessionId)
   // 不再在分享链接中包含本地 documentUrl（automerge handle URL），

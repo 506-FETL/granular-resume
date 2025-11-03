@@ -1,5 +1,5 @@
 import type { CollaborationPanelContextValue } from '../components/collaboration-types'
-import type { SupabaseUser } from '@/pages/editor/types'
+import type { SupabaseUser } from './../types'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
