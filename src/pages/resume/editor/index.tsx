@@ -149,7 +149,7 @@ function Editor() {
       })
 
       saveAs(blob, resumeName ? `${resumeName}-简历.doc` : '我的简历.doc')
-      toast.success('导出成功!请注意:建议在 Word 中打开后另存为 .docx 格式以获得最佳兼容性。')
+      toast.success('导出成功!')
     }
     catch (error) {
       console.error('导出 Word 失败', error)
