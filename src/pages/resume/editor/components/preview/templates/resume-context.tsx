@@ -1,4 +1,3 @@
-import type { PropsWithChildren } from 'react'
 import { createContext, use } from 'react'
 
 /**

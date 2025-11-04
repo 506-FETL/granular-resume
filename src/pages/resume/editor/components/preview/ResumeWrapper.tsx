@@ -1,43 +1,16 @@
+import type { PropsWithChildren, Ref } from 'react'
 import { useEffect, useRef, useState } from 'react'
-import { getFontFamilyCSS, themeColorMap } from '@/lib/schema'
 import useResumeConfigStore from '@/store/resume/config'
-import { BasicResumeContent } from './templates/BasicResumeContent'
 
-// A4纸的像素高度 (297mm at 96 DPI)
+// A4 纸张尺寸，单位毫米
 const A4_HEIGHT_MM = 297
 const MM_TO_PX = 3.7795275591
 
-function BasicResumePreview() {
+export default function ResumeWrapper({ children, ref }: PropsWithChildren<{ ref: Ref<HTMLDivElement> | null }>) {
   const spacingConfig = useResumeConfigStore(state => state.spacing)
   const fontConfig = useResumeConfigStore(state => state.font)
-  const themeConfig = useResumeConfigStore(state => state.theme)
-
   const contentRef = useRef<HTMLDivElement>(null)
   const [pageCount, setPageCount] = useState(1)
-
-  const theme = themeColorMap[themeConfig.theme]
-  const spacing = {
-    pagePadding: `${spacingConfig.pageMargin}px`,
-    sectionMargin: `${spacingConfig.sectionSpacing}px`,
-    sectionTitleMargin: '0.75rem',
-    itemSpacing: '0.55rem',
-    paragraphSpacing: '0.25rem',
-    lineHeight: spacingConfig.lineHeight,
-    proseLineHeight: spacingConfig.lineHeight,
-  }
-
-  const fontSize = fontConfig.fontSize
-  const font = {
-    fontFamily: getFontFamilyCSS(fontConfig.fontFamily),
-    nameSize: `${fontSize * 1.5}px`,
-    jobIntentSize: `${fontSize}px`,
-    sectionTitleSize: `${fontSize}px`,
-    contentSize: `${fontSize * 0.875}px`,
-    smallSize: `${fontSize * 0.75}px`,
-    boldWeight: 700,
-    mediumWeight: 600,
-    normalWeight: 400,
-  }
 
   // 实时计算页数
   useEffect(() => {
@@ -82,7 +55,7 @@ function BasicResumePreview() {
   ])
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4" ref={ref}>
       {Array.from({ length: pageCount }).map((_, pageIndex) => (
         <div key={`page-${pageIndex + 1}`}>
           <div
@@ -104,11 +77,11 @@ function BasicResumePreview() {
               {pageIndex === 0
                 ? (
                     <div ref={contentRef}>
-                      <BasicResumeContent theme={theme} spacing={spacing} font={font} />
+                      {children}
                     </div>
                   )
                 : (
-                    <BasicResumeContent theme={theme} spacing={spacing} font={font} />
+                    children
                   )}
             </div>
           </div>
@@ -117,5 +90,3 @@ function BasicResumePreview() {
     </div>
   )
 }
-
-export default BasicResumePreview

@@ -1,3 +1,4 @@
+import type { PropsWithChildren } from 'react'
 import { Palette, Space, Type } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -15,7 +16,7 @@ import { fontFamilyOptions, fontSizeOptions, themeOptions } from '@/lib/schema'
 import { cn } from '@/lib/utils'
 import useResumeConfigStore from '@/store/resume/config'
 
-export function ResumeConfigToolbar() {
+export function ResumeConfigToolbar({ children }: PropsWithChildren) {
   const isMobile = useIsMobile()
   const { spacing, font, theme, updateSpacing, updateFont, updateTheme } = useResumeConfigStore()
 
@@ -27,7 +28,7 @@ export function ResumeConfigToolbar() {
           <Button
             variant="outline"
             size={isMobile ? 'icon' : 'default'}
-            className={cn('shadow-md', isMobile && 'h-9 w-9')}
+            className={cn(isMobile && 'h-9 w-9')}
           >
             <Space className={cn(isMobile ? 'h-4 w-4' : 'h-4 w-4')} />
             {!isMobile && <span className="ml-2">间距</span>}
@@ -104,7 +105,7 @@ export function ResumeConfigToolbar() {
           <Button
             variant="outline"
             size={isMobile ? 'icon' : 'default'}
-            className={cn('shadow-md', isMobile && 'h-9 w-9')}
+            className={cn(isMobile && 'h-9 w-9')}
           >
             <Type className={cn(isMobile ? 'h-4 w-4' : 'h-4 w-4')} />
             {!isMobile && <span className="ml-2">字体</span>}
@@ -173,7 +174,7 @@ export function ResumeConfigToolbar() {
           <Button
             variant="outline"
             size={isMobile ? 'icon' : 'default'}
-            className={cn('shadow-md', isMobile && 'h-9 w-9')}
+            className={cn(isMobile && 'h-9 w-9')}
           >
             <Palette className={cn(isMobile ? 'h-4 w-4' : 'h-4 w-4')} />
             {!isMobile && <span className="ml-2">皮肤</span>}
@@ -209,6 +210,8 @@ export function ResumeConfigToolbar() {
           </div>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      {children}
     </div>
   )
 }

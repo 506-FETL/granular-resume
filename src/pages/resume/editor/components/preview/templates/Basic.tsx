@@ -1,5 +1,5 @@
 import type React from 'react'
-import type { ResumeContextType, ResumeFont, ResumeSpacing, ResumeTheme } from '../resume-context'
+import type { ResumeContextType, ResumeFont, ResumeSpacing, ResumeTheme } from './resume-context'
 import type { ORDERType, ProficiencyLevel, ResumeSchema } from '@/lib/schema'
 import parser from 'html-react-parser'
 import { createContext, use, useMemo } from 'react'
