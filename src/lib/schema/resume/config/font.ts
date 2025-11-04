@@ -57,8 +57,20 @@ export const DEFAULT_FONT_CONFIG: FontConfigType = {
  * 获取字体的CSS值
  */
 export function getFontFamilyCSS(fontFamily: FontConfigType['fontFamily']): string {
-  if (fontFamily === 'system') {
-    return `-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Microsoft YaHei', sans-serif`
+  const fallback = `-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif`
+
+  switch (fontFamily) {
+    case 'system':
+      return fallback
+    case 'SimSun':
+      return `'SimSun', '宋体', 'STSong', serif, ${fallback}`
+    case 'SimHei':
+      return `'SimHei', '黑体', 'STHeiti', 'Microsoft YaHei', sans-serif, ${fallback}`
+    case 'KaiTi':
+      return `'KaiTi', '楷体', 'STKaiti', 'KaiTi_GB2312', serif, ${fallback}`
+    case 'Microsoft YaHei':
+      return `'Microsoft YaHei', '微软雅黑', sans-serif, ${fallback}`
+    default:
+      return `'${fontFamily}', ${fallback}`
   }
-  return `'${fontFamily}', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`
 }

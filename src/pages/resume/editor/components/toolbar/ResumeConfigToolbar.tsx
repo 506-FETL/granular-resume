@@ -1,5 +1,5 @@
-import type { PropsWithChildren } from 'react'
-import { Palette, Space, Type } from 'lucide-react'
+import { FileDown, Palette, Space, Type } from 'lucide-react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -15,19 +15,23 @@ import { useIsMobile } from '@/hooks/use-mobile'
 import { fontFamilyOptions, fontSizeOptions, themeOptions } from '@/lib/schema'
 import { cn } from '@/lib/utils'
 import useResumeConfigStore from '@/store/resume/config'
+import useResumeExportStore from '@/store/resume/export'
+import { ExportDialog } from '../export/ExportDialog'
 
-export function ResumeConfigToolbar({ children }: PropsWithChildren) {
+export function ResumeConfigToolbar() {
   const isMobile = useIsMobile()
+  const { exportToPdf, exportToDoc } = useResumeExportStore()
   const { spacing, font, theme, updateSpacing, updateFont, updateTheme } = useResumeConfigStore()
+  const [exportDialogOpen, setExportDialogOpen] = useState(false)
 
   return (
-    <div className="flex flex-row md:flex-col gap-2 p-2 md:p-4">
+    <div className={cn('flex flex-row gap-2')}>
       {/* 间距设置 */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
             variant="outline"
-            size={isMobile ? 'icon' : 'default'}
+            size={isMobile ? 'icon' : 'sm'}
             className={cn(isMobile && 'h-9 w-9')}
           >
             <Space className={cn(isMobile ? 'h-4 w-4' : 'h-4 w-4')} />
@@ -104,7 +108,7 @@ export function ResumeConfigToolbar({ children }: PropsWithChildren) {
         <DropdownMenuTrigger asChild>
           <Button
             variant="outline"
-            size={isMobile ? 'icon' : 'default'}
+            size={isMobile ? 'icon' : 'sm'}
             className={cn(isMobile && 'h-9 w-9')}
           >
             <Type className={cn(isMobile ? 'h-4 w-4' : 'h-4 w-4')} />
@@ -173,7 +177,7 @@ export function ResumeConfigToolbar({ children }: PropsWithChildren) {
         <DropdownMenuTrigger asChild>
           <Button
             variant="outline"
-            size={isMobile ? 'icon' : 'default'}
+            size={isMobile ? 'icon' : 'sm'}
             className={cn(isMobile && 'h-9 w-9')}
           >
             <Palette className={cn(isMobile ? 'h-4 w-4' : 'h-4 w-4')} />
@@ -211,7 +215,18 @@ export function ResumeConfigToolbar({ children }: PropsWithChildren) {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {children}
+      <ExportDialog
+        open={exportDialogOpen}
+        onOpenChange={setExportDialogOpen}
+        onExportPdf={exportToPdf}
+        onExportDoc={exportToDoc}
+        trigger={(
+          <Button variant="outline" size={isMobile ? 'icon' : 'sm'}>
+            <FileDown className="h-4 w-4" />
+            {!isMobile && <span className="ml-2">导出</span>}
+          </Button>
+        )}
+      />
     </div>
   )
 }

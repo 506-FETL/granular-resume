@@ -11,12 +11,12 @@ import { Toaster } from '@/components/ui/sonner'
 function App() {
   return (
     <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-      <AppSidebar variant="inset" />
-      <SidebarInset className="relative overflow-hidden">
-        <SidebarHeader className="border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
+      <AppSidebar variant="floating" />
+      <SidebarInset className="relative flex flex-col">
+        <SidebarHeader className="sticky top-0 z-1 border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
           <SiteHeader />
         </SidebarHeader>
-        <div className="p-4">
+        <div className="flex-1 overflow-auto p-4">
           <Suspense fallback={<Loading />}>{useRoutes(routes)}</Suspense>
         </div>
         <Toaster position="top-right" richColors />
@@ -33,7 +33,7 @@ function Loading() {
         <div className="w-full space-y-3">
           {[1, 2, 3].map(i => (
             <div key={i} className="flex items-center gap-3 p-3 rounded-lg border bg-card/50">
-              <Skeleton className="h-8 w-8 rounded-full flex-shrink-0" />
+              <Skeleton className="h-8 w-8 rounded-full shrink-0" />
               <div className="flex-1 space-y-2">
                 <Skeleton className="h-3 w-3/4" />
                 <Skeleton className="h-2 w-1/2" />
