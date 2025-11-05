@@ -50,7 +50,8 @@ type EditorMode = 'online' | 'offline' | null
 interface ResumeState extends FormDataMap {
   activeTabId: ORDERType
   order: ORDERType[]
-  visibility: { [key in VisibilityItemsType]: boolean }
+  visibility: Record<VisibilityItemsType, boolean>
+  type: 'basic' | 'modern' | 'simple'
 
   isSyncing: boolean
   lastSyncTime: number | null
@@ -65,6 +66,7 @@ interface ResumeState extends FormDataMap {
   isInitialized: boolean
 
   toggleVisibility: (id: VisibilityItemsType) => void
+  changeType: (type: 'basic' | 'modern' | 'simple') => void
   getVisibility: (id: VisibilityItemsType) => boolean
   setVisibility: (id: VisibilityItemsType, isHidden: boolean) => void
   updateActiveTabId: (newActiveTab: ORDERType) => void
@@ -106,6 +108,7 @@ const useResumeStore = create<ResumeState>()((set, get) => ({
   selfEvaluation: DEFAULT_SELF_EVALUATION,
   hobbies: DEFAULT_HOBBIES,
   visibility: DEFAULT_VISIBILITY,
+  type: 'basic',
 
   isSyncing: false,
   lastSyncTime: null,
@@ -161,6 +164,22 @@ const useResumeStore = create<ResumeState>()((set, get) => ({
     set({ order: newOrder, pendingChanges: true })
     state.docManager?.change((doc) => {
       doc.order = [...newOrder]
+    })
+  },
+
+  changeType: (type) => {
+    const state = get()
+    const resumeId = state.currentResumeId ?? useCurrentResumeStore.getState().resumeId
+
+    if (!resumeId || state.mode === 'offline' || isOfflineResumeId(resumeId)) {
+      set({ type, pendingChanges: true })
+      scheduleOfflinePersist(() => get().syncToSupabase())
+      return
+    }
+
+    set({ type, pendingChanges: true })
+    state.docManager?.change((doc) => {
+      doc.type = type
     })
   },
 
@@ -337,8 +356,8 @@ const useResumeStore = create<ResumeState>()((set, get) => ({
         }))
       }
 
-      handle.on('change', changeHandler)
-      const offChange = () => handle.off('change', changeHandler)
+      handle.on('change', changeHandler as any)
+      const offChange = () => handle.off('change', changeHandler as any)
 
       const offSaveStart = manager.onSaveStart(() => {
         set({ isSyncing: true })
@@ -507,6 +526,7 @@ function mapDocToState(doc: Partial<AutomergeResumeDocument> | null | undefined)
     visibility: sanitizeDeep(
       (source?.visibility as Record<VisibilityItemsType, boolean> | undefined) || DEFAULT_VISIBILITY,
     ),
+    type: source?.type || 'basic',
   }
 }
 
@@ -526,6 +546,7 @@ function buildOfflinePayload(state: ResumeState) {
     hobbies: state.hobbies,
     order: state.order,
     visibility: state.visibility,
+    type: state.type,
   }
 }
 

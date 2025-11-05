@@ -1,0 +1,513 @@
+/* Modern Resume Styles */
+.modern-resume {
+  position: relative;
+}
+
+/* Header Styles */
+.modern-header {
+  position: relative;
+  overflow: hidden;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+.modern-header-bg {
+  padding: 2rem;
+  border-radius: 0.75rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.modern-header-bg::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -10%;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, currentColor 0%, transparent 70%);
+  opacity: 0.03;
+  pointer-events: none;
+}
+
+.modern-header-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.modern-name {
+  margin: 0;
+  text-align: center;
+  position: relative;
+  display: inline-block;
+  letter-spacing: 0.02em;
+}
+
+.modern-name::after {
+  content: '';
+  position: absolute;
+  bottom: -0.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, currentColor, transparent);
+  opacity: 0.3;
+}
+
+.modern-job-intent {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  align-items: center;
+}
+
+.modern-intent-item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.5rem;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  white-space: nowrap;
+}
+
+.modern-info-fields {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+}
+
+.modern-info-item {
+  padding: 0.25rem 0.5rem;
+  position: relative;
+}
+
+.modern-info-item:not(:last-child)::after {
+  content: '•';
+  position: absolute;
+  right: -0.25rem;
+  opacity: 0.3;
+}
+
+.modern-contact {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+.modern-contact-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.modern-custom-field {
+  text-align: center;
+  padding: 0.25rem 0.5rem;
+}
+
+/* Section Styles */
+.modern-section {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.modern-section-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.modern-section-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.modern-section-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25em;
+}
+
+.modern-icon-emoji {
+  display: inline-block;
+  font-size: 1.25em;
+  filter: grayscale(0.2);
+}
+
+.modern-section-title {
+  margin: 0;
+  letter-spacing: 0.02em;
+  position: relative;
+}
+
+.modern-section-line {
+  height: 2px;
+  border-radius: 1px;
+  position: relative;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.modern-section-line::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, currentColor 0%, transparent 100%);
+  opacity: 0.5;
+}
+
+.modern-section-content {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Card Styles */
+.modern-card {
+  background: transparent;
+  border-radius: 0;
+  border-left: 1px solid rgba(0, 0, 0, 0.15);
+  padding-left: 1rem;
+}
+
+/* Entry Styles */
+.modern-entry {
+  background: transparent;
+  border-radius: 0;
+  border-left: 1px solid rgba(0, 0, 0, 0.15);
+  position: relative;
+  padding-left: 1rem;
+}
+
+.modern-entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.modern-entry-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.modern-entry-title {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.modern-entry-subtitle {
+  display: block;
+  line-height: 1.4;
+}
+
+.modern-entry-duration {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.375rem;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.modern-entry-content {
+  line-height: 1.75;
+}
+
+/* Info Row */
+.modern-info-row {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+}
+
+.modern-info-row:not(:last-child) {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.modern-info-label {
+  flex-shrink: 0;
+  min-width: 5em;
+}
+
+/* Skills Styles */
+.modern-skills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.modern-skill-card {
+  padding: 1rem;
+  padding-left: 1.5rem;
+  background: transparent;
+  border-radius: 0;
+  border-left: 1px solid rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.modern-skill-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.modern-progress-bar {
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.modern-progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.modern-progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Certificates Grid */
+.modern-certificates-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.75rem;
+}
+
+.modern-certificate-badge {
+  padding: 0.75rem 1rem;
+  padding-left: 1.25rem;
+  border-radius: 0;
+  border-left: 1px solid rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
+  justify-content: center;
+}
+
+.modern-certificate-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25em;
+  height: 1.25em;
+  border-radius: 50%;
+  background: currentColor;
+  color: white;
+  font-size: 0.75em;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+/* Hobbies Grid */
+.modern-hobbies-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.modern-hobby-badge {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+}
+
+/* Prose Styles (Enhanced) */
+.modern-resume .prose {
+  color: #374151;
+  font-size: 0.875rem;
+  line-height: 1.75;
+}
+
+.modern-resume .prose h1,
+.modern-resume .prose h2,
+.modern-resume .prose h3,
+.modern-resume .prose h4,
+.modern-resume .prose h5,
+.modern-resume .prose h6 {
+  font-weight: 600;
+  color: #111827;
+  margin-top: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.modern-resume .prose p {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.modern-resume .prose ul,
+.modern-resume .prose ol {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+  padding-left: 1.5rem;
+}
+
+.modern-resume .prose ul li {
+  list-style-type: none;
+  position: relative;
+  padding-left: 1rem;
+}
+
+.modern-resume .prose ul li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.6em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.5;
+}
+
+.modern-resume .prose ol li {
+  list-style-type: decimal;
+}
+
+.modern-resume .prose strong,
+.modern-resume .prose b {
+  color: #111827;
+  font-weight: 600;
+}
+
+.modern-resume .prose code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  background-color: rgba(0, 0, 0, 0.05);
+  padding-left: 0.375rem;
+  padding-right: 0.375rem;
+  padding-top: 0.125rem;
+  padding-bottom: 0.125rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+}
+
+.modern-resume .prose pre {
+  background-color: rgba(0, 0, 0, 0.03);
+  padding: 0.75rem;
+  border-radius: 0.375rem;
+  overflow-x: auto;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.modern-resume .prose pre code {
+  background-color: transparent;
+  padding: 0;
+}
+
+.modern-resume .prose blockquote {
+  border-left-width: 3px;
+  border-left-color: currentColor;
+  padding-left: 1rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  color: #4b5563;
+  font-style: italic;
+  opacity: 0.9;
+}
+
+.modern-resume .prose hr {
+  border-top-width: 1px;
+  border-color: rgba(0, 0, 0, 0.06);
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .modern-header-bg {
+    padding: 1.5rem;
+  }
+
+  .modern-skills-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .modern-certificates-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .modern-entry-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .modern-entry-duration {
+    align-self: flex-start;
+  }
+}
+
+/* Print styles */
+@media print {
+  .modern-card,
+  .modern-entry,
+  .modern-skill-card {
+    break-inside: avoid;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .modern-section {
+    break-inside: avoid;
+  }
+
+  .modern-header-bg,
+  .modern-intent-item,
+  .modern-contact-item,
+  .modern-card,
+  .modern-entry,
+  .modern-skill-card,
+  .modern-certificate-badge,
+  .modern-hobby-badge,
+  .modern-entry-duration {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

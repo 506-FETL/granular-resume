@@ -20,7 +20,7 @@ export function SiteHeader() {
   const location = useLocation()
 
   return (
-    <div className="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6">
+    <div className="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6 z-10">
       <SidebarTrigger className="-ml-1" />
       <Separator orientation="vertical" className="mx-2 data-[orientation=vertical]:h-4" />
       <Breadcrumb>

@@ -17,7 +17,8 @@ export interface AutomergeResumeDocument extends ResumeSchema {
 
   // 表单顺序和可见性
   order: ORDERType[]
-  visibility: { [key in VisibilityItemsType]: boolean }
+  visibility: Record<VisibilityItemsType, boolean>
+  type: 'basic' | 'modern' | 'simple'
 
   // 协作者信息（运行时状态，不持久化到 Supabase）
   _collaborators?: {
