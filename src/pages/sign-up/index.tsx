@@ -1,6 +1,6 @@
-import { SignUpForm } from '@/components/sign-up-form'
 import { LightRays } from '@/components/ui/light-rays'
 import useAlreadyLoggedRedirect from '@/hooks/use-redirect'
+import { SignUpForm } from './components/sign-up-form'
 
 function Signup() {
   useAlreadyLoggedRedirect()

@@ -230,10 +230,15 @@ const useResumeExportStore = create<ResumeExportState>((set, get) => ({
   },
 
   exportToPdf: () => {
-    const { handlePrint } = get()
+    const { handlePrint, resumeRef } = get()
+
+    if (!handlePrint || !resumeRef?.current) {
+      toast.warning('简历加载中')
+      return
+    }
 
     try {
-      handlePrint?.()
+      handlePrint()
     }
     catch (error) {
       toast.error(`导出 PDF 失败,请稍后重试${error}`)
@@ -241,11 +246,11 @@ const useResumeExportStore = create<ResumeExportState>((set, get) => ({
   },
 
   exportToDoc: () => {
-    const { resumeRef } = useResumeExportStore.getState()
+    const { resumeRef } = get()
     const resumeName = useResumeStore.getState().basics.name
 
     if (!resumeRef?.current) {
-      toast.error('未找到可导出的内容')
+      toast.warning('简历加载中')
       return
     }
 
@@ -256,7 +261,11 @@ const useResumeExportStore = create<ResumeExportState>((set, get) => ({
       const resumeTheme = themeColorMap[themeConfig.theme]
       const fontSize = fontConfig.fontSize
 
-      const html = createResumeDocHtml(resumeRef.current.innerHTML, {
+      // 只获取第一个页面的内容
+      const firstPage = resumeRef.current.querySelector('[data-resume-content]')
+      const contentHtml = firstPage ? firstPage.innerHTML : resumeRef.current.innerHTML
+
+      const html = createResumeDocHtml(contentHtml, {
         baseFontSize: fontSize,
         fontFamily: getFontFamilyCSS(fontConfig.fontFamily),
         lineHeight: spacingConfig.lineHeight,

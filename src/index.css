@@ -150,7 +150,6 @@
   @import './styles/_keyframe-animations.scss';
   * {
     @apply border-border outline-ring/50;
-    scrollbar-width: none !important;
   }
   body {
     @apply bg-background text-foreground;
@@ -176,76 +175,4 @@
     --sidebar-border: oklch(1 0 0 / 10%);
     --sidebar-ring: oklch(0.439 0 0);
   }
-}
-
-/* Prose styles for rich text content in resume */
-.prose {
-  @apply text-gray-700 text-sm leading-relaxed;
-}
-
-.prose h1,
-.prose h2,
-.prose h3,
-.prose h4,
-.prose h5,
-.prose h6 {
-  @apply font-semibold text-gray-900 mt-2 mb-1;
-}
-
-.prose p {
-  @apply my-1;
-}
-
-.prose ul,
-.prose ol {
-  @apply my-1 pl-5;
-}
-
-.prose ul li {
-  @apply list-disc;
-}
-
-.prose ol li {
-  @apply list-decimal;
-}
-
-.prose ol li li {
-  @apply list-[lower-alpha];
-}
-
-.prose strong,
-.prose b {
-  @apply text-gray-900 font-semibold;
-}
-
-.prose code {
-  @apply font-mono bg-gray-100 px-1 py-0.5 rounded text-xs;
-}
-
-.prose pre {
-  @apply bg-gray-100 p-2 rounded overflow-x-auto my-2;
-}
-
-.prose pre code {
-  @apply bg-transparent p-0;
-}
-
-.prose blockquote {
-  @apply border-l-4 border-gray-300 pl-4 my-2 text-gray-600;
-}
-
-.prose hr {
-  @apply border-t border-gray-300 my-4;
-}
-
-/* Print styles for prose */
-@media print {
-  .prose a {
-    @apply text-gray-900 no-underline;
-  }
-}
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation: none;
-  mix-blend-mode: normal;
 }

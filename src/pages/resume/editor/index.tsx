@@ -1,6 +1,5 @@
-import type { SupabaseUser } from './types'
 import { Edit } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useReactToPrint } from 'react-to-print'
 import { RealtimeCursors } from '@/components/realtime-cursors'
 import { useTheme } from '@/components/theme-provider'
@@ -8,8 +7,8 @@ import { Drawer, DrawerContent, DrawerTrigger } from '@/components/ui/drawer'
 import { RainbowButton } from '@/components/ui/rainbow-button'
 import { Spinner } from '@/components/ui/spinner'
 import { DragProvider } from '@/contexts/DragContext'
+import { useCurrentUserName } from '@/hooks/use-current-user-name'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { useResumeStyles } from '@/hooks/use-resume-styles'
 import useCollaborationStore from '@/store/collaboration'
 import useResumeExportStore from '@/store/resume/export'
 import useResumeStore from '@/store/resume/form'
@@ -24,11 +23,10 @@ function Editor() {
   const isMobile = useIsMobile()
   const [open, setOpen] = useState(false)
   const { theme } = useTheme()
-
   const { loading, currentUser, activeResumeId } = useResumeLoader()
-  const { font, spacing, theme: resumeTheme } = useResumeStyles()
 
   const resumeRef = useRef<HTMLDivElement | null>(null)
+
   const resumeName = useResumeStore(state => state.basics.name)
   const setResumeRef = useResumeExportStore(state => state.setResumeRef)
   const setHandlePrint = useResumeExportStore(state => state.setHandlePrint)
@@ -59,7 +57,7 @@ function Editor() {
 
   const fill = theme === 'dark' ? '#0c0a09' : '#fafaf9'
   const stroke = theme === 'dark' ? '#3d3b3b' : '#e7e5e4'
-  const userDisplayName = useMemo(() => (currentUser ? getUserDisplayName(currentUser) : ''), [currentUser])
+  const userDisplayName = useCurrentUserName()
 
   if (loading) {
     return (
@@ -82,6 +80,7 @@ function Editor() {
       {roomName && currentUser && (
         <RealtimeCursors roomName={roomName} username={userDisplayName || `用户-${currentUser.id.slice(0, 6)}`} />
       )}
+
       <DragProvider>
         <Drawer open={open} onOpenChange={setOpen} handleOnly>
           <DrawerTrigger asChild>
@@ -112,12 +111,7 @@ function Editor() {
           </DrawerContent>
         </Drawer>
         <div className="flex flex-col md:flex-row min-h-screen overflow-auto">
-          <ResumePreview
-            resumeRef={resumeRef}
-            font={font}
-            spacing={spacing}
-            theme={resumeTheme}
-          />
+          <ResumePreview resumeRef={resumeRef} />
         </div>
       </DragProvider>
       <CollaborationDialog />
@@ -126,17 +120,3 @@ function Editor() {
 }
 
 export default Editor
-
-function getUserDisplayName(user: SupabaseUser) {
-  if (!user)
-    return ''
-
-  const fullName
-    = (user.user_metadata?.full_name as string | undefined) || (user.user_metadata?.name as string | undefined)
-
-  if (fullName)
-    return fullName
-  if (user.email)
-    return user.email
-  return `用户-${user.id.slice(0, 6)}`
-}

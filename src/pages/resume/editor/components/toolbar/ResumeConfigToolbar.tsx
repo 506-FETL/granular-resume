@@ -1,5 +1,4 @@
 import { FileDown, Palette, Space, Type } from 'lucide-react'
-import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -15,17 +14,15 @@ import { useIsMobile } from '@/hooks/use-mobile'
 import { fontFamilyOptions, fontSizeOptions, themeOptions } from '@/lib/schema'
 import { cn } from '@/lib/utils'
 import useResumeConfigStore from '@/store/resume/config'
-import useResumeExportStore from '@/store/resume/export'
-import { ExportDialog } from '../export/ExportDialog'
+import ExportDialog from '../export/ExportDialog'
 
 export function ResumeConfigToolbar() {
   const isMobile = useIsMobile()
-  const { exportToPdf, exportToDoc } = useResumeExportStore()
   const { spacing, font, theme, updateSpacing, updateFont, updateTheme } = useResumeConfigStore()
-  const [exportDialogOpen, setExportDialogOpen] = useState(false)
 
   return (
     <div className={cn('flex flex-row gap-2')}>
+
       {/* 间距设置 */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -121,16 +118,18 @@ export function ResumeConfigToolbar() {
           align={isMobile ? 'end' : 'start'}
         >
           <DropdownMenuLabel className="text-base md:text-sm">字体设置</DropdownMenuLabel>
+
           <DropdownMenuSeparator />
+
           <div className="p-3 md:p-4 space-y-4">
             {/* 字体样式 */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">字体样式</Label>
               <Select
                 value={font.fontFamily}
-                onValueChange={value =>
+                onValueChange={(value: typeof font.fontFamily) =>
                   updateFont({
-                    fontFamily: value as typeof font.fontFamily,
+                    fontFamily: value,
                   })}
               >
                 <SelectTrigger className="h-10">
@@ -216,10 +215,6 @@ export function ResumeConfigToolbar() {
       </DropdownMenu>
 
       <ExportDialog
-        open={exportDialogOpen}
-        onOpenChange={setExportDialogOpen}
-        onExportPdf={exportToPdf}
-        onExportDoc={exportToDoc}
         trigger={(
           <Button variant="outline" size={isMobile ? 'icon' : 'sm'}>
             <FileDown className="h-4 w-4" />

@@ -23,6 +23,12 @@ export function AccountSettingsCard({ user }: AccountSettingsCardProps) {
     const fetchSessionInfo = async () => {
       try {
         const user = await getCurrentUser()
+
+        if (!user) {
+          toast.error('无法获取用户信息')
+          return
+        }
+
         setSessionInfo({
           lastSignInAt: user.last_sign_in_at || undefined,
           provider: user.app_metadata.provider || 'email',

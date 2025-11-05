@@ -1,11 +1,12 @@
 import type React from 'react'
-import type { ResumeContextType, ResumeFont, ResumeSpacing, ResumeTheme } from './resume-context'
+import type { ResumeContextType, ResumeFont, ResumeSpacing, ResumeTheme } from '../../resume-context'
 import type { ORDERType, ProficiencyLevel, ResumeSchema } from '@/lib/schema'
 import parser from 'html-react-parser'
 import { createContext, use, useMemo } from 'react'
 import { Badge } from '@/components/ui/badge'
 import useAge from '@/hooks/useAge'
 import useResumeStore from '@/store/resume/form'
+import './basic.css'
 
 // 创建简历上下文
 const ResumeContext = createContext<ResumeContextType | null>(null)
@@ -436,7 +437,7 @@ interface BasicResumeContentProps {
   font: ResumeFont
 }
 
-export function BasicResumeContent({ theme, spacing, font }: BasicResumeContentProps) {
+export default function BasicResume({ theme, spacing, font }: BasicResumeContentProps) {
   const data = useResumeStore()
   const getVisibility = useResumeStore(state => state.getVisibility)
   const age = useAge(data.basics.birthMonth)

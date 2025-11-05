@@ -76,7 +76,7 @@ export default function ResumeWrapper({ children, ref }: PropsWithChildren<{ ref
             >
               {pageIndex === 0
                 ? (
-                    <div ref={contentRef}>
+                    <div ref={contentRef} data-resume-content>
                       {children}
                     </div>
                   )

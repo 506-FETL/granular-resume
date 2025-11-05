@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { FileText, Printer } from 'lucide-react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -10,28 +11,28 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import useResumeExportStore from '@/store/resume/export'
 
 interface ExportDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onExportPdf: () => void
-  onExportDoc: () => void
   trigger: ReactNode
 }
 
-export function ExportDialog({ open, onOpenChange, onExportPdf, onExportDoc, trigger }: ExportDialogProps) {
+export default function ExportDialog({ trigger }: ExportDialogProps) {
+  const { exportToPdf, exportToDoc } = useResumeExportStore()
+  const [exportDialogOpen, setExportDialogOpen] = useState(false)
+
   const handleExportPdf = () => {
-    onOpenChange(false)
-    onExportPdf()
+    setExportDialogOpen(false)
+    exportToPdf()
   }
 
   const handleExportDoc = () => {
-    onOpenChange(false)
-    onExportDoc()
+    setExportDialogOpen(false)
+    exportToDoc()
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={exportDialogOpen} onOpenChange={setExportDialogOpen}>
       <DialogTrigger asChild>
         {trigger}
       </DialogTrigger>
