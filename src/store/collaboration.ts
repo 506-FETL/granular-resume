@@ -2,6 +2,7 @@ import type { CollaborationCallbacks } from '@/lib/automerge/supabase-network-ad
 import { toast } from 'sonner'
 import { create } from 'zustand'
 import { clearStoredSession, rememberSessionRole } from '@/lib/collaboration/session-storage'
+import { logger } from '@/lib/logger'
 import useResumeStore from '@/store/resume/form'
 
 type CollaborationRole = 'host' | 'guest'
@@ -46,6 +47,178 @@ interface CollaborationState {
   acknowledgeRemoteShareEnd: () => void
 }
 
+/**
+ * 生成协作参与者颜色
+ */
+function generateParticipantColor() {
+  const hue = Math.floor(Math.random() * 360)
+  return `hsl(${hue}, 85%, 65%)`
+}
+
+/**
+ * 生成会话ID
+ */
+function createSessionId() {
+  try {
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+      return crypto.randomUUID().replace(/-/g, '').slice(0, 16)
+    }
+    if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+      const buffer = new Uint8Array(12)
+      crypto.getRandomValues(buffer)
+      return Array.from(buffer, byte => byte.toString(36)[0]).join('').slice(0, 16)
+    }
+  }
+  catch {
+    // ignore
+  }
+  return Math.random().toString(36).slice(2, 18)
+}
+
+/**
+ * 构建分享URL
+ */
+function buildShareUrl(resumeId: string, sessionId: string) {
+  const url = new URL(`${window.location.origin}/resume/editor`)
+  url.searchParams.set('resumeId', resumeId)
+  url.searchParams.set('collabSession', sessionId)
+  return url.toString()
+}
+
+/**
+ * 构建房间名称
+ */
+function buildRoomName(resumeId: string, sessionId: string) {
+  return `resume-collab:${resumeId}:${sessionId}`
+}
+
+/**
+ * 创建协作回调配置 - 统一的逻辑提取
+ */
+function createCollaborationCallbacks(params: {
+  role: CollaborationRole
+  userId: string
+  userName: string
+  color: string
+  get: () => CollaborationState
+  set: (state: Partial<CollaborationState> | ((state: CollaborationState) => Partial<CollaborationState>)) => void
+  adapterPeerIdRef: { current: string | null }
+}): CollaborationCallbacks {
+  const { role, userId, userName, color, get, set, adapterPeerIdRef } = params
+
+  return {
+    presenceMetadata: { userId, userName, color, role },
+
+    onChannelReady: (channelName) => {
+      set({ channelName })
+    },
+
+    onPeerJoin: ({ peerId, metadata }) => {
+      if (peerId === adapterPeerIdRef.current)
+        return
+
+      const displayName = metadata?.userName || metadata?.name || `协作者 ${peerId.slice(-4)}`
+      toast.success(`${displayName} 加入协作`, { description: '已同步最新内容' })
+
+      set(state => ({
+        participants: {
+          ...state.participants,
+          [peerId]: { peerId, metadata, joinedAt: Date.now() },
+        },
+      }))
+    },
+
+    onPeerLeave: ({ peerId }) => {
+      set((state) => {
+        const updated = { ...state.participants }
+        delete updated[peerId]
+        return { participants: updated }
+      })
+
+      if (peerId !== adapterPeerIdRef.current) {
+        toast.info('协作者已离开', { description: `Peer ${peerId.slice(-4)}` })
+      }
+    },
+
+    onControlMessage: ({ type }) => {
+      if (type === 'share-ended' && get().role !== 'host') {
+        get().handleRemoteShareEnd()
+      }
+    },
+  }
+}
+
+/**
+ * 通用的协作启用逻辑
+ */
+async function enableCollaboration(params: {
+  sessionId: string
+  resumeId: string
+  userId: string
+  userName: string
+  role: CollaborationRole
+  shouldSaveSnapshot?: boolean
+  get: () => CollaborationState
+  set: (state: Partial<CollaborationState> | ((state: CollaborationState) => Partial<CollaborationState>)) => void
+}) {
+  const { sessionId, resumeId, userId, userName, role, shouldSaveSnapshot = false, get, set } = params
+
+  const docManager = useResumeStore.getState().docManager
+  if (!docManager) {
+    throw new Error('文档尚未初始化，无法开启协作')
+  }
+
+  const color = get().selfColor ?? generateParticipantColor()
+  set({ isConnecting: true, error: null, selfColor: color })
+
+  const adapterPeerIdRef = { current: null as string | null }
+  const callbacks = createCollaborationCallbacks({
+    role,
+    userId,
+    userName,
+    color,
+    get,
+    set,
+    adapterPeerIdRef,
+  })
+
+  const adapter = await docManager.enableCollaboration(sessionId, callbacks)
+  adapterPeerIdRef.current = adapter.peerId || null
+
+  // 发起者保存最新快照到数据库
+  if (shouldSaveSnapshot && docManager.getHandle()) {
+    await docManager.saveToSupabase(docManager.getHandle()!)
+  }
+
+  const shareUrl = buildShareUrl(resumeId, sessionId)
+  const roomName = buildRoomName(resumeId, sessionId)
+
+  set({
+    isSharing: true,
+    isConnecting: false,
+    role,
+    sessionId,
+    shareUrl,
+    resumeId,
+    roomName,
+    participants: adapterPeerIdRef.current
+      ? {
+          [adapterPeerIdRef.current]: {
+            peerId: adapterPeerIdRef.current,
+            metadata: { userId, userName, color, role },
+            joinedAt: Date.now(),
+          },
+        }
+      : {},
+    selfPeerId: adapterPeerIdRef.current,
+    selfUserId: userId,
+    error: null,
+    shareEndedByRemote: false,
+  })
+
+  rememberSessionRole({ sessionId, resumeId, userId, role })
+}
+
 const useCollaborationStore = create<CollaborationState>()((set, get) => ({
   isSharing: false,
   isConnecting: false,
@@ -63,114 +236,25 @@ const useCollaborationStore = create<CollaborationState>()((set, get) => ({
   shareEndedByRemote: false,
 
   startSharing: async ({ resumeId, userId, userName }) => {
-    const docManager = useResumeStore.getState().docManager
-    if (!docManager) {
-      throw new Error('文档尚未初始化，无法开启协作')
-    }
-
     const existingSession = get().sessionId
     if (existingSession) {
       get().stopSharing({ silent: true })
     }
 
     const sessionId = createSessionId()
-    // 不在分享链接中包含本地 documentUrl（见 buildShareUrl 注释）
-    const shareUrl = buildShareUrl(resumeId, sessionId)
-    const color = get().selfColor ?? generateParticipantColor()
-
-    // eslint-disable-next-line no-console
-    console.log('🚀 开启协作会话', { sessionId, resumeId })
-
-    set({
-      isConnecting: true,
-      error: null,
-      selfColor: color,
-    })
-
-    let adapterPeerId: string | null = null
-
-    const callbacks: CollaborationCallbacks = {
-      presenceMetadata: {
-        userId,
-        userName,
-        color,
-        role: 'host',
-      },
-      onChannelReady: (channelName) => {
-        set({ channelName })
-      },
-      onPeerJoin: ({ peerId, metadata }) => {
-        if (peerId === adapterPeerId)
-          return
-        const displayName = metadata?.userName || metadata?.name || `协作者 ${peerId.slice(-4)}`
-        toast.success(`${displayName} 加入协作`, { description: '已同步最新内容' })
-        set(state => ({
-          participants: {
-            ...state.participants,
-            [peerId]: {
-              peerId,
-              metadata,
-              joinedAt: Date.now(),
-            },
-          },
-        }))
-      },
-      onPeerLeave: ({ peerId }) => {
-        set((state) => {
-          const updated = { ...state.participants }
-          delete updated[peerId]
-          return { participants: updated }
-        })
-        if (peerId !== adapterPeerId) {
-          toast.info('协作者已离开', { description: `Peer ${peerId.slice(-4)}` })
-        }
-      },
-      onControlMessage: ({ type }) => {
-        if (type === 'share-ended' && get().role !== 'host') {
-          get().handleRemoteShareEnd()
-        }
-      },
-    }
+    logger.automerge.collab('开启协作会话', { sessionId, resumeId })
 
     try {
-      const adapter = docManager.enableCollaboration(sessionId, callbacks)
-      adapterPeerId = adapter.peerId || null
-
-      // 发起者开始协作后，立即保存最新文档到数据库，确保协作者能导入最新快照
-      if (docManager.getHandle()) {
-        await docManager.saveToSupabase(docManager.getHandle()!)
-      }
-
-      set({
-        isSharing: true,
-        isConnecting: false,
-        role: 'host',
+      await enableCollaboration({
         sessionId,
-        shareUrl,
         resumeId,
-        // 使用 resumeId 代替 documentUrl 来生成房间名，resumeId 在不同浏览器/设备间稳定
-        roomName: buildRoomName(resumeId, sessionId),
-        participants: adapterPeerId
-          ? {
-              [adapterPeerId]: {
-                peerId: adapterPeerId,
-                metadata: {
-                  userId,
-                  userName,
-                  color,
-                  role: 'host',
-                },
-                joinedAt: Date.now(),
-              },
-            }
-          : {},
-        selfPeerId: adapterPeerId,
-        selfUserId: userId,
-        error: null,
-        shareEndedByRemote: false,
+        userId,
+        userName,
+        role: 'host',
+        shouldSaveSnapshot: true,
+        get,
+        set,
       })
-
-      rememberSessionRole({ sessionId, resumeId, userId, role: 'host' })
 
       toast.success('已开启实时协作', { description: '现在可以将链接分享给他人了' })
     }
@@ -183,106 +267,23 @@ const useCollaborationStore = create<CollaborationState>()((set, get) => ({
   },
 
   joinSession: async ({ sessionId, resumeId, userId, userName }) => {
-    const docManager = useResumeStore.getState().docManager
-    if (!docManager) {
-      throw new Error('文档尚未初始化，无法加入协作')
-    }
-
     if (get().sessionId === sessionId && get().isSharing) {
       return
     }
 
-    const color = get().selfColor ?? generateParticipantColor()
-
-    // eslint-disable-next-line no-console
-    console.log('🔗 加入协作会话', { sessionId, resumeId, documentUrl: docManager.getDocumentUrl() })
-
-    set({
-      isConnecting: true,
-      error: null,
-      selfColor: color,
-    })
-
-    let adapterPeerId: string | null = null
-
-    const callbacks: CollaborationCallbacks = {
-      presenceMetadata: {
-        userId,
-        userName,
-        color,
-        role: 'guest',
-      },
-      onChannelReady: (channelName) => {
-        set({ channelName })
-      },
-      onPeerJoin: ({ peerId, metadata }) => {
-        if (peerId === adapterPeerId)
-          return
-        const displayName = metadata?.userName || metadata?.name || `协作者 ${peerId.slice(-4)}`
-        toast.success(`${displayName} 加入协作`, { description: '已同步最新内容' })
-        set(state => ({
-          participants: {
-            ...state.participants,
-            [peerId]: {
-              peerId,
-              metadata,
-              joinedAt: Date.now(),
-            },
-          },
-        }))
-      },
-      onPeerLeave: ({ peerId }) => {
-        set((state) => {
-          const updated = { ...state.participants }
-          delete updated[peerId]
-          return { participants: updated }
-        })
-        if (peerId !== adapterPeerId) {
-          toast.info('协作者已离开', { description: `Peer ${peerId.slice(-4)}` })
-        }
-      },
-      onControlMessage: ({ type }) => {
-        if (type === 'share-ended' && get().role !== 'host') {
-          get().handleRemoteShareEnd()
-        }
-      },
-    }
+    logger.automerge.collab('加入协作会话', { sessionId, resumeId })
 
     try {
-      const adapter = docManager.enableCollaboration(sessionId, callbacks)
-      adapterPeerId = adapter.peerId || null
-
-      set({
-        isSharing: true,
-        isConnecting: false,
-        role: 'guest',
+      await enableCollaboration({
         sessionId,
-        // 不在分享链接中包含本地 documentUrl（见 buildShareUrl 注释）
-        shareUrl: buildShareUrl(resumeId, sessionId),
         resumeId,
-        // 使用 resumeId 代替 documentUrl 来生成房间名，resumeId 在不同浏览器/设备间稳定
-        roomName: buildRoomName(resumeId, sessionId),
-        participants: adapterPeerId
-          ? {
-              [adapterPeerId]: {
-                peerId: adapterPeerId,
-                metadata: {
-                  userId,
-                  userName,
-                  color,
-                  role: 'guest',
-                },
-                joinedAt: Date.now(),
-              },
-            }
-          : {},
-        selfPeerId: adapterPeerId,
-        error: null,
-        selfUserId: userId,
-        shareEndedByRemote: false,
+        userId,
+        userName,
+        role: 'guest',
+        shouldSaveSnapshot: false,
+        get,
+        set,
       })
-
-      rememberSessionRole({ sessionId, resumeId, userId, role: 'guest' })
 
       toast.info('已加入实时协作', { description: '正在与发起者同步内容' })
     }
@@ -295,97 +296,19 @@ const useCollaborationStore = create<CollaborationState>()((set, get) => ({
   },
 
   resumeHosting: async ({ sessionId, resumeId, userId, userName }) => {
-    const docManager = useResumeStore.getState().docManager
-    if (!docManager) {
-      throw new Error('文档尚未初始化，无法恢复协作')
-    }
-
-    const color = get().selfColor ?? generateParticipantColor()
-
-    set({
-      isConnecting: true,
-      error: null,
-      selfColor: color,
-    })
-
-    let adapterPeerId: string | null = null
-
-    const callbacks: CollaborationCallbacks = {
-      presenceMetadata: {
-        userId,
-        userName,
-        color,
-        role: 'host',
-      },
-      onChannelReady: (channelName) => {
-        set({ channelName })
-      },
-      onPeerJoin: ({ peerId, metadata }) => {
-        if (peerId === adapterPeerId)
-          return
-        const displayName = metadata?.userName || metadata?.name || `协作者 ${peerId.slice(-4)}`
-        toast.success(`${displayName} 加入协作`, { description: '已同步最新内容' })
-        set(state => ({
-          participants: {
-            ...state.participants,
-            [peerId]: {
-              peerId,
-              metadata,
-              joinedAt: Date.now(),
-            },
-          },
-        }))
-      },
-      onPeerLeave: ({ peerId }) => {
-        set((state) => {
-          const updated = { ...state.participants }
-          delete updated[peerId]
-          return { participants: updated }
-        })
-        if (peerId !== adapterPeerId) {
-          toast.info('协作者已离开', { description: `Peer ${peerId.slice(-4)}` })
-        }
-      },
-      onControlMessage: ({ type }) => {
-        if (type === 'share-ended' && get().role !== 'host') {
-          get().handleRemoteShareEnd()
-        }
-      },
-    }
+    logger.automerge.collab('恢复协作会话', { sessionId, resumeId })
 
     try {
-      const adapter = docManager.enableCollaboration(sessionId, callbacks)
-      adapterPeerId = adapter.peerId || null
-
-      set({
-        isSharing: true,
-        isConnecting: false,
-        role: 'host',
+      await enableCollaboration({
         sessionId,
-        shareUrl: buildShareUrl(resumeId, sessionId),
         resumeId,
-        roomName: buildRoomName(resumeId, sessionId),
-        participants: adapterPeerId
-          ? {
-              [adapterPeerId]: {
-                peerId: adapterPeerId,
-                metadata: {
-                  userId,
-                  userName,
-                  color,
-                  role: 'host',
-                },
-                joinedAt: Date.now(),
-              },
-            }
-          : {},
-        selfPeerId: adapterPeerId,
-        error: null,
-        selfUserId: userId,
-        shareEndedByRemote: false,
+        userId,
+        userName,
+        role: 'host',
+        shouldSaveSnapshot: false,
+        get,
+        set,
       })
-
-      rememberSessionRole({ sessionId, resumeId, userId, role: 'host' })
 
       toast.success('已恢复实时协作', { description: '协作者可以继续编辑' })
     }
@@ -477,44 +400,5 @@ const useCollaborationStore = create<CollaborationState>()((set, get) => ({
     }
   },
 }))
-
-function createSessionId() {
-  try {
-    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-      return crypto.randomUUID().replace(/-/g, '').slice(0, 16)
-    }
-    if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
-      const buffer = new Uint8Array(12)
-      crypto.getRandomValues(buffer)
-      return Array.from(buffer, byte => byte.toString(36)[0])
-        .join('')
-        .slice(0, 16)
-    }
-  }
-  catch {
-    // ignore
-  }
-  return Math.random().toString(36).slice(2, 18)
-}
-
-function buildShareUrl(resumeId: string, sessionId: string) {
-  const url = new URL(`${window.location.origin}/resume/editor`)
-  url.searchParams.set('resumeId', resumeId)
-  url.searchParams.set('collabSession', sessionId)
-  // 不再在分享链接中包含本地 documentUrl（automerge handle URL），
-  // 因为该 URL 在不同浏览器/设备上通常不可用，会导致接收方尝试加载失败。
-  return url.toString()
-}
-
-function buildRoomName(resumeId: string, sessionId: string) {
-  // 直接使用 resumeId 作为房间标识的一部分，保证不同浏览器/设备使用相同的标识
-  const idPart = resumeId || 'unknown'
-  return `resume-collab:${idPart}:${sessionId}`
-}
-
-function generateParticipantColor() {
-  const hue = Math.floor(Math.random() * 360)
-  return `hsl(${hue}, 85%, 65%)`
-}
 
 export default useCollaborationStore

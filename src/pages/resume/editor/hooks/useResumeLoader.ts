@@ -20,7 +20,6 @@ export function useResumeLoader() {
   const { loadResumeData } = useResumeStore()
 
   const queryResumeId = searchParams.get('resumeId')
-  const sharedDocUrl = searchParams.get('docUrl')
   const collabSessionParam = searchParams.get('collabSession')
   const activeResumeId = resumeId ?? queryResumeId ?? undefined
 
@@ -67,7 +66,7 @@ export function useResumeLoader() {
     let cancelled = false
     setLoading(true)
 
-    loadResumeData(activeResumeId, sharedDocUrl ? { documentUrl: sharedDocUrl } : undefined)
+    loadResumeData(activeResumeId)
       .catch((error: any) => {
         if (cancelled)
           return
@@ -83,7 +82,7 @@ export function useResumeLoader() {
     return () => {
       cancelled = true
     }
-  }, [activeResumeId, loadResumeData, navigate, sharedDocUrl])
+  }, [activeResumeId, loadResumeData, navigate])
 
   // 监听简历删除
   useEffect(() => {

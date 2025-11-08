@@ -291,7 +291,7 @@ const useResumeStore = create<ResumeState>()((set, get) => ({
     await get().syncToSupabase()
   },
 
-  loadResumeData: async (resumeId: string, options?: { documentUrl?: string }) => {
+  loadResumeData: async (resumeId: string) => {
     const { docManager, cleanupFns } = get()
 
     if (cleanupFns.length > 0) {
@@ -339,9 +339,7 @@ const useResumeStore = create<ResumeState>()((set, get) => ({
     }
 
     try {
-      const manager = new DocumentManager(resumeId, user.id, {
-        sharedDocumentUrl: options?.documentUrl,
-      })
+      const manager = new DocumentManager(resumeId, user.id)
       const handle = await manager.initialize()
       const doc = handle.doc()
 

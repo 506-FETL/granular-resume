@@ -1,7 +1,11 @@
 /* eslint-disable no-console */
-/**
- * 离线简历管理器
- * 使用 IndexedDB 存储本地简历
+/*
+ * @Author: lll 347552878@qq.com
+ * @Date: 2025-10-24 21:56:16
+ * @LastEditors: lll 347552878@qq.com
+ * @LastEditTime: 2025-11-08 12:36:34
+ * @FilePath: /resume/src/lib/offline-resume-manager.ts
+ * @Description: 离线简历管理器,使用 IndexedDB 存储本地简历
  */
 
 import type { DBSchema, IDBPDatabase } from 'idb'

@@ -64,8 +64,8 @@ export function useRealtimeCursors({
   username: string
   throttleMs: number
 }) {
-  const [color] = useState(generateRandomColor())
-  const [userId] = useState(generateRandomNumber())
+  const [color] = useState(() => generateRandomColor())
+  const [userId] = useState(() => generateRandomNumber())
   const [cursors, setCursors] = useState<Record<string, CursorEventPayload>>({})
   const cursorPayload = useRef<CursorEventPayload | null>(null)
 

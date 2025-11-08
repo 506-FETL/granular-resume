@@ -2,12 +2,11 @@ import type React from 'react'
 import type { ResumeContextType, ResumeFont, ResumeSpacing, ResumeTheme } from '../resume-context'
 import type { ORDERType, ProficiencyLevel, ResumeSchema } from '@/lib/schema'
 import parser from 'html-react-parser'
-import { Calendar, DollarSign, Mail, MapPin, Phone, Target } from 'lucide-react'
+import { BookOpen, Briefcase, GraduationCap, Medal, Rocket, Sparkles, Target, Trophy, Users } from 'lucide-react'
 import { createContext, use, useMemo } from 'react'
 import { Badge } from '@/components/ui/badge'
 import useAge from '@/hooks/useAge'
 import useResumeStore from '@/store/resume/form'
-import './modern.css'
 
 // 创建简历上下文
 const ResumeContext = createContext<ResumeContextType | null>(null)
@@ -52,24 +51,34 @@ function formatDuration(duration?: string[]): string | undefined {
 function Section({ title, children, icon }: { title: string, children: React.ReactNode, icon?: React.ReactNode }) {
   const { theme, font, spacing } = useResumeContext()
   return (
-    <section className="modern-section" style={{ marginBottom: spacing.sectionMargin }}>
-      <div className="modern-section-header" style={{ marginBottom: spacing.sectionTitleMargin }}>
-        <div className="modern-section-title-wrapper">
-          {icon && <span className="modern-section-icon" style={{ color: theme.primaryColor }}>{icon}</span>}
-          <h2
-            className="modern-section-title"
-            style={{
-              fontSize: font.sectionTitleSize,
-              fontWeight: font.boldWeight,
-              color: theme.primaryColor,
-            }}
+    <section style={{ marginBottom: spacing.sectionMargin }}>
+      <div
+        className="flex items-center gap-3 mb-4 pb-2 border-b-2"
+        style={{
+          marginBottom: spacing.sectionTitleMargin,
+          borderColor: theme.primaryColor,
+        }}
+      >
+        {icon && (
+          <div
+            className="flex items-center justify-center w-8 h-8 rounded-full text-white"
+            style={{ backgroundColor: theme.primaryColor }}
           >
-            {title}
-          </h2>
-        </div>
-        <div className="modern-section-line" style={{ backgroundColor: theme.primaryColor }} />
+            {icon}
+          </div>
+        )}
+        <h2
+          className="m-0 flex-1"
+          style={{
+            fontSize: font.sectionTitleSize,
+            fontWeight: font.boldWeight,
+            color: theme.textPrimary,
+          }}
+        >
+          {title}
+        </h2>
       </div>
-      <div className="modern-section-content" style={{ gap: spacing.itemSpacing }}>
+      <div className="flex flex-col" style={{ gap: spacing.itemSpacing }}>
         {children}
       </div>
     </section>
@@ -84,11 +93,17 @@ function Entry({ title, subtitle, duration, content }: {
 }) {
   const { theme, font, spacing } = useResumeContext()
   return (
-    <div className="modern-entry" style={{ padding: spacing.itemSpacing }}>
-      <div className="modern-entry-header">
-        <div className="modern-entry-left">
+    <div
+      className="relative pl-6"
+      style={{
+        padding: spacing.itemSpacing,
+        paddingLeft: '1.5rem',
+      }}
+    >
+      <div className="flex justify-between items-start gap-4 flex-wrap">
+        <div className="flex flex-col gap-1 flex-1">
           <h3
-            className="modern-entry-title"
+            className="m-0"
             style={{
               fontSize: font.contentSize,
               fontWeight: font.boldWeight,
@@ -99,7 +114,6 @@ function Entry({ title, subtitle, duration, content }: {
           </h3>
           {subtitle && (
             <span
-              className="modern-entry-subtitle"
               style={{
                 fontSize: font.contentSize,
                 fontWeight: font.mediumWeight,
@@ -111,14 +125,16 @@ function Entry({ title, subtitle, duration, content }: {
           )}
         </div>
         {duration && (
-          <div className="modern-entry-duration" style={{ fontSize: font.smallSize, color: theme.textMuted }}>
-            <Calendar size={14} className="inline mr-1" />
+          <div
+            className="flex items-center whitespace-nowrap text-sm"
+            style={{ fontSize: font.smallSize, color: theme.textMuted }}
+          >
             {duration}
           </div>
         )}
       </div>
       {content && (
-        <div className="modern-entry-content prose" style={{ marginTop: `calc(${spacing.itemSpacing} / 2)` }}>
+        <div className="prose mt-2" style={{ marginTop: `calc(${spacing.itemSpacing} / 2)` }}>
           {parser(content)}
         </div>
       )}
@@ -130,106 +146,94 @@ function BasicsModule({ data, age }: { data: ResumeSchema, age?: string | number
   const { theme, font, spacing } = useResumeContext()
   const { basics, jobIntent } = data
   const infoFields = [
-    age && `${age}岁`,
-    basics.gender !== '不填' && basics.gender,
-    basics.nation,
-    basics.heightCm && `${basics.heightCm}cm`,
-    basics.weightKg && `${basics.weightKg}kg`,
-    basics.maritalStatus !== '不填' && basics.maritalStatus,
-  ].filter(Boolean)
+    age && { icon: '年龄', value: `${age}岁` },
+    basics.gender !== '不填' && { icon: '性别', value: basics.gender },
+    basics.nation && { icon: '籍贯', value: basics.nation },
+    basics.workYears && { icon: '工作年限', value: basics.workYears },
+    basics.phone && { icon: '电话', value: basics.phone },
+    basics.email && { icon: '邮箱', value: basics.email },
+  ].filter(Boolean) as Array<{ icon: string, value: string }>
 
   return (
     <header
-      className="modern-header"
+      className="relative text-white mb-6"
       style={{
+        background: theme.primaryColor,
         marginBottom: spacing.sectionMargin,
-        paddingBottom: spacing.itemSpacing,
+        padding: '2rem 2.5rem',
       }}
     >
-      <div className="modern-header-bg" style={{ background: `linear-gradient(135deg, ${theme.primaryColor}15 0%, ${theme.primaryColor}05 100%)` }}>
-        <div className="modern-header-content">
+      <div className="flex items-start justify-between gap-6">
+        <div className="flex-1">
           <h1
-            className="modern-name"
+            className="m-0 mb-4"
             style={{
               fontSize: font.nameSize,
               fontWeight: font.boldWeight,
-              color: theme.primaryColor,
             }}
           >
             {basics.name || '姓名'}
           </h1>
 
           {jobIntent && (
-            <div className="modern-job-intent" style={{ fontSize: font.jobIntentSize, fontWeight: font.mediumWeight }}>
-              <div className="modern-intent-item" style={{ color: theme.textPrimary }}>
-                <Target size={16} className="inline mr-1" style={{ color: theme.primaryColor }} />
-                {jobIntent.jobIntent}
+            <div
+              className="flex flex-wrap items-center gap-3 mb-4 pb-4 border-b border-white/30"
+              style={{ fontSize: font.jobIntentSize, fontWeight: font.mediumWeight }}
+            >
+              <div className="flex items-center gap-2">
+                <span>求职意向:</span>
+                <span>{jobIntent.jobIntent}</span>
               </div>
               {jobIntent.intentionalCity && (
-                <div className="modern-intent-item" style={{ color: theme.textSecondary }}>
-                  <MapPin size={16} className="inline mr-1" style={{ color: theme.primaryColor }} />
-                  {jobIntent.intentionalCity}
-                </div>
+                <>
+                  <span>|</span>
+                  <span>{jobIntent.intentionalCity}</span>
+                </>
               )}
               {jobIntent.expectedSalary && (
-                <div className="modern-intent-item" style={{ color: theme.textSecondary }}>
-                  <DollarSign size={16} className="inline mr-1" style={{ color: theme.primaryColor }} />
-                  {jobIntent.expectedSalary}
-                  K
-                </div>
+                <>
+                  <span>|</span>
+                  <span>
+                    {jobIntent.expectedSalary}
+                    /月
+                  </span>
+                </>
               )}
               {jobIntent.dateEntry && jobIntent.dateEntry !== '不填' && (
-                <div className="modern-intent-item" style={{ color: theme.textSecondary }}>
-                  <Calendar size={16} className="inline mr-1" style={{ color: theme.primaryColor }} />
-                  {jobIntent.dateEntry}
-                </div>
+                <>
+                  <span>|</span>
+                  <span>{jobIntent.dateEntry}</span>
+                </>
               )}
             </div>
           )}
 
-          {infoFields.length > 0 && (
-            <div
-              className="modern-info-fields"
-              style={{
-                gap: spacing.itemSpacing,
-                fontSize: font.contentSize,
-                color: theme.textPrimary,
-              }}
-            >
-              {infoFields.map((field, i) => (
-                <span key={i} className="modern-info-item">
-                  {field}
+          <div
+            className="grid gap-x-8 gap-y-2"
+            style={{
+              fontSize: font.contentSize,
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            }}
+          >
+            {infoFields.map(field => (
+              <div key={field.icon} className="flex items-center gap-2">
+                <span className="flex items-center gap-1">
+                  <span className="opacity-90">{field.icon}</span>
+                  <span>:</span>
                 </span>
-              ))}
-            </div>
-          )}
-
-          <div className="modern-contact" style={{ fontSize: font.contentSize }}>
-            {basics.phone && (
-              <div className="modern-contact-item" style={{ color: theme.textPrimary }}>
-                <Phone size={16} style={{ color: theme.primaryColor }} />
-                <span>{basics.phone}</span>
+                <span>{field.value}</span>
               </div>
-            )}
-            {basics.email && (
-              <div className="modern-contact-item" style={{ color: theme.textPrimary }}>
-                <Mail size={16} style={{ color: theme.primaryColor }} />
-                <span>{basics.email}</span>
-              </div>
-            )}
+            ))}
           </div>
 
-          {basics.customFields?.filter(f => f?.label && f?.value).map((field, i) => (
+          {basics.customFields?.filter(f => f?.label && f?.value).map(field => (
             field && (
               <div
-                key={`custom-field-${i}`}
-                className="modern-custom-field"
-                style={{
-                  fontSize: font.contentSize,
-                  color: theme.textPrimary,
-                }}
+                key={field.label}
+                className="mt-2"
+                style={{ fontSize: font.contentSize }}
               >
-                <span style={{ fontWeight: font.mediumWeight, color: theme.primaryColor }}>
+                <span className="opacity-90">
                   {field.label}
                   ：
                 </span>
@@ -270,10 +274,10 @@ function ApplicationInfoModule() {
 function EduBackgroundModule() {
   const { eduBackground } = useResumeStore()
   return (
-    <Section title="教育背景" icon={<span className="modern-icon-emoji">🎓</span>}>
-      {eduBackground.items.map((item, i) => (
+    <Section title="教育背景" icon={<GraduationCap size={20} />}>
+      {eduBackground.items.map(item => (
         <Entry
-          key={`edu-${item.schoolName}-${i}`}
+          key={`${item.schoolName}-${item.professional}`}
           title={item.schoolName}
           subtitle={item.degree !== '不填' ? `${item.professional}（${item.degree}）` : item.professional}
           duration={formatDuration(item.duration)}
@@ -287,10 +291,10 @@ function EduBackgroundModule() {
 function WorkExperienceModule() {
   const { workExperience } = useResumeStore()
   return (
-    <Section title="工作经历" icon={<span className="modern-icon-emoji">💼</span>}>
-      {workExperience.items.map((item, i) => (
+    <Section title="工作经历" icon={<Briefcase size={20} />}>
+      {workExperience.items.map(item => (
         <Entry
-          key={`work-${item.companyName}-${i}`}
+          key={`${item.companyName}-${item.position}`}
           title={item.companyName}
           subtitle={item.position}
           duration={formatDuration(item.workDuration)}
@@ -304,10 +308,10 @@ function WorkExperienceModule() {
 function InternshipExperienceModule() {
   const { internshipExperience } = useResumeStore()
   return (
-    <Section title="实习经验" icon={<span className="modern-icon-emoji">🚀</span>}>
-      {internshipExperience.items.map((item, i) => (
+    <Section title="实习经验" icon={<Rocket size={20} />}>
+      {internshipExperience.items.map(item => (
         <Entry
-          key={`intern-${item.companyName}-${i}`}
+          key={`${item.companyName}-${item.position}`}
           title={item.companyName}
           subtitle={item.position}
           duration={formatDuration(item.internshipDuration)}
@@ -321,10 +325,10 @@ function InternshipExperienceModule() {
 function ProjectExperienceModule() {
   const { projectExperience } = useResumeStore()
   return (
-    <Section title="项目经验" icon={<span className="modern-icon-emoji">⚡</span>}>
-      {projectExperience.items.map((item, i) => (
+    <Section title="项目经验" icon={<BookOpen size={20} />}>
+      {projectExperience.items.map(item => (
         <Entry
-          key={`project-${item.projectName}-${i}`}
+          key={`${item.projectName}-${item.participantRole}`}
           title={item.projectName}
           subtitle={item.participantRole}
           duration={formatDuration(item.projectDuration)}
@@ -338,10 +342,10 @@ function ProjectExperienceModule() {
 function CampusExperienceModule() {
   const { campusExperience } = useResumeStore()
   return (
-    <Section title="校园经历" icon={<span className="modern-icon-emoji">🏫</span>}>
-      {campusExperience.items.map((item, i) => (
+    <Section title="校园经历" icon={<Users size={20} />}>
+      {campusExperience.items.map(item => (
         <Entry
-          key={`campus-${item.experienceName}-${i}`}
+          key={`${item.experienceName}-${item.role}`}
           title={item.experienceName}
           subtitle={item.role}
           duration={formatDuration(item.duration)}
@@ -357,34 +361,36 @@ function SkillSpecialtyModule() {
   const { skillSpecialty } = useResumeStore()
 
   return (
-    <Section title="技能特长" icon={<span className="modern-icon-emoji">💪</span>}>
+    <Section title="技能特长" icon={<Medal size={20} />}>
       {skillSpecialty.description && (
-        <div className="modern-card prose" style={{ padding: spacing.itemSpacing }}>
+        <div className="prose" style={{ padding: spacing.itemSpacing }}>
           {parser(skillSpecialty.description)}
         </div>
       )}
       {skillSpecialty.skills?.length > 0 && (
-        <div className="modern-skills-grid">
-          {skillSpecialty.skills.map((skill, i) => {
+        <div className="grid grid-cols-2 gap-4">
+          {skillSpecialty.skills.map((skill) => {
             const percentage = skillProficiencyMap[skill.proficiencyLevel] || 50
             return (
-              <div key={`skill-${skill.label}-${i}`} className="modern-skill-card">
-                <div className="modern-skill-header">
+              <div key={skill.label} className="flex flex-col gap-2">
+                <div className="flex justify-between items-center">
                   <span style={{ fontSize: font.contentSize, color: theme.textPrimary, fontWeight: font.mediumWeight }}>
                     {skill.label}
                   </span>
-                  <span style={{ fontSize: font.smallSize, color: theme.textMuted, fontWeight: font.boldWeight }}>
-                    {percentage}
-                    %
+                  <span style={{ fontSize: font.smallSize, color: theme.textMuted }}>
+                    {skill.proficiencyLevel}
                   </span>
                 </div>
                 {skill.displayType === 'percentage' && (
-                  <div className="modern-progress-bar" style={{ backgroundColor: theme.progressBarBg }}>
+                  <div
+                    className="w-full h-2 rounded-full overflow-hidden"
+                    style={{ backgroundColor: theme.progressBarBg }}
+                  >
                     <div
-                      className="modern-progress-fill"
+                      className="h-full rounded-full transition-all duration-300"
                       style={{
                         width: `${percentage}%`,
-                        background: `linear-gradient(90deg, ${theme.progressBarFill} 0%, ${theme.primaryColor} 100%)`,
+                        backgroundColor: theme.primaryColor,
                       }}
                     />
                   </div>
@@ -403,28 +409,26 @@ function HonorsCertificatesModule() {
   const { honorsCertificates } = useResumeStore()
 
   return (
-    <Section title="荣誉证书" icon={<span className="modern-icon-emoji">🏆</span>}>
+    <Section title="荣誉证书" icon={<Trophy size={20} />}>
       {honorsCertificates.description && (
-        <div className="modern-card prose" style={{ padding: spacing.itemSpacing }}>
+        <div className="prose" style={{ padding: spacing.itemSpacing }}>
           {parser(honorsCertificates.description)}
         </div>
       )}
       {honorsCertificates.certificates?.length > 0 && (
-        <div className="modern-certificates-grid">
-          {honorsCertificates.certificates.map((cert, i) => (
-            <div
-              key={`cert-${cert.name}-${i}`}
-              className="modern-certificate-badge"
+        <div className="flex flex-wrap gap-2">
+          {honorsCertificates.certificates.map(cert => (
+            <Badge
+              key={cert.name}
+              variant="outline"
               style={{
                 fontSize: font.contentSize,
-                backgroundColor: `${theme.primaryColor}10`,
+                borderColor: theme.primaryColor,
                 color: theme.textPrimary,
-                borderColor: `${theme.primaryColor}30`,
               }}
             >
-              <span className="modern-certificate-icon">✓</span>
               {cert.name}
-            </div>
+            </Badge>
           ))}
         </div>
       )}
@@ -436,8 +440,8 @@ function SelfEvaluationModule() {
   const { spacing } = useResumeContext()
   const { selfEvaluation } = useResumeStore()
   return (
-    <Section title="自我评价" icon={<span className="modern-icon-emoji">✨</span>}>
-      <div className="modern-card prose" style={{ padding: spacing.itemSpacing }}>
+    <Section title="自我评价" icon={<Sparkles size={20} />}>
+      <div className="prose" style={{ padding: spacing.itemSpacing }}>
         {parser(selfEvaluation.content)}
       </div>
     </Section>
@@ -445,26 +449,25 @@ function SelfEvaluationModule() {
 }
 
 function HobbiesModule() {
-  const { theme } = useResumeContext()
+  const { theme, font } = useResumeContext()
   const { hobbies } = useResumeStore()
 
   return (
-    <Section title="兴趣爱好" icon={<span className="modern-icon-emoji">🎨</span>}>
+    <Section title="兴趣爱好" icon={<Sparkles size={20} />}>
       {hobbies.description && (
-        <div className="modern-card prose" style={{ padding: '1rem' }}>
+        <div className="prose mb-3">
           {parser(hobbies.description)}
         </div>
       )}
       {hobbies.hobbies?.length > 0 && (
-        <div className="modern-hobbies-grid">
-          {hobbies.hobbies.map((hobby, i) => (
+        <div className="flex flex-wrap gap-2">
+          {hobbies.hobbies.map(hobby => (
             <Badge
               variant="outline"
-              key={`hobby-${hobby.name}-${i}`}
-              className="modern-hobby-badge"
+              key={hobby.name}
               style={{
-                backgroundColor: `${theme.primaryColor}08`,
-                borderColor: `${theme.primaryColor}40`,
+                fontSize: font.contentSize,
+                borderColor: theme.primaryColor,
                 color: theme.textPrimary,
               }}
             >

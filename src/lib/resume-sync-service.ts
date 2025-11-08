@@ -1,6 +1,10 @@
-/**
- * 简历同步服务
- * 处理登录后本地简历与云端的合并
+/*
+ * @Author: lll 347552878@qq.com
+ * @Date: 2025-10-27 17:57:54
+ * @LastEditors: lll 347552878@qq.com
+ * @LastEditTime: 2025-11-08 12:36:52
+ * @FilePath: /resume/src/lib/resume-sync-service.ts
+ * @Description: 简历同步服务,处理登录后本地简历与云端的合并
  */
 
 import { toast } from 'sonner'
@@ -66,10 +70,8 @@ export async function autoSyncOnLogin(): Promise<void> {
   try {
     const hasOfflineResumes = await hasOfflineResumesToSync()
 
-    if (!hasOfflineResumes) {
-      console.log('📭 没有需要同步的本地简历')
+    if (!hasOfflineResumes)
       return
-    }
 
     // 显示同步提示
     const syncPromise = syncOfflineResumesToCloud()
